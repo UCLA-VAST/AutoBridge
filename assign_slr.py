@@ -1,36 +1,17 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.6
+
 import argparse
 import collections
 import sys
 from typing import Dict, Set
 import re 
-
 import tlp.core
-
 import collections
-
-Area = collections.namedtuple('Area', 'BRAM DSP FF LUT')
+from mip import *
+from parse import *
 
 max_usage_ratio = 0.75
-DDR_constraint = f'''
-m += UpdateMem_p[0] == 0
-m += UpdateMem_p[1] == 0
-m += UpdateMem_p[2] == 0
-m += UpdateMem_p[3] == 0
-m += UpdateMem_p[4] == 0
-m += UpdateMem_p[5] == 0
-m += UpdateMem_p[6] == 0
-m += UpdateMem_p[7] == 0
-m += EdgeMem_p[0] == 0
-m += EdgeMem_p[1] == 0
-m += EdgeMem_p[2] == 0
-m += EdgeMem_p[3] == 0
-m += EdgeMem_p[4] == 0
-m += EdgeMem_p[5] == 0
-m += EdgeMem_p[6] == 0
-m += EdgeMem_p[7] == 0
-m += VertexMem_p[0] == 0
-'''
+
 # F1
 # SLR_CNT = 3
 # BRAM_SLR = 1440
@@ -47,10 +28,37 @@ m += VertexMem_p[0] == 0
 
 # u280
 SLR_CNT = 3
-BRAM_SLR = 1344
-DSP_SLR = 3008
-FF_SLR = 869120
-LUT_SLR = 434560
+SLR_AREA = {}
+SLR_AREA['BRAM'] = 1344
+SLR_AREA['DSP'] = 3008
+SLR_AREA['FF'] = 869120
+SLR_AREA['LUT'] = 434560
+
+# DDR location table
+DDR_loc = collections.defaultdict(dict)
+
+DDR_loc['UpdateMem'][0] = 0
+DDR_loc['UpdateMem'][1] = 0
+DDR_loc['UpdateMem'][2] = 0
+DDR_loc['UpdateMem'][3] = 0
+DDR_loc['UpdateMem'][4] = 0
+DDR_loc['UpdateMem'][5] = 0
+DDR_loc['UpdateMem'][6] = 0
+DDR_loc['UpdateMem'][7] = 0
+
+DDR_loc['EdgeMem'][0] = 0
+DDR_loc['EdgeMem'][1] = 0
+DDR_loc['EdgeMem'][2] = 0
+DDR_loc['EdgeMem'][3] = 0
+DDR_loc['EdgeMem'][4] = 0
+DDR_loc['EdgeMem'][5] = 0
+DDR_loc['EdgeMem'][6] = 0
+DDR_loc['EdgeMem'][7] = 0
+
+DDR_loc['VertexMem'][0] = 0
+
+#######################################
+Area = collections.namedtuple('Area', 'BRAM DSP FF LUT')
 
 def get_area(name_set, rpt_path):
   area_table = {}
@@ -90,6 +98,8 @@ def get_width(src):
     #   fifo_width[x.group(2).strip()] = type_table[x.group(1).strip()]
   return fifo_width
 
+#################################
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--output',
@@ -105,7 +115,7 @@ def main():
 
   output = args.output
   report_path = f'{args.tlp}/report'
-  top_rtl = f'{args.tlp}/hdl/{args.top}.v'
+  top_rtl = f'{args.tlp}/hdl/{args.top}_{args.top}.v'
   program = tlp.core.Program(open(f'{args.tlp}/program.json', 'r'))
   
 
@@ -123,36 +133,10 @@ def main():
         levels[dst_task_name].add(dst_task_id)
 
   area_table = get_area(levels.keys(), report_path)
-
-  output.write(f'''
-from mip import *
-
-SLR_CNT = {SLR_CNT}
-BRAM_SLR = {BRAM_SLR}
-DSP_SLR = {DSP_SLR}
-FF_SLR = {FF_SLR}
-LUT_SLR = {LUT_SLR} 
-
-max_usage_ratio = {max_usage_ratio}
-
-m = Model()
-
-''')
-
-  # [var] if a module belongs to an SLR
-  for name, ids in levels.items():
-    output.write(f'{name}_x = [ [m.add_var(var_type=BINARY, name=f\'{name}_x_{{id}}_{{j}}\') for j in range(SLR_CNT)] for id in range({len(ids)})] \n')
-  output.write('\n')
-
-  # [var]  the location of a module
-  for name, ids in levels.items():  
-    output.write(f'{name}_p = [ m.add_var(var_type=INTEGER, name=f\'{name}_p_{{id}}\') for id in range({len(ids)})] \n')
-
-  # define topology
-  output.write('''
-topology = []
-''')
-  task_fmt = '{name}_p[{id}]'
+  
+  # construct topology of the graph
+  topology = []
+  task_fmt = '{name}_{id}_p'
   for task in program.tasks:
     if task.is_upper:
       for fifo_name, fifo_attr in task.fifos.items():
@@ -160,73 +144,91 @@ topology = []
         dst_task_name, dst_task_id = fifo_attr['consumed_by']
         src = task_fmt.format(name=src_task_name, id=src_task_id)
         dst = task_fmt.format(name=dst_task_name, id=dst_task_id)
-        print(f'{src}, {dst}, {fifo_width[fifo_name]}, {fifo_name}')
-        output.write(f'topology.append(({src}, {dst}, {fifo_width[fifo_name]}))\n')
+        #print(f'{src}, {dst}, {fifo_width[fifo_name]}, {fifo_name}')
+        topology.append((src, dst, fifo_width[fifo_name]))
 
-  # [var]  each fifo corresponds to a distance variable
-  output.write('''
-d = [m.add_var(var_type=INTEGER) for i in topology]
-''')
+#######################################
 
-  # [goal]  optimization goal
-  output.write('''
-m.objective = minimize(xsum(d[i] * topology[i][2] for i in range(len(d))) )    
-''')
-  output.write('\n')
+
+  # initialize model
+  m = Model()
+
+  # [var] if a module belongs to an SLR
+  mods_x = []
+  for name, ids in levels.items():
+    for id in ids:
+      new_mod_x = [m.add_var(var_type=BINARY, name=f'{name}_{id}_x_{loc}') for loc in range(SLR_CNT)]
+      mods_x.append(new_mod_x)
+
+  # [var] the location of a module
+  mods_p = {}
+  for name, ids in levels.items(): 
+    for id in ids:
+      new_mod_p = m.add_var(var_type=INTEGER, name=f'{name}_{id}_p')
+      mods_p[f'{name}_{id}_p'] = new_mod_p
+  
+  # [var] distance of each edge
+  d = [m.add_var(var_type=INTEGER, name=f'd_{i}') for i in topology]
+
+  # [goal] 
+  m.objective = minimize(xsum(d[i] * topology[i][2] for i in range(len(d))) )
 
   # [constraint] only assign to 1 SLR
-  for name, ids in levels.items():
-    for id in ids:
-      output.write(f'm += xsum( {name}_x[{id}][loc] for loc in range(SLR_CNT) ) == 1\n')
-  output.write('\n')
+  for mod_x in mods_x:
+    m += xsum(mod_x[loc] for loc in range(SLR_CNT)) == 1
 
   # [constraint] auxiliary varaible p
-  for name, ids in levels.items():
-    for id in ids:
-      output.write(f'm += {name}_p[{id}] == xsum( {name}_x[{id}][loc] * loc for loc in range(SLR_CNT)) \n')
-  output.write('\n')  
+  for mod_x, mod_p in zip(mods_x, mods_p.values()):
+    m += mod_p == xsum(mod_x[loc] * loc for loc in range(SLR_CNT))
 
-  # auxiliary variable d
-  output.write('''
-for i in range(len(d)):
-  m += d[i] >= (topology[i][0] - topology[i][1]) * topology[i][2]
-  m += d[i] >= (topology[i][1] - topology[i][0]) * topology[i][2]
-''')
-  output.write('\n')  
+  # [constraint] auxiliary variable d
+  for d_i, top_i in zip(d, topology):
+    m += d_i >= (mods_p[top_i[0]] - mods_p[top_i[1]]) * top_i[2]
+    m += d_i >= (mods_p[top_i[1]] - mods_p[top_i[0]]) * top_i[2]
 
-  # area constraints
-  output.write('''
-for loc in range(SLR_CNT):''')
+  # [constraint] area
+  x_name_fmt = '{}_{}_x_{}'
   for item in ['BRAM', 'DSP', 'FF', 'LUT']:
-    output.write('''
-  m += 0 ''') # "0" as a placeholder
-    for name, ids in levels.items():
-      output.write(f'+ xsum({name}_x[id][loc] * {getattr(area_table[name],item)} for id in range({len(ids)})) ')
-    output.write(f'<= {item}_SLR * max_usage_ratio') 
-  
+    for loc in range(SLR_CNT):
+      cmd = 'm += 0'
+      for i in range(len(mods_x)):
+        mod_name = parse(x_name_fmt, mods_x[i][loc].name)[0]
+        usage = getattr(area_table[ mod_name ],item)
+        cmd += f' + mods_x[{i}][{loc}] * {usage}'
+      cmd += f'<= {int(SLR_AREA[item] * max_usage_ratio)}'
+      #print(cmd)
+      exec(cmd)
+
   # DDR location constraint
-  output.write(DDR_constraint)
+  p_name_fmt = '{}_{}_p'
+  for mod_p in mods_p.values():
+    mod_type, mod_id = parse(p_name_fmt, mod_p.name)
+    mod_id = int(mod_id)
+    if(mod_type in DDR_loc and mod_id in DDR_loc[mod_type]):
+      print(f'{mod_type} {mod_id} ')
+      m += mod_p == DDR_loc[mod_type][mod_id]
 
-  output.write('''
-m.optimize()
-''')
+  # run
+  #m.write('sample.lp')
+  m.optimize()
 
-  output.write('''
-for loc in range(SLR_CNT):
-  print(f"\\nSLR_{loc} includes:")
-''')
-  for name, ids in levels.items():
-    output.write(f'''
-  for id in range({len(ids)}):
-    if ({name}_p[id].x == loc):
-      print(f'{name}_{{id}}')
-''')
+###################################
 
-  output.write('''
-for cross in topology:
-  if (cross[0].x != cross[1].x):
-    print(f'{cross[0]}:{cross[0].x} -> {cross[1]}:{cross[1].x}   {cross[2]}')
-''')
+  for loc in range(SLR_CNT):
+    print(f'SLR_{loc} includes:')
+    for mod_p in mods_p.values():
+      if (mod_p.x == loc):
+        mod_type, mod_id = parse(p_name_fmt, mod_p.name)
+        print(f'{mod_type}[{mod_id}]')
+
+  print('')
+  for edge in topology:
+    src = mods_p[edge[0]]
+    dst = mods_p[edge[1]]
+    if (src.x != dst.x):
+      print(f'{src}:{src.x} -> {dst}:{dst.x}   {edge[2]}')
+
+####################################
 
 if __name__ == '__main__':
   main()
