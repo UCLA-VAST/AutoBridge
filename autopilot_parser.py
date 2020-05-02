@@ -162,7 +162,7 @@ def getAreaFromReport(mod_name, rpt_dir):
     rpt = open(f'{rpt_dir}/{mod_name}_csynth.rpt', 'r')
   except IOError:
     print(f'no report file for {mod_name}')
-    return
+    return Area(0, 0, 0, 0)
 
   for line in rpt:
     if ('Total' in line):

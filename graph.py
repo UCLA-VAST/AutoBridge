@@ -4,6 +4,7 @@ import pyverilog.vparser.ast as ast
 from pyverilog.vparser.parser import parse as rtl_parse
 import re
 import autopilot_parser
+from assign_slr import *
 
 class Edge:
   def __init__(self, name:str):
@@ -22,6 +23,7 @@ class Vertex:
     self.upstream = [] # marked edges in the upstream
     self.downstream = []
     self.area = autopilot_parser.Area(-1, -1, -1, -1)
+    self.slr_loc = -1
 
   def add_in(self, edge : Edge):
     self.out_edges.append(edge)
@@ -32,7 +34,7 @@ class Vertex:
 class Graph:
   fifo_type = ['fifo', 'relay_station']
 
-  def __init__(self, rtl_addrs : list, rpt_path : str):
+  def __init__(self, rtl_addrs : list, rpt_path : str, DDR_loc):
     self.rpt_path = rpt_path
     ast, directives = rtl_parse(rtl_addrs)
 
@@ -43,7 +45,9 @@ class Graph:
     self.dfs(ast, set(), self.init_vertices)
     self.dfs(ast, set(), self.init_edges)
 
-    self.show_vertices()
+    self.DDR_loc = DDR_loc
+
+    assign_slr(self.vertices.values(), self.edges.values(), self.DDR_loc)
 
   def show_vertices(self):
     for v in self.vertices.values():
@@ -148,7 +152,47 @@ def main():
   top_rtl_path = f'{tlp_path}/hdl/{top_name}_{top_name}.v'
   rpt_path = f'{tlp_path}/report'
 
-  g = Graph([top_rtl_path], rpt_path)
+  DDR_loc = collections.defaultdict(dict)
+
+  DDR_loc['UpdateMem_0'] = 0
+  DDR_loc['UpdateMem_1'] = 0
+  DDR_loc['UpdateMem_2'] = 0
+  DDR_loc['UpdateMem_3'] = 0
+  DDR_loc['UpdateMem_4'] = 0
+  DDR_loc['UpdateMem_5'] = 0
+  DDR_loc['UpdateMem_6'] = 0
+  DDR_loc['UpdateMem_7'] = 0
+  DDR_loc['EdgeMem_0'] = 0
+  DDR_loc['EdgeMem_1'] = 0
+  DDR_loc['EdgeMem_2'] = 0
+  DDR_loc['EdgeMem_3'] = 0
+  DDR_loc['EdgeMem_4'] = 0
+  DDR_loc['EdgeMem_5'] = 0
+  DDR_loc['EdgeMem_6'] = 0
+  DDR_loc['EdgeMem_7'] = 0
+  DDR_loc['VertexMem_0'] = 0
+  DDR_loc['PageRank_control_s_axi_U'] = 0
+  DDR_loc['edges_0__m_axi'] = 0
+  DDR_loc['edges_1__m_axi'] = 0
+  DDR_loc['edges_2__m_axi'] = 0
+  DDR_loc['edges_3__m_axi'] = 0
+  DDR_loc['edges_4__m_axi'] = 0
+  DDR_loc['edges_5__m_axi'] = 0
+  DDR_loc['edges_6__m_axi'] = 0
+  DDR_loc['edges_7__m_axi'] = 0
+  DDR_loc['updates_0__m_axi'] = 0
+  DDR_loc['updates_1__m_axi'] = 0
+  DDR_loc['updates_2__m_axi'] = 0
+  DDR_loc['updates_3__m_axi'] = 0
+  DDR_loc['updates_4__m_axi'] = 0
+  DDR_loc['updates_5__m_axi'] = 0
+  DDR_loc['updates_6__m_axi'] = 0
+  DDR_loc['updates_7__m_axi'] = 0
+  DDR_loc['degrees__m_axi'] = 0
+  DDR_loc['rankings__m_axi'] = 0
+  DDR_loc['tmps__m_axi'] = 0
+
+  g = Graph([top_rtl_path], rpt_path, DDR_loc)
     
 if __name__ == '__main__':
   main()
