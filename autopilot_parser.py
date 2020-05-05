@@ -15,8 +15,13 @@ import json
 #
 # return: map stage number to pipeline ID
 #
-def getPipeline(rpt_path):
-  rpt = open(rpt_path, 'r')
+def getPipeline(sche_path):
+  try:
+    rpt = open(sche_path, 'r')
+  except IOError:
+    print(f'getPipeline: no report for {sche_path}')
+    return {}
+
   stage_pp = {}
   for line in rpt:
     match = re.search('\* Pipeline : (\d)+', line)
@@ -34,9 +39,13 @@ def getPipeline(rpt_path):
 #
 # extract all sentences of one stage
 #
-def getStage(rpt_path):
-  rpt = open(rpt_path, 'r')
-  
+def getStage(sche_path):
+  try:
+    rpt = open(sche_path, 'r')
+  except IOError:
+    print(f'getStage: no report for {sche_path}')
+    return {}
+
   line = rpt.readline()
   while (line):
     match = re.search('^State (\d+)', line)
@@ -58,27 +67,40 @@ def getStage(rpt_path):
 #
 # get the mapping of formal names
 #
-def getGrouping(mod_type:str, tlp_path:str):
-  rpt_path = f'{tlp_path}/report/{mod_type}.verbose.sched.rpt'
+def getGrouping(sche_path:str):
+  try:
+    rpt = open(sche_path, 'r')
+  except IOError:
+    print(f'getGrouping: no report for {sche_path}')
+    return {}, {}
 
   # map stage ID -> pp ID
   # stage ID starts from 1
-  stage_pp = getPipeline(rpt_path)
+  stage_pp = getPipeline(sche_path)
 
   # map pipeline ID -> all the FIFOs used in this pipeline
-  pp_fifo = collections.defaultdict(set)
+  pp_to_formal = collections.defaultdict(set)
 
   # extract used FIFOs in this stage
-  getFifoArray = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+)_fifo_V_(\d+)', stage))
-  getFifo      = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+)_fifo_V[^_]', stage))
+  getFifoArray = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+_fifo_V_\d+)', stage))
+  getFifo      = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+_fifo_V)[^_]', stage))
 
-  for i, stage in enumerate(getStage(rpt_path)):
+  for i, stage in enumerate(getStage(sche_path)):
     stage_id = i+1
     if (stage_id in stage_pp):
       pp_num = stage_pp[stage_id]
-      pp_fifo[pp_num].update(getFifo(stage)) 
-      pp_fifo[pp_num].update(getFifoArray(stage)) 
+      pp_to_formal[pp_num].update(getFifo(stage)) 
+      pp_to_formal[pp_num].update(getFifoArray(stage)) 
 
+  formal_to_pp = {}
+  for pp_num, fifos in pp_to_formal.items():
+    for fifo in fifos:
+      formal_to_pp[fifo] = pp_num
+
+  #print(json.dumps(pp_to_formal, indent=2, sort_keys=True))
+  # for i in pp_to_formal:
+  #   print(i, pp_to_formal[i])
+  return formal_to_pp, pp_to_formal
 
 #
 # extract a module from raw verilog file
@@ -154,14 +176,11 @@ def getMapping(mod_name: str, tlp_path:str, top_name:str):
 
 Area = collections.namedtuple('Area', 'BRAM DSP FF LUT')
 
-def getAreaFromReport(mod_name, rpt_dir):
-
-  if (re.search('_\d+[ ]*$', mod_name)):
-    mod_name = re.sub('_\d+[ ]*$', '', mod_name)
+def getAreaFromReport(rpt_addr:str):
   try:
-    rpt = open(f'{rpt_dir}/{mod_name}_csynth.rpt', 'r')
+    rpt = open(rpt_addr, 'r')
   except IOError:
-    print(f'no report file for {mod_name}')
+    print(f'No report file at {rpt_addr}')
     return Area(0, 0, 0, 0)
 
   for line in rpt:
@@ -172,12 +191,14 @@ def getAreaFromReport(mod_name, rpt_dir):
 ##############################
 
 
-# TODO: we should build the graph by parsing the RTL, which will be more useful
-
 # mod_name = 'Control_0'
 # mod_type = 'Control'
 # tlp_path = '/home/einsx7/pr/application/PageRank/HBM_try1/PageRank.xilinx_u280_xdma_201920_3.hw.xo.tlp'
 # top_name = 'PageRank'
 
 # getMapping(mod_name, tlp_path, top_name)
+# getGrouping(mod_type, tlp_path)
+
+# tlp_path = '/home/einsx7/pr/application/PageRank/HBM_try1/PageRank.xilinx_u280_xdma_201920_3.hw.xo.tlp'
+# mod_type = 'ProcElem'
 # getGrouping(mod_type, tlp_path)
