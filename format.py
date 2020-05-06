@@ -2,68 +2,35 @@
 
 import collections
 import re
+import pyverilog.vparser.ast as ast
 
-print('import Format module')
-
-class Format:
+class FormatTLP:
   # either xxxx__dout or xxxx_dout
   fifo_dout_format = '([^ ]*[^_])_+dout'
   fifo_din_format = '([^ ]*[^_])_+din'
-  fifo_width_format = 'DATA_WIDTH'
+  fifo_type = ['fifo', 'relay_station']
 
-  def __init__(self, tlp_path:str, top_name:str):
-    # specific to the TLP compiler
-    self.rpt_path = f'{tlp_path}/report'
-    self.hls_sche_path = f'{tlp_path}/report'
-    self.rtl_path = f'{tlp_path}/hdl'
-    self.fifo_type = ['fifo', 'relay_station']
+  def __init__(
+      self,
+      rpt_path,
+      hls_sche_path,
+      top_hdl_path,
+      top_name,
+      DDR_loc,
+      max_usage_ratio,
+      SLR_CNT,
+      SLR_AREA):
+    self.rpt_path = rpt_path
+    self.hls_sche_path = hls_sche_path
+    self.top_hdl_path = top_hdl_path
+    self.top_name = top_name
+    self.DDR_loc = DDR_loc,
+    self.max_usage_ratio = max_usage_ratio
+    self.SLR_CNT = SLR_CNT
+    self.SLR_AREA = SLR_AREA   
 
-    # Control_Control.v
-    # use list according to the api of pyverilog
-    self.top_rtl_path = [f'{self.rtl_path}/{top_name}_{top_name}.v']
-
-    # TODO: automatically parse the location from the .cfg file
-    self.DDR_loc = collections.defaultdict(dict)
-    self.DDR_loc['UpdateMem_0'] = 0
-    self.DDR_loc['UpdateMem_1'] = 0
-    self.DDR_loc['UpdateMem_2'] = 0
-    self.DDR_loc['UpdateMem_3'] = 0
-    self.DDR_loc['UpdateMem_4'] = 0
-    self.DDR_loc['UpdateMem_5'] = 0
-    self.DDR_loc['UpdateMem_6'] = 0
-    self.DDR_loc['UpdateMem_7'] = 0
-    self.DDR_loc['EdgeMem_0'] = 0
-    self.DDR_loc['EdgeMem_1'] = 0
-    self.DDR_loc['EdgeMem_2'] = 0
-    self.DDR_loc['EdgeMem_3'] = 0
-    self.DDR_loc['EdgeMem_4'] = 0
-    self.DDR_loc['EdgeMem_5'] = 0
-    self.DDR_loc['EdgeMem_6'] = 0
-    self.DDR_loc['EdgeMem_7'] = 0
-    self.DDR_loc['VertexMem_0'] = 0
-    self.DDR_loc['PageRank_control_s_axi_U'] = 0
-    self.DDR_loc['edges_0__m_axi'] = 0
-    self.DDR_loc['edges_1__m_axi'] = 0
-    self.DDR_loc['edges_2__m_axi'] = 0
-    self.DDR_loc['edges_3__m_axi'] = 0
-    self.DDR_loc['edges_4__m_axi'] = 0
-    self.DDR_loc['edges_5__m_axi'] = 0
-    self.DDR_loc['edges_6__m_axi'] = 0
-    self.DDR_loc['edges_7__m_axi'] = 0
-    self.DDR_loc['updates_0__m_axi'] = 0
-    self.DDR_loc['updates_1__m_axi'] = 0
-    self.DDR_loc['updates_2__m_axi'] = 0
-    self.DDR_loc['updates_3__m_axi'] = 0
-    self.DDR_loc['updates_4__m_axi'] = 0
-    self.DDR_loc['updates_5__m_axi'] = 0
-    self.DDR_loc['updates_6__m_axi'] = 0
-    self.DDR_loc['updates_7__m_axi'] = 0
-    self.DDR_loc['degrees__m_axi'] = 0
-    self.DDR_loc['rankings__m_axi'] = 0
-    self.DDR_loc['tmps__m_axi'] = 0
-
+  # Control_Control.v -> Control.verbose.sched.rpt
   def getScheFile(self, mod_type:str):
-    # Control_Control.v -> Control.verbose.sched.rpt
     filter = ['s_axi', 'm_axi', 'async_mmap']
     if( any(w in mod_type for w in filter)):
       return ''
@@ -73,25 +40,41 @@ class Format:
     # print(former, latter)
     assert(former == latter)
     return f'{self.hls_sche_path}/{former}.verbose.sched.rpt'
-
-  def getRptFile(self, mod_name:str):
-    # module name : Control_0 -> rpt name: Control_csynth.rpt
+    
+  # module name : Control_0 -> rpt name: Control_csynth.rpt
+  def getRptFile(self, v):
+    mod_name = v.name
     if (re.search('_\d+[ ]*$', mod_name)):
       mod_name = re.sub('_\d+[ ]*$', '', mod_name)
     return f'{self.rpt_path}/{mod_name}_csynth.rpt'
 
+  # xxx_dout -> xxx
   def extractFIFOFromRaw(self, name_raw:str):
     if ('_dout' in name_raw):
-      return re.search(Format.fifo_dout_format, name_raw).group(1)
+      return re.search(FormatTLP.fifo_dout_format, name_raw).group(1)
     elif ('_din' in name_raw):
-      return re.search(Format.fifo_din_format, name_raw).group(1)
+      return re.search(FormatTLP.fifo_din_format, name_raw).group(1)
     else:
       return None    
 
-  # def isFIFOPortPair(self, formal:str, actual:str):
-  #   if ('_dout' in formal and '_dout' in actual):
-  #     return true
-  #   elif ('_din' in formal and '_din' in actual):
-  #     return true
-  #   else:
-  #     return false
+  # fifo xxx (.DATA_WIDTH(16)) -> 16
+  # fifo_w32_d2_A xxx -> 32
+  def extractFIFOWidth(self, node):
+    mod_type = node.module
+    
+    if (node.parameterlist): # for TLP
+      for paramarg in node.parameterlist:
+        formal = paramarg.paramname
+        actual = paramarg.argname.value
+        if( 'DATA_WIDTH' in formal): 
+          return int(actual)
+
+    else: # for HLS
+      match = re.search('_w(\d+)_d(\d+)_', mod_type)
+      if (match):
+        return int(match.group(1))
+      
+    print('FIFO width error')
+
+  def isFIFO(self, node):
+    return 'fifo' in node.module or 'relay_station' in node.module

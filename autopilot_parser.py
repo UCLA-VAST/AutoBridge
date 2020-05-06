@@ -43,7 +43,9 @@ def getStage(sche_path):
   try:
     rpt = open(sche_path, 'r')
   except IOError:
-    print(f'getStage: no report for {sche_path}')
+    name = sche_path.split('/')
+    name = name[len(name)-1]
+    print(f'getStage: no report for {name}')
     return {}
 
   line = rpt.readline()
@@ -71,7 +73,9 @@ def getGrouping(sche_path:str):
   try:
     rpt = open(sche_path, 'r')
   except IOError:
-    print(f'getGrouping: no report for {sche_path}')
+    name = sche_path.split('/')
+    name = name[len(name)-1]
+    print(f'getStage: no report for {name}')
     return {}, {}
 
   # map stage ID -> pp ID

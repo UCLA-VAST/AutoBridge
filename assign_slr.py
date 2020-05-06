@@ -4,32 +4,13 @@ import collections
 from mip import *
 from graph import *
 from typing import List
-max_usage_ratio = 0.75
+import format
+import format_hls
 
-# F1
-# SLR_CNT = 3
-# BRAM_SLR = 1440
-# DSP_SLR = 2280
-# FF_SLR = 788160
-# LUT_SLR = 394080 
-
-# u250
-# SLR_CNT = 4
-# BRAM_SLR = 1344
-# DSP_SLR = 3072
-# FF_SLR = 864000
-# LUT_SLR = 432000 
-
-# u280
-SLR_CNT = 3
-SLR_AREA = {}
-SLR_AREA['BRAM'] = 1344
-SLR_AREA['DSP'] = 3008
-SLR_AREA['FF'] = 869120
-SLR_AREA['LUT'] = 434560
-
-def assign_slr(vertices : List[Vertex], topology : List[Edge], DDR_loc):
+def assign_slr(vertices : List, topology : List, formator):
   
+  SLR_CNT = formator.SLR_CNT
+
   # initialize model
   m = Model()
 
@@ -57,7 +38,7 @@ def assign_slr(vertices : List[Vertex], topology : List[Edge], DDR_loc):
 
   # [constraint] auxiliary varaible p
   for mod_x, mod_p in zip(mods_x.values(), mods_p.values()):
-    m += mod_p == xsum(mod_x[loc] * loc for loc in range(SLR_CNT))
+    m += mod_p == xsum(mod_x[loc] * loc for loc in range(formator.SLR_CNT))
 
   # [constraint] auxiliary variable d
   for d_i, top_i in zip(d, topology):
@@ -70,17 +51,17 @@ def assign_slr(vertices : List[Vertex], topology : List[Edge], DDR_loc):
       cmd = 'm += 0'
       for v in vertices:
         cmd += f' + mods_x["{v.name}"][{loc}] * {getattr(v.area, item)}'
-      cmd += f'<= {int(SLR_AREA[item] * max_usage_ratio)}'
+      cmd += f'<= {int(formator.SLR_AREA[item] * formator.max_usage_ratio)}'
 
       exec(cmd)
 
   # [constraint] DDR location constraint
   for v, mod_p in mods_p.items():
-    if (v.name in DDR_loc):
-      m += mod_p == DDR_loc[v.name]
+    if (v.name in formator.DDR_loc):
+      m += mod_p == formator.DDR_loc[v.name]
   
   # run
-  #m.write('sample.lp')
+  m.write('sample.lp')
   m.optimize()
 
   for v in vertices:
@@ -98,4 +79,6 @@ def assign_slr(vertices : List[Vertex], topology : List[Edge], DDR_loc):
       if (v.slr_loc == loc):
         print(f'  {v.name}')
 
-
+  for e in topology:
+    if (e.src.slr_loc != e.dst.slr_loc):
+      print(f'{e.name}: {e.src.name} @ {e.src.slr_loc} --> {e.dst.name} @ {e.dst.slr_loc} ')
