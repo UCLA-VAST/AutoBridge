@@ -1,7 +1,6 @@
 #! /usr/bin/python3.6
 
 import graph
-from format import FormatTLP
 from format_hls import FormatHLS
 import collections
 

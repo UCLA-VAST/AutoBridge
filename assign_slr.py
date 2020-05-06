@@ -4,7 +4,7 @@ import collections
 from mip import *
 from graph import *
 from typing import List
-import format
+import format_tlp
 import format_hls
 
 def assign_slr(vertices : List, topology : List, formator):

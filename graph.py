@@ -9,7 +9,7 @@ import math
 from collections import defaultdict
 
 import autopilot_parser
-from format import FormatTLP
+from format_tlp import FormatTLP
 from format_hls import FormatHLS
 from assign_slr import assign_slr
 
@@ -58,16 +58,16 @@ class Graph:
     self.edges = {} # name -> Edge
     self.edge_to_vertex = {} # raw edge name (xxx_din & xxx_dout) -> Vertex
 
-    self.dfs(top_mod_ast, set(), self.init_vertices)
-    self.dfs(top_mod_ast, set(), self.init_edges)
+    self.dfs(top_mod_ast, set(), self.initVertices)
+    self.dfs(top_mod_ast, set(), self.initEdges)
     
     # run ILP to solve the SLR assignment problem
     assign_slr(self.vertices.values(), self.edges.values(), self.formator)
 
     self.generateConstraint()
-    self.generateTopHdl(top_mod_ast)
+    # self.generateTopHdl(top_mod_ast)
     
-  def show_vertices(self):
+  def showVertices(self):
     for v in self.vertices.values():
       print(f'{v.name}: {v.area}')
       for e in v.in_edges:
@@ -75,7 +75,7 @@ class Graph:
       for e in v.out_edges:
         print(f'  -> {e.name}')
 
-  def show_edges(self):
+  def showEdges(self):
     for e in self.edges.values():
       print(f'{e.name}: {e.src.name} -> {e.dst.name}')
 
@@ -93,14 +93,6 @@ class Graph:
     for c in node.children():
       self.dfs(c, visited, func)
 
-      try:
-        if (c.name == 'in_size_c16_U'):
-          c.show()
-          self.flag = 1      
-
-      except:
-        pass
-
   def level_traverse(self, node, func):
     q = [node]
     track = None
@@ -110,20 +102,10 @@ class Graph:
         q.append(c)
       func(curr)
 
-      try:
-        if (curr.name == 'in_size_c16_U'):
-          curr.show()
-          self.flag = 1      
-          track = curr
-      except:
-        pass  
-  
-    track.show()
-    return track
   #
   # for each instance create a Vertex
   #
-  def init_vertices(self, node):
+  def initVertices(self, node):
     # for every non-fifo module instance  
     if (not self.formator.isValidInstance(node)):
       return 
@@ -179,7 +161,7 @@ class Graph:
   #
   # for each FIFO or relay station create an Edge
   #
-  def init_edges(self, node):
+  def initEdges(self, node):
     # only considers fifo/rs instances
     if (not self.formator.isValidInstance(node)):
       return 

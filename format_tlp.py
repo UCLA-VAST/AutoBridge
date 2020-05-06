@@ -76,5 +76,25 @@ class FormatTLP:
       
     print('FIFO width error')
 
+  def extractFIFODepth(self, node):
+    mod_type = node.module
+    
+    if (node.parameterlist): # for TLP
+      for paramarg in node.parameterlist:
+        formal = paramarg.paramname
+        actual = paramarg.argname.value
+        if( 'DEPTH' in formal): 
+          return int(actual)
+
+    else: # for HLS
+      match = re.search('_w(\d+)_d(\d+)_', mod_type)
+      if (match):
+        return int(match.group(2)) # group 2
+      
+    print('FIFO depth error')
+    
   def isFIFO(self, node):
     return 'fifo' in node.module or 'relay_station' in node.module
+
+  def isValidInstance(self, node):
+    return isinstance(node, ast.Instance) and 'start_for' not in node.name and '_axi' not in node.name

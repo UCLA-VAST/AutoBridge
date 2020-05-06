@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 
 import graph
-import format
+from format_tlp import FormatTLP
 import collections
 
 tlp_path = '/home/einsx7/pr/application/PageRank/HBM_try1/PageRank.xilinx_u280_xdma_201920_3.hw.xo.tlp'
@@ -77,7 +77,7 @@ SLR_AREA['DSP'] = 3008
 SLR_AREA['FF'] = 869120
 SLR_AREA['LUT'] = 434560
 
-formator = format.FormatTLP(
+formator = FormatTLP(
   rpt_path,
   hls_sche_path,
   top_hdl_path,
