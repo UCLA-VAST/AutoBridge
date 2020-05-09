@@ -15,19 +15,29 @@ class FormatHLS:
       hls_sche_path,
       top_hdl_path,
       top_name,
-      DDR_loc,
+      DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y,
       max_usage_ratio,
+      max_usage_ratio_2d,
       SLR_CNT,
-      SLR_AREA):
+      column,
+      SLR_AREA,
+      board_name,
+      horizontal_cross_penalty):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
     self.top_name = top_name
     self.DDR_loc = DDR_loc
+    self.DDR_loc_2d_x = DDR_loc_2d_x
+    self.DDR_loc_2d_y = DDR_loc_2d_y
     self.max_usage_ratio = max_usage_ratio
+    self.max_usage_ratio_2d = max_usage_ratio_2d
     self.SLR_CNT = SLR_CNT
+    self.column = column
     self.SLR_AREA = SLR_AREA   
-
+    self.board_name = board_name
+    self.horizontal_cross_penalty = horizontal_cross_penalty
+    
   # {top_name}_Control.v -> Control.verbose.sched.rpt
   def getScheFile(self, mod_type:str):
     former = mod_type[:len(self.top_name)+1]

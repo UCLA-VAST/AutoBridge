@@ -4,7 +4,7 @@ import graph
 from format_hls import FormatHLS
 import collections
 
-solution_path = f'/home/einsx7/pr/application/Compression/_x.hw.xilinx_u250_xdma_201830_2/deflate/deflate/deflate/solution'
+solution_path = f'/home/einsx7/pr/application/Compression/hls/deflate_orig_backup/solution'
 top_name = 'deflate'
 rpt_path = f'{solution_path}/syn/report'
 hls_sche_path = f'{solution_path}/.autopilot/db'
@@ -18,6 +18,13 @@ DDR_loc = collections.defaultdict(dict)
 DDR_loc['feed9_U0'] = 0
 DDR_loc['export_data_U0'] = 1
 
+DDR_loc_2d_x = collections.defaultdict(dict)
+DDR_loc_2d_y = collections.defaultdict(dict)
+
+DDR_loc_2d_y['feed9_U0'] = 0
+DDR_loc_2d_y['export_data_U0'] = 1
+DDR_loc_2d_x['feed9_U0'] = 0
+DDR_loc_2d_x['export_data_U0'] = 0
 
 max_usage_ratio = 0.6
 
@@ -44,14 +51,24 @@ SLR_AREA['LUT'] = 432000
 # SLR_AREA['FF'] = 869120
 # SLR_AREA['LUT'] = 434560
 
+column = 2
+
+#t = lambda x, y : 0.8 if x == 0 and y < 2 else 0.8 if x == 0 else 0.4
+#max_usage_ratio_2d = [ [ t(x, y) for y in range(SLR_CNT)] for x in range(column) ]
+max_usage_ratio_2d = [ [ 0.8, 0.8, 0.8, 0.8], [0.4, 0.4, 0.8, 0.8] ]
+
+horizontal_cross_penalty = 0
+
 formator = FormatHLS(
   rpt_path,
   hls_sche_path,
   top_hdl_path,
   top_name,
-  DDR_loc,
-  max_usage_ratio,
-  SLR_CNT,
-  SLR_AREA)
+  DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y,
+  max_usage_ratio, max_usage_ratio_2d,
+  SLR_CNT,column,
+  SLR_AREA,
+  'u250',
+  horizontal_cross_penalty)
 
 g = graph.Graph(formator)
