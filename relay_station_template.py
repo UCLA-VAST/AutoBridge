@@ -243,7 +243,7 @@ module relay_station #(
       );
 
     end else begin
-      fifo_almost_full #(
+      (* keep = "true" *) fifo_almost_full #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(REAL_ADDR_WIDTH),
         .DEPTH(REAL_DEPTH),

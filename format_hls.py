@@ -22,7 +22,8 @@ class FormatHLS:
       column,
       SLR_AREA,
       board_name,
-      horizontal_cross_penalty):
+      coorinate_expansion_ratio,
+      NUM_PER_SLR_HORIZONTAL):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -36,7 +37,37 @@ class FormatHLS:
     self.column = column
     self.SLR_AREA = SLR_AREA   
     self.board_name = board_name
-    self.horizontal_cross_penalty = horizontal_cross_penalty
+    self.coorinate_expansion_ratio = coorinate_expansion_ratio
+    self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
+  
+  # for non-dataflow use
+  def __init__(
+      self,
+      DDR_loc_2d_x, DDR_loc_2d_y,
+      max_usage_ratio_2d,
+      SLR_CNT,
+      column,
+      SLR_AREA,
+      board_name,
+      coorinate_expansion_ratio,
+      max_width_threshold,
+      NUM_PER_SLR_HORIZONTAL):
+    self.rpt_path = None
+    self.hls_sche_path = None
+    self.top_hdl_path = None
+    self.top_name = None
+    self.DDR_loc = None
+    self.DDR_loc_2d_x = DDR_loc_2d_x
+    self.DDR_loc_2d_y = DDR_loc_2d_y
+    self.max_usage_ratio = None
+    self.max_usage_ratio_2d = max_usage_ratio_2d
+    self.SLR_CNT = SLR_CNT
+    self.column = column
+    self.SLR_AREA = SLR_AREA   
+    self.board_name = board_name
+    self.coorinate_expansion_ratio = coorinate_expansion_ratio
+    self.max_width_threshold = max_width_threshold
+    self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
     
   # {top_name}_Control.v -> Control.verbose.sched.rpt
   def getScheFile(self, mod_type:str):

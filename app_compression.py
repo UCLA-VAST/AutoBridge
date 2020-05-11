@@ -13,7 +13,7 @@ hdl_path = f'{solution_path}/syn/verilog'
 # Control_Control.v
 # use list according to the api of pyverilog
 top_hdl_path = f'{hdl_path}/{top_name}_{top_name}.v'
-
+print(top_hdl_path)
 DDR_loc = collections.defaultdict(dict)
 DDR_loc['feed9_U0'] = 0
 DDR_loc['export_data_U0'] = 1
@@ -51,13 +51,26 @@ SLR_AREA['LUT'] = 432000
 # SLR_AREA['FF'] = 869120
 # SLR_AREA['LUT'] = 434560
 
-column = 2
+# the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
+column = [2, 2, 1, 1]
 
 #t = lambda x, y : 0.8 if x == 0 and y < 2 else 0.8 if x == 0 else 0.4
 #max_usage_ratio_2d = [ [ t(x, y) for y in range(SLR_CNT)] for x in range(column) ]
-max_usage_ratio_2d = [ [ 0.8, 0.8, 0.8, 0.8], [0.4, 0.4, 0.8, 0.8] ]
 
-horizontal_cross_penalty = 0
+# the right half of SLR0 and SLR1 contains the DDR controller and the static region, which takes away half the resources
+max_usage_ratio_2d = [ [0.9, 0.45], [0.9, 0.45], [0.8], [0.8] ]
+
+# to handle situation like this
+# |   R0  |
+# |-------|
+# | R1|R2 |
+# |-------|
+# the x of R1 and R2 is originally 0 and 1
+# now we set it to 0 and 2, and R0 to 1
+# we avoid assigning 0.5 to R0, which will make the situation Mixed ILP
+coorinate_expansion_ratio = 2
+
+NUM_PER_SLR_HORIZONTAL = 4
 
 formator = FormatHLS(
   rpt_path,
@@ -69,6 +82,7 @@ formator = FormatHLS(
   SLR_CNT,column,
   SLR_AREA,
   'u250',
-  horizontal_cross_penalty)
+  coorinate_expansion_ratio,
+  NUM_PER_SLR_HORIZONTAL)
 
 g = graph.Graph(formator)
