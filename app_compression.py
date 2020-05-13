@@ -3,8 +3,13 @@
 import graph
 from format_hls import FormatHLS
 import collections
+import os
 
+# fifo 128
 solution_path = f'/home/einsx7/pr/application/Compression/hls/deflate_orig_backup/solution'
+# fifo 2048
+#solution_path = f'/home/einsx7/pr/application/Compression/0511_fifo2048/deflate/solution'
+
 top_name = 'deflate'
 rpt_path = f'{solution_path}/syn/report'
 hls_sche_path = f'{solution_path}/.autopilot/db'
@@ -24,7 +29,10 @@ DDR_loc_2d_y = collections.defaultdict(dict)
 DDR_loc_2d_y['feed9_U0'] = 0
 DDR_loc_2d_y['export_data_U0'] = 1
 DDR_loc_2d_x['feed9_U0'] = 0
-DDR_loc_2d_x['export_data_U0'] = 0
+DDR_loc_2d_x['export_data_U0'] = 1
+
+# only the DDRs in SLR0 and SLR1 are enabled
+DDR_enable = [1, 1, 0, 0]
 
 max_usage_ratio = 0.6
 
@@ -52,13 +60,13 @@ SLR_AREA['LUT'] = 432000
 # SLR_AREA['LUT'] = 434560
 
 # the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
-column = [2, 2, 1, 1]
+column = [2, 2, 2, 2]
 
 #t = lambda x, y : 0.8 if x == 0 and y < 2 else 0.8 if x == 0 else 0.4
 #max_usage_ratio_2d = [ [ t(x, y) for y in range(SLR_CNT)] for x in range(column) ]
 
 # the right half of SLR0 and SLR1 contains the DDR controller and the static region, which takes away half the resources
-max_usage_ratio_2d = [ [0.9, 0.45], [0.9, 0.45], [0.8], [0.8] ]
+max_usage_ratio_2d = [ [0.8, 0.4], [0.67, 0.4], [0.8, 0.8], [0.8, 0.8] ]
 
 # to handle situation like this
 # |   R0  |
@@ -71,18 +79,34 @@ max_usage_ratio_2d = [ [0.9, 0.45], [0.9, 0.45], [0.8], [0.8] ]
 coorinate_expansion_ratio = 2
 
 NUM_PER_SLR_HORIZONTAL = 4
+max_width_threshold = 10000
 
-formator = FormatHLS(
+target_dir = '/home/einsx7/pr/application/Compression/0512_FP3_EarlyBlockPlacement'
+check = input(f'Please confirm the target directory is: \n{target_dir}\n(Y/n):  ')
+if (check != 'Y'):
+  exit
+  
+if (not os.path.isdir(f'{target_dir}/{top_name}')):
+  print('Please place the HLS project under the target directory')
+  exit
+
+horizontal_cross_weight = 0.7
+
+formator = FormatHLS()
+formator.init_dataflow(
   rpt_path,
   hls_sche_path,
   top_hdl_path,
   top_name,
-  DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y,
+  DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y, DDR_enable,
   max_usage_ratio, max_usage_ratio_2d,
   SLR_CNT,column,
   SLR_AREA,
   'u250',
   coorinate_expansion_ratio,
-  NUM_PER_SLR_HORIZONTAL)
+  max_width_threshold,
+  NUM_PER_SLR_HORIZONTAL,
+  horizontal_cross_weight,
+  target_dir)
 
 g = graph.Graph(formator)

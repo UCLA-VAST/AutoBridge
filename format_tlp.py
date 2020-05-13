@@ -10,25 +10,61 @@ class FormatTLP:
   fifo_din_format = '([^ ]*[^_])_+din'
   fifo_type = ['fifo', 'relay_station']
 
+  # def __init__(
+  #     self,
+  #     rpt_path,
+  #     hls_sche_path,
+  #     top_hdl_path,
+  #     top_name,
+  #     DDR_loc,
+  #     max_usage_ratio,
+  #     SLR_CNT,
+  #     SLR_AREA):
+  #   self.rpt_path = rpt_path
+  #   self.hls_sche_path = hls_sche_path
+  #   self.top_hdl_path = top_hdl_path
+  #   self.top_name = top_name
+  #   self.DDR_loc = DDR_loc,
+  #   self.max_usage_ratio = max_usage_ratio
+  #   self.SLR_CNT = SLR_CNT
+  #   self.SLR_AREA = SLR_AREA   
+
   def __init__(
       self,
       rpt_path,
       hls_sche_path,
       top_hdl_path,
       top_name,
-      DDR_loc,
+      DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y, DDR_enable,
       max_usage_ratio,
+      max_usage_ratio_2d,
       SLR_CNT,
-      SLR_AREA):
+      column,
+      SLR_AREA,
+      board_name,
+      coorinate_expansion_ratio,
+      max_width_threshold,
+      NUM_PER_SLR_HORIZONTAL,
+      horizontal_cross_weight):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
     self.top_name = top_name
-    self.DDR_loc = DDR_loc,
+    self.DDR_loc = DDR_loc
+    self.DDR_loc_2d_x = DDR_loc_2d_x
+    self.DDR_loc_2d_y = DDR_loc_2d_y
+    self.DDR_enable = DDR_enable
     self.max_usage_ratio = max_usage_ratio
+    self.max_usage_ratio_2d = max_usage_ratio_2d
     self.SLR_CNT = SLR_CNT
+    self.column = column
     self.SLR_AREA = SLR_AREA   
-
+    self.board_name = board_name
+    self.coorinate_expansion_ratio = coorinate_expansion_ratio
+    self.max_width_threshold = max_width_threshold
+    self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
+    self.horizontal_cross_weight = horizontal_cross_weight
+    
   # Control_Control.v -> Control.verbose.sched.rpt
   def getScheFile(self, mod_type:str):
     filter = ['s_axi', 'm_axi', 'async_mmap']
@@ -98,3 +134,10 @@ class FormatTLP:
 
   def isValidInstance(self, node):
     return isinstance(node, ast.Instance) and 'start_for' not in node.name and '_axi' not in node.name
+  
+  def isFIFOInstanceList(self, node):
+    return isinstance(node, ast.InstanceList) and 'fifo' in node.module
+  
+  def getFIFONameFromInstanceList(self, node):
+    assert(len(node.instances) == 1)
+    return node.instances[0].name

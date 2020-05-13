@@ -8,14 +8,34 @@ class FormatHLS:
   # either xxxx__dout or xxxx_dout
   fifo_dout_format = '([^ ]*[^_])_+dout'
   fifo_din_format = '([^ ]*[^_])_+din'
+  def __init__(self):
+    self.rpt_path = None
+    self.hls_sche_path = None
+    self.top_hdl_path = None
+    self.top_name = None
+    self.DDR_loc = None
+    self.DDR_loc_2d_x = None
+    self.DDR_loc_2d_y = None
+    self.DDR_enable = None
+    self.max_usage_ratio = None
+    self.max_usage_ratio_2d = None
+    self.SLR_CNT = None
+    self.column = None
+    self.SLR_AREA = None   
+    self.board_name = None
+    self.coorinate_expansion_ratio = 2
+    self.max_width_threshold = 10000
+    self.NUM_PER_SLR_HORIZONTAL = 4
+    self.horizontal_cross_weight = 0.7
+    self.target_dir = None
 
-  def __init__(
+  def init_dataflow(
       self,
       rpt_path,
       hls_sche_path,
       top_hdl_path,
       top_name,
-      DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y,
+      DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y, DDR_enable,
       max_usage_ratio,
       max_usage_ratio_2d,
       SLR_CNT,
@@ -23,7 +43,10 @@ class FormatHLS:
       SLR_AREA,
       board_name,
       coorinate_expansion_ratio,
-      NUM_PER_SLR_HORIZONTAL):
+      max_width_threshold,
+      NUM_PER_SLR_HORIZONTAL,
+      horizontal_cross_weight,
+      target_dir):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -31,6 +54,7 @@ class FormatHLS:
     self.DDR_loc = DDR_loc
     self.DDR_loc_2d_x = DDR_loc_2d_x
     self.DDR_loc_2d_y = DDR_loc_2d_y
+    self.DDR_enable = DDR_enable
     self.max_usage_ratio = max_usage_ratio
     self.max_usage_ratio_2d = max_usage_ratio_2d
     self.SLR_CNT = SLR_CNT
@@ -38,10 +62,12 @@ class FormatHLS:
     self.SLR_AREA = SLR_AREA   
     self.board_name = board_name
     self.coorinate_expansion_ratio = coorinate_expansion_ratio
+    self.max_width_threshold = max_width_threshold
     self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
+    self.target_dir = target_dir
   
   # for non-dataflow use
-  def __init__(
+  def init_taskbased(
       self,
       DDR_loc_2d_x, DDR_loc_2d_y,
       max_usage_ratio_2d,

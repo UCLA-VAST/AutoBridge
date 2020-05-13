@@ -139,8 +139,8 @@ def assign_slr(vertices : List, topology : List, formator):
   # [constraint] auxiliary variable d
   for d_x_i, d_y_i, e in zip(d_x, d_y, topology):
     if (e.width < formator.max_width_threshold):
-      m += d_x_i >= (mods_p[e.src]['X'] - mods_p[e.dst]['X']) * e.width
-      m += d_x_i >= (mods_p[e.dst]['X'] - mods_p[e.src]['X']) * e.width
+      m += d_x_i >= (mods_p[e.src]['X'] - mods_p[e.dst]['X']) * e.width * formator.horizontal_cross_weight
+      m += d_x_i >= (mods_p[e.dst]['X'] - mods_p[e.src]['X']) * e.width * formator.horizontal_cross_weight
       m += d_y_i >= (mods_p[e.src]['Y'] - mods_p[e.dst]['Y']) * e.width
       m += d_y_i >= (mods_p[e.dst]['Y'] - mods_p[e.src]['Y']) * e.width
 
