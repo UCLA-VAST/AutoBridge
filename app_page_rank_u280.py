@@ -1,17 +1,15 @@
 #! /usr/bin/python3.6
 
 import graph
-from format_tlp import FormatTLP
+from formator import FormatTLP
 import collections
 
 tlp_path = '/home/einsx7/pr/application/PageRank/HBM_try1/PageRank.xilinx_u280_xdma_201920_3.hw.xo.tlp'
 top_name = 'PageRank'
+
 rpt_path = f'{tlp_path}/report'
 hls_sche_path = f'{tlp_path}/report'
 hdl_path = f'{tlp_path}/hdl'
-
-# Control_Control.v
-# use list according to the api of pyverilog
 top_hdl_path = f'{hdl_path}/{top_name}_{top_name}.v'
 
 DDR_loc_2d_x = collections.defaultdict(dict)
@@ -92,35 +90,10 @@ DDR_loc_2d_x['degrees__m_axi'] = 1
 DDR_loc_2d_x['rankings__m_axi'] = 1
 DDR_loc_2d_x['tmps__m_axi'] = 1
 
-max_usage_ratio = 0.75
-
-# F1
-# SLR_CNT = 3
-# BRAM_SLR = 1440
-# DSP_SLR = 2280
-# FF_SLR = 788160
-# LUT_SLR = 394080 
-
-# u250
-# SLR_CNT = 4
-# BRAM_SLR = 1344
-# DSP_SLR = 3072
-# FF_SLR = 864000
-# LUT_SLR = 432000 
-
-# u280
-SLR_CNT = 3
-SLR_AREA = {}
-SLR_AREA['BRAM'] = 1344
-SLR_AREA['DSP'] = 3008
-SLR_AREA['FF'] = 869120
-SLR_AREA['LUT'] = 434560
 
 DDR_enable = [0, 0, 0]
 max_usage_ratio_2d = [ [0.9, 0.9], [1, 0.9], [1, 0.9] ]
 column = [2, 2, 2]
-# max_usage_ratio_2d = [ [0.75], [0.75], [0.75]]
-# column = [1, 1, 1]
 
 relay_station_count = lambda x : 2 * x # how many levels of relay stations to add for x-unit of crossing
 relay_station_template = 'fifo' # 'fifo' or 'reg' or 'reg_srl_fifo'
@@ -128,24 +101,21 @@ constraint_edge = True # whether to add constraints to rs and FIFO
 constraint_marked_edge = False
 
 formator = FormatTLP(
-  rpt_path,
-  hls_sche_path,
-  top_hdl_path,
-  top_name,
-  None, # DDR_loc
-  DDR_loc_2d_x, 
-  DDR_loc_2d_y, 
-  DDR_enable,
-  None, # max_usage_ratio
-  max_usage_ratio_2d,
-  SLR_CNT,
-  column,
-  SLR_AREA,
-  'u280',
+  rpt_path = rpt_path,
+  hls_sche_path = hls_sche_path,
+  top_hdl_path = top_hdl_path,
+  top_name = top_name,
+  DDR_loc_2d_x = DDR_loc_2d_x, 
+  DDR_loc_2d_y = DDR_loc_2d_y, 
+  DDR_enable = DDR_enable,
+  max_usage_ratio_2d = max_usage_ratio_2d,
+  column = column,
+  board_name = 'u280',
   coorinate_expansion_ratio = 2,
   max_width_threshold = 10000,
   NUM_PER_SLR_HORIZONTAL = 4,
   horizontal_cross_weight = 0.7,
+  target_dir = None,
   relay_station_count = relay_station_count,
   relay_station_template = relay_station_template,
   constraint_edge = constraint_edge,

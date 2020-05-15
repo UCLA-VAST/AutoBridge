@@ -1,4 +1,8 @@
 from collections import defaultdict
+import pyverilog.vparser.ast as ast
+from pyverilog.ast_code_generator.codegen import ASTCodeGenerator
+from typing import Dict
+import relay_station_template
 
 def initPblocksU250(formator, tcl):
   NUM_PER_SLR_HORIZONTAL = 4
@@ -160,6 +164,109 @@ def generateConstraint_2D(formator, vertices, edges):
     assignment_e = defaultdict(lambda: defaultdict(list))
 
   removeUnusedPblock(formator, assignment_v, assignment_e, tcl)
+
+#########################################
+
+
+def level_traverse(formator, node, func, edges_dict):
+  q = [node]
+  while( len(q) ):
+    curr = q.pop(0)
+    for c in curr.children():
+      q.append(c)
+    func(formator, curr, edges_dict)
+  
+def generateTopHdl(formator, top_mod_ast, edges_dict : Dict):
+  level_traverse(formator, top_mod_ast, addRelayStation, edges_dict)
+  level_traverse(formator, top_mod_ast, addPragmaKeepHier, edges_dict)
+
+  codegen = ASTCodeGenerator()
+  result = codegen.visit(top_mod_ast)
+
+  new_top = open(f'{formator.top_name}_{formator.top_name}.v', 'w')
+  new_top.write(result)
+
+  # types of relay station
+  if (formator.relay_station_template == 'fifo'):
+    new_top.write(relay_station_template.relay_station_template)
+  elif (formator.relay_station_template == 'reg'): 
+    new_top.write(relay_station_template.reg_based_relay_station_template)
+  elif (formator.relay_station_template == 'reg_srl_fifo'): 
+    new_top.write(relay_station_template.reg_srl_fifo_relay_station_template)
+  else:
+    print('ERROR: fifo template')
+    exit
+
+  new_top.close()
+
+  pack_xo = open('pack_xo.tcl', 'w')
+  
+  if(formator.board_name == 'u250'):
+    pack_xo.write(f'''
+      open_project {formator.top_name}
+      open_solution "solution"
+      set_part {{xcu250-figd2104-2L-e}}
+      create_clock -period 3.33 -name default
+      config_compile -name_max_length 50  -pipeline_loops 0 -unsafe_math_optimizations
+      config_dataflow -strict_mode warning
+      config_sdx -target xocc
+      export_design -rtl verilog -format ip_catalog -xo {formator.top_name}_tlp.xo
+      exit    
+    ''')
+  elif(formator.board_name == 'u280'):
+    pack_xo.write(f'''
+      open_project {formator.top_name}
+      open_solution "solution"
+      set_part {{xcu280-fsvh2892-2L-e}}
+      create_clock -period 3.33 -name default
+      config_compile -name_max_length 50  -pipeline_loops 0 -unsafe_math_optimizations
+      config_dataflow -strict_mode warning
+      config_sdx -target xocc
+      export_design -rtl verilog -format ip_catalog -xo {formator.top_name}_tlp.xo
+      exit    
+    ''')      
+
+def addRelayStation(formator, node, edges_dict):
+  # only considers fifo/rs instances
+  if (not formator.isFIFOInstanceList(node)):
+    return 
+
+  edge_name = formator.getFIFONameFromInstanceList(node)
+  e = edges_dict[edge_name]
+  
+  step_v = abs(e.src.slr_loc - e.dst.slr_loc)
+  step_h = abs(e.src.slr_sub_loc - e.dst.slr_sub_loc)
+  sum = step_v + step_h
+  step = formator.relay_station_count(sum)
+  
+  if (e.mark):
+    node.module = 'relay_station'
+
+    width = ast.ParamArg( 'DATA_WIDTH', ast.Rvalue(ast.IntConst(str(e.width))) )
+    depth = ast.ParamArg( 'DEPTH', ast.Rvalue(ast.IntConst(str(e.depth))) )
+    addr_width = ast.ParamArg( 'ADDR_WIDTH', ast.Rvalue(ast.IntConst(str(e.addr_width))) )
+    level = ast.ParamArg( 'LEVEL', ast.Rvalue(ast.IntConst(str(int(step)))) )
+    params = [width, depth, addr_width, level]
+
+    node.parameterlist = params
+
+    for c in node.instances:
+      c.module = 'relay_station'
+      c.parameterlist = params
+
+    print(f' ---- update rs to {edge_name} -> {node.module}')
+
+def addPragmaKeepHier(formator, node, edges):
+  #non fifo modules
+  if (not formator.isInstanceList(node)):
+    return     
+
+  node.module = f'(* keep_hierarchy = "yes" *) {node.module}'
+  for c in node.instances:
+    c.module = f'(* keep_hierarchy = "yes" *) {c.module}'
+  
+  print(f' ---- add keep_hierarchy to {node.module}')
+
 
 #########################################
 

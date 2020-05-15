@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 
 import graph
-from format_hls import FormatHLS
+from formator import FormatHLS
 import collections
 import os
 import subprocess
@@ -18,32 +18,16 @@ hls_sche_path = f'{solution_path}/.autopilot/db'
 hdl_path = f'{solution_path}/syn/verilog'
 top_hdl_path = f'{hdl_path}/{top_name}_{top_name}.v'
 
-# DDR_loc = collections.defaultdict(dict)
-# DDR_loc['feed9_U0'] = 0
-# DDR_loc['export_data_U0'] = 1
-
 DDR_loc_2d_x = collections.defaultdict(dict)
 DDR_loc_2d_y = collections.defaultdict(dict)
 
 DDR_loc_2d_y['feed9_U0'] = 0
 DDR_loc_2d_y['export_data_U0'] = 1
 DDR_loc_2d_x['feed9_U0'] = 0
-#cDDR_loc_2d_x['export_data_U0'] = 1
+#DDR_loc_2d_x['export_data_U0'] = 1
 
 # only the DDRs in SLR0 and SLR1 are enabled
 DDR_enable = [1, 1, 0, 0]
-
-#obsolete
-max_usage_ratio = None
-DDR_loc = None
-
-# u250
-SLR_CNT = 4
-SLR_AREA = {}
-SLR_AREA['BRAM'] = 1344
-SLR_AREA['DSP'] = 3072
-SLR_AREA['FF'] = 864000
-SLR_AREA['LUT'] = 432000
 
 # the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
 column = [2, 2, 2, 2]
@@ -74,34 +58,35 @@ target_dir = '/home/einsx7/pr/application/Compression/0513_FP4_FifoRS_X2_WithNon
 
 #-----------------------------
 
-check = input(f'Please confirm:\nthe source project directory is: \n{project_path}\n the target directory is: \n{target_dir}\n\n(Y/n):  ')
-if (check != 'Y'):
-  exit
+# check = input(f'Please confirm:\nthe source project directory is: \n{project_path}\n the target directory is: \n{target_dir}\n\n(Y/n):  ')
+# if (check != 'Y'):
+#   exit
 
-if (not os.path.isdir(target_dir)):
-  subprocess.run(['mkdir', f'{target_dir}/'])
+# if (not os.path.isdir(target_dir)):
+#   subprocess.run(['mkdir', f'{target_dir}/'])
 
-subprocess.run(['cp', '-r', project_path, f'{target_dir}/{top_name}'])
-subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
-formator = FormatHLS()
-formator.init_dataflow(
-  rpt_path,
-  hls_sche_path,
-  top_hdl_path,
-  top_name,
-  DDR_loc, DDR_loc_2d_x, DDR_loc_2d_y, DDR_enable,
-  max_usage_ratio, max_usage_ratio_2d,
-  SLR_CNT,column,
-  SLR_AREA,
-  'u250',
-  coorinate_expansion_ratio,
-  max_width_threshold,
-  NUM_PER_SLR_HORIZONTAL,
-  horizontal_cross_weight,
-  target_dir,
-  relay_station_count,
-  relay_station_template,
-  constraint_edge,
-  constraint_marked_edge)
+# subprocess.run(['cp', '-r', project_path, f'{target_dir}/{top_name}'])
+# subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
+
+formator = FormatHLS(
+  rpt_path = rpt_path,
+  hls_sche_path = hls_sche_path,
+  top_hdl_path = top_hdl_path,
+  top_name = top_name,
+  DDR_loc_2d_x = DDR_loc_2d_x, 
+  DDR_loc_2d_y = DDR_loc_2d_y, 
+  DDR_enable = DDR_enable,
+  max_usage_ratio_2d = max_usage_ratio_2d,
+  column = column,
+  board_name = 'u250',
+  coorinate_expansion_ratio = 2,
+  max_width_threshold = 10000,
+  NUM_PER_SLR_HORIZONTAL = 4,
+  horizontal_cross_weight = 0.7,
+  target_dir = None,
+  relay_station_count = relay_station_count,
+  relay_station_template = relay_station_template,
+  constraint_edge = constraint_edge,
+  constraint_marked_edge = constraint_marked_edge)
 
 g = graph.Graph(formator)
