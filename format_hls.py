@@ -28,6 +28,10 @@ class FormatHLS:
     self.NUM_PER_SLR_HORIZONTAL = 4
     self.horizontal_cross_weight = 0.7
     self.target_dir = None
+    self.relay_station_count = None
+    self.relay_station_template = None
+    self.constraint_edge = None
+    self.constraint_marked_edge = None
 
   def init_dataflow(
       self,
@@ -46,7 +50,11 @@ class FormatHLS:
       max_width_threshold,
       NUM_PER_SLR_HORIZONTAL,
       horizontal_cross_weight,
-      target_dir):
+      target_dir,
+      relay_station_count,
+      relay_station_template,
+      constraint_edge,
+      constraint_marked_edge):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -65,7 +73,11 @@ class FormatHLS:
     self.max_width_threshold = max_width_threshold
     self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
     self.target_dir = target_dir
-  
+    self.relay_station_count = relay_station_count
+    self.relay_station_template = relay_station_template
+    self.constraint_edge = constraint_edge
+    self.constraint_marked_edge = constraint_marked_edge
+    
   # for non-dataflow use
   def init_taskbased(
       self,

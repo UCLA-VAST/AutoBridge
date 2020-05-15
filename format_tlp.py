@@ -45,7 +45,11 @@ class FormatTLP:
       coorinate_expansion_ratio,
       max_width_threshold,
       NUM_PER_SLR_HORIZONTAL,
-      horizontal_cross_weight):
+      horizontal_cross_weight,
+      relay_station_count,
+      relay_station_template,
+      constraint_edge,
+      constraint_marked_edge):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -64,7 +68,11 @@ class FormatTLP:
     self.max_width_threshold = max_width_threshold
     self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
     self.horizontal_cross_weight = horizontal_cross_weight
-    
+    self.relay_station_count = relay_station_count
+    self.relay_station_template = relay_station_template
+    self.constraint_edge = constraint_edge 
+    self.constraint_marked_edge = constraint_marked_edge
+
   # Control_Control.v -> Control.verbose.sched.rpt
   def getScheFile(self, mod_type:str):
     filter = ['s_axi', 'm_axi', 'async_mmap']
@@ -137,7 +145,10 @@ class FormatTLP:
   
   def isFIFOInstanceList(self, node):
     return isinstance(node, ast.InstanceList) and 'fifo' in node.module
-  
+
+  def isInstanceList(self, node):
+    return isinstance(node, ast.InstanceList)
+
   def getFIFONameFromInstanceList(self, node):
     assert(len(node.instances) == 1)
     return node.instances[0].name
