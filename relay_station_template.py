@@ -217,7 +217,7 @@ module relay_station #(
 
   // both full_n and write are registered, thus one level of relay_station cause two additional latency for the almost full fifo
   parameter GRACE_PERIOD = LEVEL * 2;
-  parameter REAL_DEPTH = DEPTH < 4 + GRACE_PERIOD? 4 + GRACE_PERIOD : DEPTH;
+  parameter REAL_DEPTH = GRACE_PERIOD + DEPTH + 1;
   parameter REAL_ADDR_WIDTH  = $clog2(REAL_DEPTH);
 
   genvar i;
@@ -712,7 +712,7 @@ module relay_station #(
 
   // both full_n and write are registered, thus one level of relay_station cause two additional latency for the almost full fifo
   parameter GRACE_PERIOD = LEVEL * 2;
-  parameter REAL_DEPTH = DEPTH < 4 + GRACE_PERIOD? 4 + GRACE_PERIOD : DEPTH;
+  parameter REAL_DEPTH = GRACE_PERIOD + DEPTH + 1;
   parameter REAL_ADDR_WIDTH  = $clog2(REAL_DEPTH);
 
   genvar i;

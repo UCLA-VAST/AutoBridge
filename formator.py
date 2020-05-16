@@ -133,11 +133,25 @@ class FormatHLS:
   def extractFIFOWidth(self, node):
     mod_type = node.module
     
-    if (node.parameterlist): # for TLP
+    if (mod_type == 'async_mmap'):
+      width_acc = 0 # for async_mmap, we need to count both data width and addr width
       for paramarg in node.parameterlist:
         formal = paramarg.paramname
         actual = paramarg.argname.value
-        if( 'DATA_WIDTH' in formal): 
+
+        if ( formal == 'DataWidth' or formal == 'AddrWidth'):
+          width_acc += 2 * int(actual) # from and to
+      
+      assert(width_acc != 0)
+      return width_acc  
+
+    if ('fifo' in mod_type and node.parameterlist): # for TLP
+      width_acc = 0 # for async_mmap, we need to count both data width and addr width
+      for paramarg in node.parameterlist:
+        formal = paramarg.paramname
+        actual = paramarg.argname.value
+      
+        if( formal == 'DATA_WIDTH'): 
           return int(actual)
 
     else: # for HLS
@@ -149,6 +163,8 @@ class FormatHLS:
 
   def extractFIFODepth(self, node):
     mod_type = node.module
+    if (mod_type == 'async_mmap'):
+      return 64
     
     if (node.parameterlist): # for TLP
       for paramarg in node.parameterlist:
@@ -168,7 +184,7 @@ class FormatHLS:
     return 'fifo' in node.module
   
   def isValidInstance(self, node):
-    return isinstance(node, ast.Instance) and 'start_for' not in node.name and '_axi' not in node.name
+    return isinstance(node, ast.Instance) and 'start_for' not in node.name #and '_axi' not in node.name
   
   def isFIFOInstanceList(self, node):
     return isinstance(node, ast.InstanceList) and 'fifo' in node.module
@@ -204,9 +220,10 @@ class FormatTLP(FormatHLS):
     return f'{self.rpt_path}/{mod_name}_csynth.rpt'
     
   def isFIFO(self, node):
-    return 'fifo' in node.module or 'relay_station' in node.module
+    return  'fifo' in node.module or \
+            'relay_station' in node.module
 
-
-
+  def isAsyncMmap(self, node):
+    return 'async_mmap' in node.module
 
 

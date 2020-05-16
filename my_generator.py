@@ -62,6 +62,8 @@ def constraintModules(formator, vertices, tcl):
   for y in range(formator.SLR_CNT):
     for x in range(formator.column[y]):
       for v in vertices:
+        if ('_axi' in v.name):
+          continue
         if (v.slr_sub_loc == x and v.slr_loc == y):
           assignment_v_sub[y][x].append(v.name)
 
@@ -82,13 +84,14 @@ def constraintModules(formator, vertices, tcl):
 
   return assignment_v_sub
 
-def constraintModulesSLRLevel(formator, tcl):
+def constraintModulesSLRLevel(formator, vertices, tcl):
   # collect modules for each SRL-level pblock
   assignment_v_slr = defaultdict(list)
   for y in range(formator.SLR_CNT):
     for v in vertices:
-      if (v.slr_sub_loc == 0.5 and v.slr_loc == y):
-        assignment_v_slr[y].append(v.name)
+      if ('_axi' in v.name):
+        if (v.slr_loc == y):
+          assignment_v_slr[y].append(v.name)
   
   for y in range(formator.SLR_CNT):
     names = assignment_v_slr[y]
@@ -156,7 +159,8 @@ def generateConstraint_2D(formator, vertices, edges):
 
   assignment_v = constraintModules(formator, vertices, tcl)
 
-  # constraintModulesSLRLevel(tcl)
+  # memory units constrainted at SLR level
+  constraintModulesSLRLevel(formator, vertices, tcl)
 
   if (formator.constraint_edge):
     assignment_e = constraintEdges(formator, edges, tcl)
