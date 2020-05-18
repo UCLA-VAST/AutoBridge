@@ -60,7 +60,7 @@ constraint_marked_edge = True
 
 #-----------------------------
 
-target_dir = '/home/einsx7/pr/application/Compression/0515_FP3_keep_hier_FP4/'
+target_dir = '/home/einsx7/pr/application/Compression/0516_test_new_codegen/'
 
 check = input(f'''
 Please confirm:

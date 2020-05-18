@@ -14,13 +14,13 @@ def initPblocksU250(formator, tcl):
       right_half_start = 5 if formator.DDR_enable[y] == 1 else 4
       tcl.write(f'''
         startgroup
-        create_pblock pblock_X{0}_Y{y}
-        resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          create_pblock pblock_X{0}_Y{y}
+          resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
         endgroup
 
         startgroup
-        create_pblock pblock_X{1}_Y{y}
-        resize_pblock pblock_X{1}_Y{y} -add CLOCKREGION_X{right_half_start}Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X6Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          create_pblock pblock_X{1}_Y{y}
+          resize_pblock pblock_X{1}_Y{y} -add CLOCKREGION_X{right_half_start}Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X6Y{3+y*NUM_PER_SLR_HORIZONTAL}
         endgroup
       ''')
 
@@ -33,44 +33,32 @@ def initPblocksU280(formator, tcl):
       # adding X4Y0 to the left half seems to violate PR DRC rules
       tcl.write(f'''
         startgroup
-        create_pblock pblock_X{0}_Y{y}
-        resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          create_pblock pblock_X{0}_Y{y}
+          resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
         endgroup
       \n''')
   tcl.write('''
     startgroup
-    create_pblock pblock_X1_Y2
-    resize_pblock pblock_X1_Y2 -add {SLICE_X117Y480:SLICE_X205Y719 DSP48E2_X16Y186:DSP48E2_X29Y281 LAGUNA_X16Y360:LAGUNA_X27Y599 RAMB18_X8Y192:RAMB18_X11Y287 RAMB36_X8Y96:RAMB36_X11Y143 URAM288_X2Y128:URAM288_X4Y191}
+      create_pblock pblock_X1_Y2
+      resize_pblock pblock_X1_Y2 -add {SLICE_X117Y480:SLICE_X205Y719 DSP48E2_X16Y186:DSP48E2_X29Y281 LAGUNA_X16Y360:LAGUNA_X27Y599 RAMB18_X8Y192:RAMB18_X11Y287 RAMB36_X8Y96:RAMB36_X11Y143 URAM288_X2Y128:URAM288_X4Y191}
     endgroup
 
     startgroup
-    create_pblock pblock_X1_Y1
-    resize_pblock pblock_X1_Y1 -add {SLICE_X117Y240:SLICE_X205Y479 DSP48E2_X16Y90:DSP48E2_X29Y185 LAGUNA_X16Y120:LAGUNA_X27Y359 RAMB18_X8Y96:RAMB18_X11Y191 RAMB36_X8Y48:RAMB36_X11Y95 URAM288_X2Y64:URAM288_X4Y127}
+      create_pblock pblock_X1_Y1
+      resize_pblock pblock_X1_Y1 -add {SLICE_X117Y240:SLICE_X205Y479 DSP48E2_X16Y90:DSP48E2_X29Y185 LAGUNA_X16Y120:LAGUNA_X27Y359 RAMB18_X8Y96:RAMB18_X11Y191 RAMB36_X8Y48:RAMB36_X11Y95 URAM288_X2Y64:URAM288_X4Y127}
     endgroup
 
     startgroup
-    create_pblock pblock_X1_Y0
-    resize_pblock pblock_X1_Y0 -add {SLICE_X117Y0:SLICE_X205Y239 DSP48E2_X16Y0:DSP48E2_X29Y89 LAGUNA_X16Y0:LAGUNA_X27Y119 RAMB18_X8Y0:RAMB18_X11Y95 RAMB36_X8Y0:RAMB36_X11Y47 URAM288_X2Y0:URAM288_X4Y63}
-    resize_pblock pblock_X1_Y0 -add {SLICE_X206Y0:SLICE_X232Y59 DSP48E2_X30Y0:DSP48E2_X31Y17 PCIE4CE4_X1Y0:PCIE4CE4_X1Y0 RAMB18_X12Y0:RAMB18_X13Y23 RAMB36_X12Y0:RAMB36_X13Y11}
+      create_pblock pblock_X1_Y0
+      resize_pblock pblock_X1_Y0 -add {SLICE_X117Y0:SLICE_X205Y239 DSP48E2_X16Y0:DSP48E2_X29Y89 LAGUNA_X16Y0:LAGUNA_X27Y119 RAMB18_X8Y0:RAMB18_X11Y95 RAMB36_X8Y0:RAMB36_X11Y47 URAM288_X2Y0:URAM288_X4Y63}
+      resize_pblock pblock_X1_Y0 -add {SLICE_X206Y0:SLICE_X232Y59 DSP48E2_X30Y0:DSP48E2_X31Y17 PCIE4CE4_X1Y0:PCIE4CE4_X1Y0 RAMB18_X12Y0:RAMB18_X13Y23 RAMB36_X12Y0:RAMB36_X13Y11}
     endgroup
   \n''')
 
-# sub-SLR level (default)
-def constraintModules(formator, vertices, tcl):
-  # collect modules for each sub-SLR pblock
-  assignment_v_sub = defaultdict(lambda: defaultdict(list))
+def output_Sub_SLRConstraint(formator, assignment, tcl):
   for y in range(formator.SLR_CNT):
     for x in range(formator.column[y]):
-      for v in vertices:
-        if ('_axi' in v.name):
-          continue
-        if (v.slr_sub_loc == x and v.slr_loc == y):
-          assignment_v_sub[y][x].append(v.name)
-
-  # kernels assign to half-SLR granularity
-  for y in range(formator.SLR_CNT):
-    for x in range(formator.column[y]):
-      names = assignment_v_sub[y][x]
+      names = assignment[y][x]
       
       # the command cannot take empty inputs
       if (len(names) == 0):
@@ -82,58 +70,129 @@ def constraintModules(formator, vertices, tcl):
         tcl.write(f'\t(.*/)?{v}\n')
       tcl.write('}] -clear_locs \n')
 
-  return assignment_v_sub
+def outputSLRConstraint(formator, assignment, tcl):
+  # if the assignment is 2d dict
+  try:
+    for y in range(formator.SLR_CNT):
+      for x in range(formator.column[y]):
+        names = assignment[y][x]
+        
+        # the command cannot take empty inputs
+        if (len(names) == 0):
+          continue
 
-def constraintModulesSLRLevel(formator, vertices, tcl):
-  # collect modules for each SRL-level pblock
-  assignment_v_slr = defaultdict(list)
-  for y in range(formator.SLR_CNT):
-    for v in vertices:
-      if ('_axi' in v.name):
-        if (v.slr_loc == y):
-          assignment_v_slr[y].append(v.name)
-  
-  for y in range(formator.SLR_CNT):
-    names = assignment_v_slr[y]
-    
-    # the command cannot take empty inputs
-    if (len(names) == 0):
-      continue
+        # sub-SLR level
+        tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -hierarchical -regexp {{\n')
+        for v in names:
+          tcl.write(f'\t(.*/)?{v}\n')
+        tcl.write('}] -clear_locs \n') 
 
-    tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -hierarchical -regexp {{\n')
-    for v in names:
-      tcl.write(f'\t(.*/)?{v}\n')
-    tcl.write('}] -clear_locs \n')
-
-def constraintEdges(formator, edges, tcl):
-  # collect edges for each pblock
-  assignment_e = defaultdict(lambda: defaultdict(list))
-  for y in range(formator.SLR_CNT):
-    for x in range(formator.column[y]):
-      for e in edges:
-        if (e.mark):
-          if (e.dst.slr_loc == y and e.dst.slr_sub_loc == x):
-            assignment_e[y][x].append(f'{e.name}/.*fifo_unit') # inst[x].fifo_unit
-          elif (e.src.slr_loc == y and e.src.slr_sub_loc == x):
-            assignment_e[y][x].append(f'{e.name}/inst.*0.*unit') # inst[0].reg_unit
-        elif (e.dst.slr_loc == y and e.dst.slr_sub_loc == x):
-          assignment_e[y][x].append(f'{e.name}')
-
-  # edges only assign to SLR granularity
-  for y in range(formator.SLR_CNT):
-    for x in range(formator.column[y]):
-      names = assignment_e[y][x]
+  # if the assignment is 1d dict   
+  except:      
+    print(' *** WARNING: encounter SLR-level assignment *** ')
+    for y in range(formator.SLR_CNT):
+      names = assignment[y]
       
       # the command cannot take empty inputs
       if (len(names) == 0):
         continue
 
-      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_X{x}_Y{y}] [get_cells -hierarchical -regexp {{\n')
+      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -hierarchical -regexp {{\n')
       for v in names:
         tcl.write(f'\t(.*/)?{v}\n')
       tcl.write('}] -clear_locs \n')
 
+def constraintModules(formator, vertices, tcl):
+  # collect modules for each sub-SLR pblock
+  assignment_v_sub = defaultdict(lambda: defaultdict(list))
+  
+  for v in vertices:
+    # here we do not consider axi modules
+    if ('_axi' not in v.name):
+      assignment_v_sub[v.slr_loc][v.slr_sub_loc].append(v.name)
+
+  # kernels assign to half-SLR granularity
+  output_Sub_SLRConstraint(formator, assignment_v_sub, tcl)
+
+  return assignment_v_sub
+
+def constraintAxiModules(formator, vertices, tcl):
+  # collect modules for each SRL-level pblock
+  assignment_axi = defaultdict(lambda: defaultdict(list))
+  for v in vertices:
+    if ('_axi' in v.name):
+      assignment_axi[v.slr_loc][v.slr_sub_loc].append(v.name)
+  
+  # in U280 the SLR0 is divided according to the two HBM banks
+  if ('280' in formator.board_name):
+    output_Sub_SLRConstraint(formator, assignment_axi, tcl)
+  else:
+    outputSLRConstraint(formator, assignment_axi, tcl)
+
+def constraintEdges(formator, edges, tcl):
+  # collect edges for each pblock
+  assignment_e = defaultdict(lambda: defaultdict(list))
+
+  # first constraint non-marked edges
+  for e in filter(lambda x : not x.mark, edges):
+    assert(e.dst.slr_loc == e.src.slr_loc)
+    assert(e.dst.slr_sub_loc == e.src.slr_sub_loc)
+    assignment_e[e.dst.slr_loc][e.dst.slr_sub_loc].append(f'{e.name}')
+
+  # constraint marked edges
+  constraintMarkedEdges(formator, edges, assignment_e)
+
+  # edges assign to sub SLR granularity
+  output_Sub_SLRConstraint(formator, assignment_e, tcl)
+
   return assignment_e
+
+def constraintMarkedEdges(formator, edges, assignment_e):
+  # currently not support other form of rs count
+  assert(formator.relay_station_count(1) == 2)
+  assert(formator.relay_station_count(2) == 4)
+  assert(formator.relay_station_count(3) == 6)
+
+  # only consider marked edges
+  for e in filter(lambda x: x.mark, edges):
+
+    src_y = e.src.slr_loc
+    dst_y = e.dst.slr_loc
+    src_x = e.src.slr_sub_loc
+    dst_x = e.dst.slr_sub_loc
+
+    # example: src = (0, 1); dst = (1, 3)
+    # then there will be six units, separated in
+    # (0, 1) -> (0, 2) -> (0, 2) -> (0, 3) -> (0, 3) -> (1, 3) 
+    # range_inclusive_y = [1, 2, 3]
+    # range_inclusive_x = [0, 1]
+    # y_crossing = 2, x_crossing = 1
+    range_inclusive_y = list(range( min(src_y, dst_y), max(src_y, dst_y)+1) )
+    if (src_y > dst_y):
+      range_inclusive_y.reverse()
+
+    range_inclusive_x = list(range( min(src_x, dst_x), max(src_x, dst_x)+1) )
+    if (src_x > dst_x):
+      range_inclusive_x.reverse()
+
+    y_crossing = abs(src_y - dst_y)
+    x_crossing = abs(src_x - dst_x)
+    for i in range(y_crossing + x_crossing):
+      # first travel in y direction
+      if (i < y_crossing):
+        curr_y = range_inclusive_y[i]
+        next_y = range_inclusive_y[i+1]
+        assignment_e[curr_y][src_x].append(f'{e.name}/inst.*{i*2}.*unit')
+        assignment_e[next_y][src_x].append(f'{e.name}/inst.*{i*2+1}.*unit')
+      
+      # then travel in x direction
+      else :
+        i_adjust = i - y_crossing
+        curr_x = range_inclusive_x[i_adjust]
+        next_x = range_inclusive_x[i_adjust + 1]
+        assignment_e[dst_y][curr_x].append(f'{e.name}/inst.*{i*2}.*unit')
+        assignment_e[dst_y][next_x].append(f'{e.name}/inst.*{i*2+1}.*unit')
+
 
 def removeUnusedPblock(formator, assignment_v, assignment_e, tcl):
   for y in range(formator.SLR_CNT):
@@ -159,12 +218,13 @@ def generateConstraint_2D(formator, vertices, edges):
 
   assignment_v = constraintModules(formator, vertices, tcl)
 
-  # memory units constrainted at SLR level
-  constraintModulesSLRLevel(formator, vertices, tcl)
+  # memory units constrainted at SLR level, but not for U280
+  constraintAxiModules(formator, vertices, tcl)
 
   if (formator.constraint_edge):
     assignment_e = constraintEdges(formator, edges, tcl)
   else :
+    print(' *** WARNING: edges are not constrained *** ')
     assignment_e = defaultdict(lambda: defaultdict(list))
 
   removeUnusedPblock(formator, assignment_v, assignment_e, tcl)
@@ -238,18 +298,13 @@ def addRelayStation(formator, node, edges_dict):
   edge_name = formator.getFIFONameFromInstanceList(node)
   e = edges_dict[edge_name]
   
-  step_v = abs(e.src.slr_loc - e.dst.slr_loc)
-  step_h = abs(e.src.slr_sub_loc - e.dst.slr_sub_loc)
-  sum = step_v + step_h
-  step = formator.relay_station_count(sum)
-  
   if (e.mark):
     node.module = 'relay_station'
 
     width = ast.ParamArg( 'DATA_WIDTH', ast.Rvalue(ast.IntConst(str(e.width))) )
     depth = ast.ParamArg( 'DEPTH', ast.Rvalue(ast.IntConst(str(e.depth))) )
     addr_width = ast.ParamArg( 'ADDR_WIDTH', ast.Rvalue(ast.IntConst(str(e.addr_width))) )
-    level = ast.ParamArg( 'LEVEL', ast.Rvalue(ast.IntConst(str(int(step)))) )
+    level = ast.ParamArg( 'LEVEL', ast.Rvalue(ast.IntConst(str( e.latency ))) )
     params = [width, depth, addr_width, level]
 
     node.parameterlist = params

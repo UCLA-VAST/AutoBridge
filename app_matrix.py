@@ -6,46 +6,25 @@ import collections
 import os
 import subprocess
 
-DDR_loc_2d_x = collections.defaultdict(dict)
-DDR_loc_2d_y = collections.defaultdict(dict)
-
-tlp_path = '/home/einsx7/pr/application/U250_PageRank/tlp_src_6_stage_ap_signal/tlpc_result'
-top_name = 'PageRank'
+tlp_path = '/home/einsx7/pr/application/Matrix_Dataflow/tlp/tlpc_result_16'
+top_name = 'Matrix'
 
 rpt_path = f'{tlp_path}/report'
 hls_sche_path = f'{tlp_path}/report'
 hdl_path = f'{tlp_path}/hdl'
 top_hdl_path = f'{hdl_path}/{top_name}_{top_name}.v'
 
-DDR_loc_2d_y['edges_0__m_axi'] = 0
-DDR_loc_2d_y['edges_1__m_axi'] = 1
-DDR_loc_2d_y['edges_2__m_axi'] = 2
-DDR_loc_2d_y['edges_3__m_axi'] = 3
+DDR_loc_2d_x = collections.defaultdict(dict)
+DDR_loc_2d_y = collections.defaultdict(dict)
+DDR_loc_2d_y['ReadMatrixA_0'] = 0
+DDR_loc_2d_y['ReadMatrixB_0'] = 1
+DDR_loc_2d_y['WriteResult_0'] = 2
+DDR_loc_2d_y['Matrix_control_s_axi_U'] = 0
 
-DDR_loc_2d_y['updates_0__m_axi'] = 0
-DDR_loc_2d_y['updates_1__m_axi'] = 1
-DDR_loc_2d_y['updates_2__m_axi'] = 2
-DDR_loc_2d_y['updates_3__m_axi'] = 3
 
-DDR_loc_2d_y['degrees__m_axi'] = 0
-DDR_loc_2d_y['rankings__m_axi'] = 0
-DDR_loc_2d_y['tmps__m_axi'] = 0
-DDR_loc_2d_y['PageRank_control_s_axi_U'] = 0
-
-DDR_loc_2d_y['EdgeMem_0'] = 0
-DDR_loc_2d_y['EdgeMem_1'] = 1
-DDR_loc_2d_y['EdgeMem_2'] = 2
-DDR_loc_2d_y['EdgeMem_3'] = 3
-
-DDR_loc_2d_y['UpdateMem_0'] = 0
-DDR_loc_2d_y['UpdateMem_1'] = 1
-DDR_loc_2d_y['UpdateMem_2'] = 2
-DDR_loc_2d_y['UpdateMem_3'] = 3
-
-DDR_loc_2d_y['VertexMem_0'] = 0
-
-DDR_enable = [1, 1, 1, 1]
-max_usage_ratio_2d = [ [0.9, 0.4], [0.9, 0.4], [0.9, 0.4], [0.9, 0.4] ]
+DDR_enable = [1, 1, 1, 0]
+max_usage_ratio_2d = [ [0.7, 0.3], [0.7, 0.3], [0.7, 0.3], [0.7, 0.7] ]
+# max_usage_ratio_2d = [ [0.9, 0.5], [0.9, 0.5], [0.9, 0.5], [0.9, 0.9] ]
 column = [2, 2, 2, 2]
 
 relay_station_count = lambda x : 2 * x # how many levels of relay stations to add for x-unit of crossing
@@ -55,7 +34,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U250_PageRank/0517_fp_every_rs_add_ap_reg'
+target_dir = '/home/einsx7/pr/application/Matrix_Dataflow/0517_dim16'
 
 check = input(f'''
 Please confirm:
@@ -104,8 +83,8 @@ subprocess.run(['cp', '-r', tlp_path, f'{target_dir}/'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
 subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tlpc_result/hdl'])
-subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/relay_station.v'])
+subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tlpc_result_16/hdl'])
+subprocess.run(['rm', f'{target_dir}/tlpc_result_16/hdl/relay_station.v'])
 
 if (relay_station_template == 'fifo'):
-  subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/fifo_srl.v'])
+  subprocess.run(['rm', f'{target_dir}/tlpc_result_16/hdl/fifo_srl.v'])

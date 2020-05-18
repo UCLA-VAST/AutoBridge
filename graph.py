@@ -24,6 +24,7 @@ class Edge:
     self.addr_width = -1
     self.name = name
     self.mark = False
+    self.latency = 1 # default latency of 1
 
 class Vertex:
   def __init__(self, type:str, name : str):

@@ -104,7 +104,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U280_PageRank/0515_keep_hier_fix_ap_signsl'
+target_dir = '/home/einsx7/pr/application/U280_PageRank/0516_m_axi_sub_slr'
 
 check = input(f'''
 Please confirm:
@@ -146,6 +146,7 @@ g = graph.Graph(formator)
 ################
 
 if (os.path.isdir(target_dir)):
+  #target_dir = f'{target_dir}_dup'
   subprocess.run(['rm', '-rf', f'{target_dir}/'])
 
 subprocess.run(['mkdir', f'{target_dir}/'])

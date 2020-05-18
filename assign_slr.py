@@ -171,14 +171,17 @@ def assign_slr(vertices : List, topology : List, formator):
   m.optimize(max_seconds=120)
 
   for v in vertices:
-    v.slr_loc = mods_p[v]['Y'].x / coorinate_expansion_ratio
-    if(mods_p[v]['X'].x == coorinate_expansion_ratio/2):
-      v.slr_sub_loc = 0.5
-    else:
-      v.slr_sub_loc = mods_p[v]['X'].x / coorinate_expansion_ratio
+    v.slr_loc = int( mods_p[v]['Y'].x / coorinate_expansion_ratio )
+    v.slr_sub_loc = int( mods_p[v]['X'].x / coorinate_expansion_ratio )
 
   for e in topology:
     e.mark = mods_p[e.src]['X'].x != mods_p[e.dst]['X'].x or mods_p[e.src]['Y'].x != mods_p[e.dst]['Y'].x
+
+  for e in topology:
+    if (e.mark):
+      step_v = abs(e.src.slr_loc - e.dst.slr_loc)
+      step_h = abs(e.src.slr_sub_loc - e.dst.slr_sub_loc)
+      e.latency = int( formator.relay_station_count(step_v + step_h) )
 
   ###################################
 
