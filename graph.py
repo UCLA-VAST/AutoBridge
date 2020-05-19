@@ -9,7 +9,8 @@ from collections import defaultdict
 import subprocess
 import os
 import autopilot_parser
-from assign_slr import assign_slr
+from assign_slr import assignSLR
+from assign_slr import reBalance
 import my_generator
 from formator import *
 
@@ -25,6 +26,7 @@ class Edge:
     self.name = name
     self.mark = False
     self.latency = 1 # default latency of 1
+    self.additional_depth = 0  # used to balance the additional latency
 
 class Vertex:
   def __init__(self, type:str, name : str):
@@ -37,7 +39,7 @@ class Vertex:
     self.slr_sub_loc = -1
     self.sub_vertices = {} # pp id -> sub vertex
     self.actual_to_sub = {} # map actual edge name -> sub vertex
-    print(f'*** init vertex {self.name} of type {self.type}')
+    print(f'[Init vertex] create vertix {self.name} of type {self.type}')
 
   def add_in(self, edge : Edge):
     self.out_edges.append(edge)
@@ -65,28 +67,12 @@ class Graph:
 
     self.dfs(top_mod_ast, set(), self.initEdges)
 
-    # for e in self.edges.values():
-    #   print(f'{e.name}', end='')
-    #   print(f'\t\t{e.src.name}\t->\t{e.dst.name}')
-    # run ILP to solve the SLR assignment problem
-    assign_slr(self.vertices.values(), self.edges.values(), self.formator)
+    assignSLR(self.vertices.values(), self.edges.values(), self.formator)
+
+    reBalance(self.vertices.values(), self.edges, self.formator)
 
     my_generator.generateConstraint_2D(self.formator, self.vertices.values(), self.edges.values())
     my_generator.generateTopHdl(self.formator, top_mod_ast, self.edges)
-    
-    # if (self.formator.target_dir):
-    #   verilog_dir = f'{self.formator.target_dir}/{self.formator.top_name}/solution/syn/verilog/'
-    #   top_rtl_file = f'./{self.formator.top_name}_{self.formator.top_name}.v'
-      
-    #   if (not os.path.isfile(f'{verilog_dir}/{top_rtl_file}')):
-    #     print('error locating HLS projects')
-    #     print(verilog_dir)
-    #     print(top_rtl_file)
-    #     exit
-
-    #   subprocess.run(['mv', f'./{top_rtl_file}', verilog_dir])
-    #   subprocess.run(['mv', f'./pack_xo.tcl', self.formator.target_dir])
-    #   subprocess.run(['mv', f'./constraint.tcl', self.formator.target_dir])
 
   def showVertices(self):
     for v in self.vertices.values():
@@ -152,26 +138,27 @@ class Graph:
 
         actual_to_formal[actual_strip] = formal_strip
 
+    print(f'[initVertices] ap_fifos for vertex {v.name} are: ', actual_to_formal.values())
     # get area
     rpt_name = self.formator.getRptFile(v)
     v.area = autopilot_parser.getAreaFromReport(rpt_name)
 
     # split into pseudo vertex at loop level
     sche_file = self.formator.getScheFile(v.type)
-    formal_to_pp, pp_to_formal = autopilot_parser.getGrouping(sche_file) # map pp id -> fifos used in this pp
+    formal_to_pp, pp_to_formal = autopilot_parser.getGrouping(sche_file, actual_to_formal.values()) # map pp id -> fifos used in this pp
     for i, pp in pp_to_formal.items():
       v.sub_vertices[i] = (Vertex(node.module, f'{node.name}_sub_{i}'))
     
     # map edge to pseudo vertices
     # we have actual_to_formal and formal_to_pp, need to bridge them
     for actual_strip, formal_strip in actual_to_formal.items():
-      # print(actual_strip, formal_strip)
-      # print(json.dumps(formal_to_pp, indent=2, sort_keys=True))
-
       # some FIFOs are not accessed in pp loops
       if (formal_strip in formal_to_pp.keys()):
         v.actual_to_sub[actual_strip] = v.sub_vertices[formal_to_pp[formal_strip] ]
 
+    print(f'[initVertices] mapping from edge name to sub vertices: \n')
+    for actual, sub in v.actual_to_sub.items():
+      print('\t', actual, sub.name)
     self.vertices[node.name] = v
 
   #
@@ -259,12 +246,12 @@ class Graph:
         try:
           e.dst.actual_to_sub[e.name].add_in(e)
         except:
-          print(f'non-pp edge: {e.name}')
+          print(f'[initEdges] non-pp edge: {e.name} for vertex {e.dst.name}')
       elif ('_din' in actual_raw and '_din' in formal_raw):
         try:
           e.src.actual_to_sub[e.name].add_out(e)         
         except:
-          print(f'non-pp edge: {e.name}')
+          print(f'[initEdges] non-pp edge: {e.name} for vertex {e.src.name}')
 
     self.edges[node.name] = e
 

@@ -4,6 +4,16 @@ import re
 import collections
 import json
 
+class bcolors:
+  HEADER = '\033[95m'
+  OKBLUE = '\033[94m'
+  OKGREEN = '\033[92m'
+  WARNING = '\033[93m'
+  FAIL = '\033[91m'
+  ENDC = '\033[0m'
+  BOLD = '\033[1m'
+  UNDERLINE = '\033[4m'
+
 #
 # sample format as follows:
 # * Pipeline : 5
@@ -19,7 +29,7 @@ def getPipeline(sche_path):
   try:
     rpt = open(sche_path, 'r')
   except IOError:
-    print(f'getPipeline: no report for {sche_path}')
+    print(f'[getPipeline]: no report for {sche_path}')
     return {}
 
   stage_pp = {}
@@ -45,7 +55,7 @@ def getStage(sche_path):
   except IOError:
     name = sche_path.split('/')
     name = name[len(name)-1]
-    print(f'getStage: no report for {name}')
+    print(f'[getStage] no report for {name}')
     return {}
 
   line = rpt.readline()
@@ -67,15 +77,51 @@ def getStage(sche_path):
     line = rpt.readline()
 
 #
-# get the mapping of formal names
+# extract all sentences of one stage, but with the newline
+# return stage id, list of instructions
 #
-def getGrouping(sche_path:str):
+def getStageWithNewline(sche_path):
   try:
     rpt = open(sche_path, 'r')
   except IOError:
     name = sche_path.split('/')
     name = name[len(name)-1]
-    print(f'getStage: no report for {name}')
+    print(f'[getStageWithNewline] no report for {name}')
+    return {}
+
+  line = rpt.readline()
+  while (line):
+    match = re.search('^State (\d+)', line)
+    if (match):
+      stage_id = int(match.group(1))
+      block = []
+    
+      stmt = rpt.readline()
+      while (stmt != ''):
+        if (re.search('^State (\d+)', stmt)):
+          rpt.seek(rpt.tell() - len(stmt))
+          break
+        else:
+          block.append(stmt)
+          stmt = rpt.readline()
+      # print(f'[getStageWithNewline] extract block:\n{block}')
+      yield stage_id, block
+    line = rpt.readline()
+
+#
+# get the grouping of all ap_fifo interfaces
+# two ap_fifos are in the same group if they are accessed in the same pipeline
+# input: the autopilot schedule report; the formal names of all ap_fifo interfaces
+# output: mapping from pipeline id to all ap_fifos used in this pipeline
+#
+def getGrouping(sche_path:str, formal_names):
+  dir_names = sche_path.split('/')
+  module_name = dir_names[len(dir_names)-1]  
+  
+  try:
+    rpt = open(sche_path, 'r')
+  except IOError:
+    print(f'[getGrouping] no report for {module_name}')
     return {}, {}
 
   # map stage ID -> pp ID
@@ -86,24 +132,31 @@ def getGrouping(sche_path:str):
   pp_to_formal = collections.defaultdict(set)
 
   # extract used FIFOs in this stage
-  getFifoArray = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+_fifo_V_\d+)', stage))
-  getFifo      = lambda stage: set(re.findall('ap_fifo\.volatile[^%]*%(\w+_fifo_V)[^_]', stage))
+  def getFIFO(stage_with_newline, formal_names):
+    curr_fifo = set()
+    for line in stage_with_newline:
+      # print(f'[getFIFO] inspect line: {line}') #if 'ap_fifo' in line else 0
+      for name in formal_names:
+        if ('ap_fifo.' in line and name in line):
+          curr_fifo.add(name)
+    return curr_fifo
 
-  for i, stage in enumerate(getStage(sche_path)):
-    stage_id = i+1
+  for stage_id, stage_with_newline in getStageWithNewline(sche_path):
     if (stage_id in stage_pp):
       pp_num = stage_pp[stage_id]
-      pp_to_formal[pp_num].update(getFifo(stage)) 
-      pp_to_formal[pp_num].update(getFifoArray(stage)) 
+      pp_to_formal[pp_num].update(getFIFO(stage_with_newline, formal_names)) 
+      # print(f'[getGrouping] in pipeline {pp_num} find fifo: ', pp_to_formal[pp_num])
 
+  # inverse index
   formal_to_pp = {}
   for pp_num, fifos in pp_to_formal.items():
     for fifo in fifos:
       formal_to_pp[fifo] = pp_num
 
   #print(json.dumps(pp_to_formal, indent=2, sort_keys=True))
-  # for i in pp_to_formal:
-  #   print(i, pp_to_formal[i])
+  print(f'[getGrouping] grouping results for {bcolors.WARNING}{module_name}:{bcolors.ENDC}')
+  for i in pp_to_formal:
+    print('\t', i, pp_to_formal[i])
   return formal_to_pp, pp_to_formal
 
 #
@@ -175,7 +228,7 @@ def getMapping(mod_name: str, tlp_path:str, top_name:str):
         if (match):
           formal_to_actual[f'{match.group(1)}[{match.group(2)}]'] = match.group(3)
 
-  print(json.dumps(formal_to_actual, indent=2, sort_keys=True))
+  print('[getMapping]\n', json.dumps(formal_to_actual, indent=2, sort_keys=True))
   return formal_to_actual
 
 Area = collections.namedtuple('Area', 'BRAM DSP FF LUT')
@@ -184,7 +237,7 @@ def getAreaFromReport(rpt_addr:str):
   try:
     rpt = open(rpt_addr, 'r')
   except IOError:
-    print(f'No report file at {rpt_addr}')
+    print(f'[getAreaFromReport] no report file at {rpt_addr}')
     return Area(0, 0, 0, 0)
 
   for line in rpt:

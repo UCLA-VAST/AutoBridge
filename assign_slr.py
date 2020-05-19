@@ -8,7 +8,7 @@ from typing import List
 #
 # Multi-column SLR assignment problem
 #
-def assign_slr(vertices : List, edges : List, formator):
+def assignSLR(vertices : List, edges : List, formator):
 
   column = formator.column
   SLR_CNT = formator.SLR_CNT
@@ -87,7 +87,7 @@ def assign_slr(vertices : List, edges : List, formator):
       m += mod_p['Y'] == formator.DDR_loc_2d_y[v.name]
   
   # run
-  m.write('sample.lp')
+  m.write('assignment.lp')
   m.optimize(max_seconds=120)
 
   writeBackAssignResult(vertices, edges, formator, mods_p)
@@ -142,4 +142,48 @@ def showAssignResult(vertices : List, edges : List, formator):
     if (e.mark):
       print(f'{e.name}: {e.src.name} @ {e.src.slr_loc, e.src.slr_sub_loc} --> {e.dst.name} @ {e.dst.slr_loc, e.dst.slr_sub_loc} ')
 
+def reBalance(vertices : List, edges_dict : Dict, formator):
+  m = Model()
+
+  edges = edges_dict.values()
+
+  mods_S = {} # Vertex -> mip_var
+  for v in vertices:
+    for sub_v in v.sub_vertices.values(): 
+      new_mod_S = m.add_var(var_type=INTEGER, name=f'{sub_v.name}_S')
+      mods_S[sub_v] = new_mod_S  
+
+  for e in edges:
+    # if at either side the edge is not accessed in pipeline, then no worries
+    if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
+      src_sub = e.src.actual_to_sub[e.name]
+      dst_sub = e.dst.actual_to_sub[e.name]
+      adjusted_lat = e.latency if e.latency > 1 else 0
+      m += mods_S[src_sub] >= mods_S[dst_sub] + adjusted_lat
+
+  goal = 'm.objective = minimize( 0 '
+  for e in edges:
+    if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
+      src_sub = e.src.actual_to_sub[e.name]
+      dst_sub = e.dst.actual_to_sub[e.name]
+      adjusted_lat = e.latency if e.latency > 1 else 0      
+      goal += f' + {e.width} * (mods_S[edges_dict["{e.name}"].src.actual_to_sub["{e.name}"]] - mods_S[edges_dict["{e.name}"].dst.actual_to_sub["{e.name}"]] - {adjusted_lat})'
+  goal += ')'
+  exec(goal)
+
+  m.write('rebalance.lp')
+  m.optimize(max_seconds=120)
+
+  ##############################
+
+  for e in edges:
+    # if at either side the edge is not accessed in pipeline, then no worries
+    if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
+      src_sub = e.src.actual_to_sub[e.name]
+      dst_sub = e.dst.actual_to_sub[e.name]
+      adjusted_lat = e.latency if e.latency > 1 else 0
+
+      e.additional_depth = mods_S[src_sub].x - mods_S[dst_sub].x - adjusted_lat
+      if (e.additional_depth):
+        print(f'[reBalance] edge {e.name} is increased by {e.additional_depth}')
 
