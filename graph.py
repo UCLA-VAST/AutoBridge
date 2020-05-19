@@ -32,8 +32,6 @@ class Vertex:
     self.out_edges = []
     self.type = type
     self.name = name
-    self.upstream = [] # marked edges in the upstream
-    self.downstream = []
     self.area = autopilot_parser.Area(-1, -1, -1, -1)
     self.slr_loc = -1
     self.slr_sub_loc = -1

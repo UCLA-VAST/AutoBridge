@@ -55,7 +55,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U250_PageRank/0517_fp_every_rs_add_ap_reg'
+target_dir = '/home/einsx7/pr/application/U250_PageRank/0518_test_refactor'
 
 check = input(f'''
 Please confirm:
