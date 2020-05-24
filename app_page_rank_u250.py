@@ -21,41 +21,65 @@ DDR_loc_2d_y['edges_0__m_axi'] = 0
 DDR_loc_2d_y['edges_1__m_axi'] = 1
 DDR_loc_2d_y['edges_2__m_axi'] = 2
 DDR_loc_2d_y['edges_3__m_axi'] = 3
-
 DDR_loc_2d_y['updates_0__m_axi'] = 0
 DDR_loc_2d_y['updates_1__m_axi'] = 1
 DDR_loc_2d_y['updates_2__m_axi'] = 2
 DDR_loc_2d_y['updates_3__m_axi'] = 3
-
 DDR_loc_2d_y['degrees__m_axi'] = 0
 DDR_loc_2d_y['rankings__m_axi'] = 0
 DDR_loc_2d_y['tmps__m_axi'] = 0
 DDR_loc_2d_y['PageRank_control_s_axi_U'] = 0
-
 DDR_loc_2d_y['EdgeMem_0'] = 0
 DDR_loc_2d_y['EdgeMem_1'] = 1
 DDR_loc_2d_y['EdgeMem_2'] = 2
 DDR_loc_2d_y['EdgeMem_3'] = 3
-
 DDR_loc_2d_y['UpdateMem_0'] = 0
 DDR_loc_2d_y['UpdateMem_1'] = 1
 DDR_loc_2d_y['UpdateMem_2'] = 2
 DDR_loc_2d_y['UpdateMem_3'] = 3
-
 DDR_loc_2d_y['VertexMem_0'] = 0
 
-DDR_enable = [1, 1, 1, 1]
-max_usage_ratio_2d = [ [0.9, 0.4], [0.9, 0.4], [0.9, 0.4], [0.9, 0.4] ]
+DDR_loc_2d_x['edges_0__m_axi'] = 1
+DDR_loc_2d_x['edges_1__m_axi'] = 1
+DDR_loc_2d_x['edges_2__m_axi'] = 1
+DDR_loc_2d_x['edges_3__m_axi'] = 1
+DDR_loc_2d_x['updates_0__m_axi'] = 1
+DDR_loc_2d_x['updates_1__m_axi'] = 1
+DDR_loc_2d_x['updates_2__m_axi'] = 1
+DDR_loc_2d_x['updates_3__m_axi'] = 1
+DDR_loc_2d_x['degrees__m_axi'] = 1
+DDR_loc_2d_x['rankings__m_axi'] = 1
+DDR_loc_2d_x['tmps__m_axi'] = 1
+DDR_loc_2d_x['PageRank_control_s_axi_U'] = 1
+DDR_loc_2d_x['EdgeMem_0'] = 1
+DDR_loc_2d_x['EdgeMem_1'] = 1
+DDR_loc_2d_x['EdgeMem_2'] = 1
+DDR_loc_2d_x['EdgeMem_3'] = 1
+DDR_loc_2d_x['UpdateMem_0'] = 1
+DDR_loc_2d_x['UpdateMem_1'] = 1
+DDR_loc_2d_x['UpdateMem_2'] = 1
+DDR_loc_2d_x['UpdateMem_3'] = 1
+DDR_loc_2d_x['VertexMem_0'] = 1
+
+#
+# WARNING: pretend there is no DDR so that the pblock includes DDR
+# then when we constraint the axi with the same pblock, probably we can get good results
+#
+DDR_enable = [0, 0, 0, 0]
+max_usage_ratio_2d = [ [0.8, 0.6], [0.8, 0.6], [0.8, 0.6], [0.8, 0.6] ]
 column = [2, 2, 2, 2]
 
 relay_station_count = lambda x : 2 * x # how many levels of relay stations to add for x-unit of crossing
 relay_station_template = 'reg' # 'fifo' or 'reg' or 'reg_srl_fifo'
 constraint_edge = True # whether to add constraints to rs and FIFO
 constraint_marked_edge = True
+only_keep_rs_hierarchy = False
+max_search_time = 300
+AssignAxiSubSLR = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U250_PageRank/0518_test_refactor'
+target_dir = '/home/einsx7/pr/application/U250_PageRank/0523_assign_all_m_axi_right_column'
 
 check = input(f'''
 Please confirm:
@@ -89,7 +113,10 @@ formator = FormatTLP(
   relay_station_count = relay_station_count,
   relay_station_template = relay_station_template,
   constraint_edge = constraint_edge,
-  constraint_marked_edge = constraint_marked_edge)
+  constraint_marked_edge = constraint_marked_edge,
+  only_keep_rs_hierarchy = only_keep_rs_hierarchy,
+  max_search_time = max_search_time,
+  AssignAxiSubSLR = AssignAxiSubSLR)
 
 g = graph.Graph(formator)
 

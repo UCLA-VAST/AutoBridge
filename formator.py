@@ -1,10 +1,10 @@
 #! /usr/bin/python3.6
 
-import collections
+from collections import defaultdict
 import re
 import pyverilog.vparser.ast as ast
 
-class U250:
+class U250_old:
   SLR_CNT = 4
   SLR_AREA = {}
   SLR_AREA['BRAM'] = 1344
@@ -12,13 +12,39 @@ class U250:
   SLR_AREA['FF'] = 864000
   SLR_AREA['LUT'] = 432000
 
-class U280:
+class U280_old:
   SLR_CNT = 3
   SLR_AREA = {}
   SLR_AREA['BRAM'] = 1344
   SLR_AREA['DSP'] = 3008
   SLR_AREA['FF'] = 869120
   SLR_AREA['LUT'] = 434560
+
+class U250:
+  SLR_CNT = 4
+  SLR_AREA = defaultdict(lambda: defaultdict(list))
+  SLR_AREA['BRAM'][0] = 768
+  SLR_AREA['DSP'][0] = 1536
+  SLR_AREA['FF'][0] = 433920
+  SLR_AREA['LUT'][0] = 216960
+
+  SLR_AREA['BRAM'][1] = 384
+  SLR_AREA['DSP'][1] = 1344
+  SLR_AREA['FF'][1] = 433920
+  SLR_AREA['LUT'][1] = 165120
+
+class U280:
+  SLR_CNT = 3
+  SLR_AREA = defaultdict(lambda: defaultdict(list))
+  SLR_AREA['BRAM'][0] = 768
+  SLR_AREA['DSP'][0] = 1536
+  SLR_AREA['FF'][0] = 433920
+  SLR_AREA['LUT'][0] = 216960  
+  
+  SLR_AREA['BRAM'][1] = 384
+  SLR_AREA['DSP'][1] = 1344
+  SLR_AREA['FF'][1] = 330240
+  SLR_AREA['LUT'][1] = 165120  
 
 class FormatHLS:
   # either xxxx__dout or xxxx_dout
@@ -46,7 +72,11 @@ class FormatHLS:
       relay_station_count,
       relay_station_template,
       constraint_edge,
-      constraint_marked_edge):
+      constraint_marked_edge,
+      only_keep_rs_hierarchy,
+      max_search_time,
+      NaiveBalance = False,
+      AssignAxiSubSLR = False):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -66,6 +96,10 @@ class FormatHLS:
     self.relay_station_template = relay_station_template
     self.constraint_edge = constraint_edge
     self.constraint_marked_edge = constraint_marked_edge
+    self.only_keep_rs_hierarchy = only_keep_rs_hierarchy
+    self.max_search_time = max_search_time
+    self.NaiveBalance = NaiveBalance
+    self.AssignAxiSubSLR = AssignAxiSubSLR
 
     if (board_name == 'u250'):
       self.SLR_CNT = U250.SLR_CNT

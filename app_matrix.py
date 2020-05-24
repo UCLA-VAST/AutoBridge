@@ -6,7 +6,7 @@ import collections
 import os
 import subprocess
 
-tlp_path = '/home/einsx7/pr/application/Matrix_Dataflow/tlp/tlpc_result_16'
+tlp_path = '/home/einsx7/pr/application/Matrix_Dataflow/tlp/tlpc_result'
 top_name = 'Matrix'
 
 rpt_path = f'{tlp_path}/report'
@@ -34,7 +34,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/Matrix_Dataflow/0517_dim16'
+target_dir = '/home/einsx7/pr/application/Matrix_Dataflow/0521_dim32'
 
 check = input(f'''
 Please confirm:
@@ -83,8 +83,8 @@ subprocess.run(['cp', '-r', tlp_path, f'{target_dir}/'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
 subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tlpc_result_16/hdl'])
-subprocess.run(['rm', f'{target_dir}/tlpc_result_16/hdl/relay_station.v'])
+subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tlpc_result/hdl'])
+subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/relay_station.v'])
 
 if (relay_station_template == 'fifo'):
-  subprocess.run(['rm', f'{target_dir}/tlpc_result_16/hdl/fifo_srl.v'])
+  subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/fifo_srl.v'])

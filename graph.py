@@ -11,6 +11,7 @@ import os
 import autopilot_parser
 from assign_slr import assignSLR
 from assign_slr import reBalance
+from assign_slr import reBalanceNaive
 import my_generator
 from formator import *
 
@@ -69,10 +70,13 @@ class Graph:
 
     assignSLR(self.vertices.values(), self.edges.values(), self.formator)
 
-    reBalance(self.vertices.values(), self.edges, self.formator)
+    if (formator.NaiveBalance):
+      reBalanceNaive(self.vertices.values(), self.edges, self.formator)
+    else :
+      reBalance(self.vertices.values(), self.edges, self.formator)
 
     my_generator.generateConstraint_2D(self.formator, self.vertices.values(), self.edges.values())
-    my_generator.generateTopHdl(self.formator, top_mod_ast, self.edges)
+    my_generator.generateTopHdl(self.formator, top_mod_ast, self.vertices, self.edges)
 
   def showVertices(self):
     for v in self.vertices.values():

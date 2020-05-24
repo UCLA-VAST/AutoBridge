@@ -75,8 +75,7 @@ def assignSLR(vertices : List, edges : List, formator):
         cmd = 'm += 0'
         for v in vertices:
           cmd += f' + mods_x["{v.name}"][{y}][{x}] * {getattr(v.area, item)}'
-        cmd += f'<= {int(formator.SLR_AREA[item] / column[y] * formator.max_usage_ratio_2d[y][x])}, "{item}_SLR_{y}_sub_{x}_of_{column[y]}"'
-
+        cmd += f'<= {int(formator.SLR_AREA[item][x] * formator.max_usage_ratio_2d[y][x])}, "{item}_SLR_{y}_sub_{x}_of_{column[y]}"'
         exec(cmd)
 
   # [constraint] DDR location constraint
@@ -88,7 +87,7 @@ def assignSLR(vertices : List, edges : List, formator):
   
   # run
   m.write('assignment.lp')
-  m.optimize(max_seconds=120)
+  m.optimize(max_seconds=formator.max_search_time)
 
   writeBackAssignResult(vertices, edges, formator, mods_p)
 
@@ -132,10 +131,10 @@ def showAssignResult(vertices : List, edges : List, formator):
             print(f'  {v.name} -> {v.area}')
             all.append(v.area)
         
-      print(f'\n    BRAM usage: {sum(int(v[0]) for v in all)} / {formator.SLR_AREA["BRAM"] / column[y]} = { (sum(int(v[0]) for v in all)) / (formator.SLR_AREA["BRAM"] / column[y]) }')
-      print(f'    DSP usage: {sum(int(v[1]) for v in all)} / {formator.SLR_AREA["DSP"] / column[y]} = { (sum(int(v[1]) for v in all)) / (formator.SLR_AREA["DSP"] / column[y]) }')
-      print(f'    FF usage: {sum(int(v[2]) for v in all)} / {formator.SLR_AREA["FF"] / column[y]} = { (sum(int(v[2]) for v in all)) / (formator.SLR_AREA["FF"] / column[y]) }')
-      print(f'    LUT usage: {sum(int(v[3]) for v in all)} / {formator.SLR_AREA["LUT"] / column[y]} = { (sum(int(v[3]) for v in all)) / (formator.SLR_AREA["LUT"] / column[y]) }\n')
+      print(f'\n    BRAM usage: {sum(int(v[0]) for v in all)} / {formator.SLR_AREA["BRAM"][x]} = { (sum(int(v[0]) for v in all)) / (formator.SLR_AREA["BRAM"][x]) }')
+      print(f'    DSP usage: {sum(int(v[1]) for v in all)} / {formator.SLR_AREA["DSP"][x]} = { (sum(int(v[1]) for v in all)) / (formator.SLR_AREA["DSP"][x]) }')
+      print(f'    FF usage: {sum(int(v[2]) for v in all)} / {formator.SLR_AREA["FF"][x]} = { (sum(int(v[2]) for v in all)) / (formator.SLR_AREA["FF"][x]) }')
+      print(f'    LUT usage: {sum(int(v[3]) for v in all)} / {formator.SLR_AREA["LUT"][x]} = { (sum(int(v[3]) for v in all)) / (formator.SLR_AREA["LUT"][x]) }\n')
 
 
   for e in edges:
@@ -154,6 +153,9 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
       mods_S[sub_v] = new_mod_S  
 
   for e in edges:
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+      print(f'[reBalance] FIXME need to handle async_mmap')
+      continue
     # if at either side the edge is not accessed in pipeline, then no worries
     if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
       src_sub = e.src.actual_to_sub[e.name]
@@ -163,12 +165,20 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
 
   goal = 'm.objective = minimize( 0 '
   for e in edges:
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+      print(f'[reBalance] FIXME need to handle async_mmap')
+      continue
     if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
       src_sub = e.src.actual_to_sub[e.name]
       dst_sub = e.dst.actual_to_sub[e.name]
       adjusted_lat = e.latency if e.latency > 1 else 0      
       goal += f' + {e.width} * (mods_S[edges_dict["{e.name}"].src.actual_to_sub["{e.name}"]] - mods_S[edges_dict["{e.name}"].dst.actual_to_sub["{e.name}"]] - {adjusted_lat})'
   goal += ')'
+  
+  if (goal == 'm.objective = minimize( 0 )'):
+    print(f'[rebalance] WARNING: do not detect any reconvergent paths')
+    return
+    
   exec(goal)
 
   m.write('rebalance.lp')
@@ -177,6 +187,9 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
   ##############################
 
   for e in edges:
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+      print(f'[reBalance] FIXME need to handle async_mmap')
+      continue    
     # if at either side the edge is not accessed in pipeline, then no worries
     if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
       src_sub = e.src.actual_to_sub[e.name]
@@ -187,3 +200,41 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
       if (e.additional_depth):
         print(f'[reBalance] edge {e.name} is increased by {e.additional_depth}')
 
+# treat all ports of a module as synchronized
+def reBalanceNaive(vertices : List, edges_dict : Dict, formator):
+  m = Model()
+
+  edges = edges_dict.values()
+
+  mods_S = {} # Vertex -> mip_var
+  for v in vertices:
+    new_mod_S = m.add_var(var_type=INTEGER, name=f'{v.name}_S')
+    mods_S[v] = new_mod_S  
+
+  for e in edges:
+    adjusted_lat = e.latency if e.latency > 1 else 0
+    m += mods_S[e.src] >= mods_S[e.dst] + adjusted_lat
+
+  goal = 'm.objective = minimize( 0 '
+  for e in edges:
+    adjusted_lat = e.latency if e.latency > 1 else 0      
+    goal += f' + {e.width} * (mods_S[edges_dict["{e.name}"].src] - mods_S[edges_dict["{e.name}"].dst] - {adjusted_lat})'
+  goal += ')'
+  
+  if (goal == 'm.objective = minimize( 0 )'):
+    print(f'[rebalance] WARNING: do not detect any reconvergent paths')
+    return
+    
+  exec(goal)
+
+  m.write('rebalance.lp')
+  m.optimize(max_seconds=120)
+
+  ##############################
+
+  for e in edges:
+    adjusted_lat = e.latency if e.latency > 1 else 0
+
+    e.additional_depth = mods_S[e.src].x - mods_S[e.dst].x - adjusted_lat
+    if (e.additional_depth):
+      print(f'[reBalanceNaive] edge {e.name} is increased by {e.additional_depth}')
