@@ -6,7 +6,8 @@ import collections
 import os
 import subprocess
 
-tlp_path = '/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/'
+#tlp_path = '/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/'
+tlp_path = '/home/einsx7/pr/application/U280_PageRank/tlp_src_fix_0526/tlpc_result'
 top_name = 'PageRank'
 
 rpt_path = f'{tlp_path}/report'
@@ -104,7 +105,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U280_PageRank/0516_m_axi_sub_slr'
+target_dir = '/home/einsx7/pr/application/U280_PageRank/0526_fix_rs_fix_src'
 
 check = input(f'''
 Please confirm:

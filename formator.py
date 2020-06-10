@@ -71,10 +71,10 @@ class FormatHLS:
       target_dir,
       relay_station_count,
       relay_station_template,
-      constraint_edge,
-      constraint_marked_edge,
-      only_keep_rs_hierarchy,
-      max_search_time,
+      constraint_edge = True,
+      constraint_marked_edge = True,
+      only_keep_rs_hierarchy = False,
+      max_search_time = 600,
       NaiveBalance = False,
       AssignAxiSubSLR = False):
     self.rpt_path = rpt_path

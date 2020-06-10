@@ -9,7 +9,8 @@ import subprocess
 DDR_loc_2d_x = collections.defaultdict(dict)
 DDR_loc_2d_y = collections.defaultdict(dict)
 
-DDR_loc_2d_y['jacobi2d_kernel_control_s_axi_U'] = 0
+# somehow for this design the s_axi controller is at the top
+DDR_loc_2d_y['jacobi2d_kernel_control_s_axi_U'] = 3
 DDR_loc_2d_y['load_0'] = 0
 DDR_loc_2d_x['load_0'] = 0
 
@@ -28,7 +29,7 @@ constraint_marked_edge = True
 board_name = 'u250'
 #######################################
 
-for i in range(1, 9):
+for i in range(1, 8):
   target_dir = f'/home/einsx7/pr/application/soda_U250/0520_small_max_ratio/0520_iter{i}'
   tlp_path = f'/home/einsx7/pr/application/soda_U250/orig/dac_iter{i}/tlpc_result'
   top_name = 'jacobi2d_kernel'
@@ -77,11 +78,11 @@ for i in range(1, 9):
 
   ################
 
-  if (os.path.isdir(target_dir)):
+  if (os.path.isdir(f'{target_dir}/tlpc_result')):
     #target_dir = f'{target_dir}_dup'
-    subprocess.run(['rm', '-rf', f'{target_dir}/'])
+    subprocess.run(['rm', '-rf', f'{target_dir}/tlpc_result'])
 
-  subprocess.run(['mkdir', f'{target_dir}/'])
+  #subprocess.run(['mkdir', f'{target_dir}/'])
   subprocess.run(['cp', '-r', tlp_path, f'{target_dir}/'])
   subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
   subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])

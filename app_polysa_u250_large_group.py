@@ -6,7 +6,7 @@ import collections
 import os
 import subprocess
 
-project_path = '/home/einsx7/pr/application/polysa_U280/orig_10x8x8/kernel0'
+project_path = '/home/einsx7/pr/application/polysa_U250_large_group/orig_y4x4_x8+5/kernel0'
 solution_path = f'{project_path}/solution/'
 
 
@@ -19,69 +19,40 @@ top_hdl_path = f'{hdl_path}/{top_name}_{top_name}.v'
 DDR_loc_2d_x = collections.defaultdict(dict)
 DDR_loc_2d_y = collections.defaultdict(dict)
 
-DDR_loc_2d_y['kernel0_gmem_A_0_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_A_1_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_B_0_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_B_1_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_B_2_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_B_3_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_C_0_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_C_1_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_C_2_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_C_3_m_axi_U'] = 0
+# use DDR 0, 1, 3
+DDR_loc_2d_y['A_IO_L3_in_wrapper_U0'] = 0
+DDR_loc_2d_y['B_IO_L3_in_wrapper_U0'] = 1
+DDR_loc_2d_y['C_drain_IO_L3_out_wrapper_U0'] = 3
 
-DDR_loc_2d_x['kernel0_gmem_A_0_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_A_1_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_B_0_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_B_1_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_B_2_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_B_3_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_C_0_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_C_1_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_C_2_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_C_3_m_axi_U'] = 0
+DDR_loc_2d_x['A_IO_L3_in_wrapper_U0'] = 0
+DDR_loc_2d_x['B_IO_L3_in_wrapper_U0'] = 0
+DDR_loc_2d_x['C_drain_IO_L3_out_wrapper_U0'] = 0
 
-DDR_loc_2d_y['A_IO_L3_in_wrapper174_U0'] = 0
-DDR_loc_2d_y['A_IO_L3_in_wrapper175_U0'] = 0
-DDR_loc_2d_y['B_IO_L3_in_wrapper185_U0'] = 0
-DDR_loc_2d_y['B_IO_L3_in_wrapper186_U0'] = 0
-DDR_loc_2d_y['B_IO_L3_in_wrapper187_U0'] = 0
-DDR_loc_2d_y['B_IO_L3_in_wrapper188_U0'] = 0
-DDR_loc_2d_y['C_drain_IO_L3_out_wrapper375_U0'] = 0
-DDR_loc_2d_y['C_drain_IO_L3_out_wrapper376_U0'] = 0
-DDR_loc_2d_y['C_drain_IO_L3_out_wrapper377_U0'] = 0
-DDR_loc_2d_y['C_drain_IO_L3_out_wrapper378_U0'] = 0
-
-DDR_loc_2d_x['A_IO_L3_in_wrapper174_U0'] = 0
-DDR_loc_2d_x['A_IO_L3_in_wrapper175_U0'] = 0
-DDR_loc_2d_x['B_IO_L3_in_wrapper185_U0'] = 0
-DDR_loc_2d_x['B_IO_L3_in_wrapper186_U0'] = 0
-DDR_loc_2d_x['B_IO_L3_in_wrapper187_U0'] = 0
-DDR_loc_2d_x['B_IO_L3_in_wrapper188_U0'] = 0
-DDR_loc_2d_x['C_drain_IO_L3_out_wrapper375_U0'] = 0
-DDR_loc_2d_x['C_drain_IO_L3_out_wrapper376_U0'] = 0
-DDR_loc_2d_x['C_drain_IO_L3_out_wrapper377_U0'] = 0
-DDR_loc_2d_x['C_drain_IO_L3_out_wrapper378_U0'] = 0
+DDR_loc_2d_y['kernel0_gmem_A_m_axi_U'] = 0
+DDR_loc_2d_y['kernel0_gmem_B_m_axi_U'] = 1
+DDR_loc_2d_y['kernel0_gmem_C_m_axi_U'] = 3
+DDR_loc_2d_x['kernel0_gmem_A_m_axi_U'] = 0
+DDR_loc_2d_x['kernel0_gmem_B_m_axi_U'] = 0
+DDR_loc_2d_x['kernel0_gmem_C_m_axi_U'] = 0
 
 DDR_loc_2d_y['kernel0_control_s_axi_U'] = 0
-DDR_loc_2d_x['kernel0_control_s_axi_U'] = 1
 
-######################################################
+# manual place the systolic array
+for y in range(0, 16, 4):
+    DDR_loc_2d_y[f'PE_module_group_wrapper_0_{y}_U0'] = int(y / 4)
+    DDR_loc_2d_x[f'PE_module_group_wrapper_0_{y}_U0'] = 0
 
-# from app_polysa_u280_config_0522_lower_X0Y0 import addFloorplan
-# addFloorplan(DDR_loc_2d_x=DDR_loc_2d_x, DDR_loc_2d_y = DDR_loc_2d_y)
-
-######################################################
-
+    DDR_loc_2d_y[f'PE_module_group_wrapper_8_{y}_U0'] = int(y / 4)
+    DDR_loc_2d_x[f'PE_module_group_wrapper_8_{y}_U0'] = 1
 
 # only the DDRs in SLR0 and SLR1 are enabled
-DDR_enable = [0, 0, 0]
+DDR_enable = [0, 0, 0, 0]
 
 # the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
-column = [2, 2, 2]
+column = [2, 2, 2, 2]
 
 # the right half of SLR0 and SLR1 contains the DDR controller and the static region, which takes away half the resources
-max_usage_ratio_2d = [ [0.5, 0.6], [0.6, 0.5], [0.6, 0.5]]
+max_usage_ratio_2d = [ [0.85, 0.6], [0.85, 0.6], [0.85, 0.85], [0.85, 0.6] ]
 
 # to handle situation like this
 # |   R0  |
@@ -102,12 +73,12 @@ relay_station_template = 'reg' # 'fifo' or 'reg' or 'reg_srl_fifo'
 constraint_edge = True # whether to add constraints to rs and FIFO
 constraint_marked_edge = True
 only_keep_rs_hierarchy = False
-max_search_time = 600
-board_name = 'u280'
-NaiveBalance = True # FIXME currently does not support extracting multi-layer FIFO relation
+max_search_time = 1200
+board_name = 'u250'
+NaiveBalance = True
 #-----------------------------
 
-target_dir = '/home/einsx7/pr/application/polysa_U280/0523_fix_area_further_lower_threshold_fix_rs'
+target_dir = '/home/einsx7/pr/application/polysa_U250_large_group/0609_attemp1'
 
 check = input(f'''
 Please confirm:
@@ -151,7 +122,7 @@ g = graph.Graph(formator)
 ################
 
 if (os.path.isdir(target_dir)):
-  subprocess.run(['rm', '-rf', f'{target_dir}/'])
+  subprocess.run(['rm', '-rf', f'{target_dir}'])
 
 subprocess.run(['mkdir', f'{target_dir}/'])
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{top_name}'])
