@@ -153,7 +153,8 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
       mods_S[sub_v] = new_mod_S  
 
   for e in edges:
-    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name or \
+        'Router' in e.dst.name or 'Router' in e.src.name):
       print(f'[reBalance] FIXME need to handle async_mmap')
       continue
     # if at either side the edge is not accessed in pipeline, then no worries
@@ -165,7 +166,8 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
 
   goal = 'm.objective = minimize( 0 '
   for e in edges:
-    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name or \
+        'Router' in e.dst.name or 'Router' in e.src.name):
       print(f'[reBalance] FIXME need to handle async_mmap')
       continue
     if (e.name in e.dst.actual_to_sub and e.name in e.src.actual_to_sub):
@@ -187,7 +189,8 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
   ##############################
 
   for e in edges:
-    if ('Mem' in e.dst.name or 'Mem' in e.src.name ):
+    if ('Mem' in e.dst.name or 'Mem' in e.src.name or \
+        'Router' in e.dst.name or 'Router' in e.src.name):
       print(f'[reBalance] FIXME need to handle async_mmap')
       continue    
     # if at either side the edge is not accessed in pipeline, then no worries
