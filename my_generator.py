@@ -68,9 +68,9 @@ def output_Sub_SLRConstraint(formator, assignment, tcl):
         continue
 
       # sub-SLR level
-      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_X{x}_Y{y}] [get_cells -hierarchical -regexp {{\n')
+      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_X{x}_Y{y}] [get_cells -regexp {{\n')
       for v in names:
-        tcl.write(f'\t(.*/)?{v}\n')
+        tcl.write(f'\tpfm_top_i/dynamic_region/.*/inst/{v}\n')
       tcl.write('}] -clear_locs \n')
 
 def outputSLRConstraint(formator, assignment, tcl):
@@ -85,9 +85,9 @@ def outputSLRConstraint(formator, assignment, tcl):
           continue
 
         # sub-SLR level
-        tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -hierarchical -regexp {{\n')
+        tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -regexp {{\n')
         for v in names:
-          tcl.write(f'\t(.*/)?{v}\n')
+          tcl.write(f'\tpfm_top_i/dynamic_region/.*/inst/{v}\n')
         tcl.write('}] -clear_locs \n') 
 
   # if the assignment is 1d dict   
@@ -100,9 +100,9 @@ def outputSLRConstraint(formator, assignment, tcl):
       if (len(names) == 0):
         continue
 
-      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -hierarchical -regexp {{\n')
+      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_dynamic_SLR{y}] [get_cells -regexp {{\n')
       for v in names:
-        tcl.write(f'\t(.*/)?{v}\n')
+        tcl.write(f'\tpfm_top_i/dynamic_region/.*/inst/{v}\n')
       tcl.write('}] -clear_locs \n')
 
 def constraintModules(formator, vertices, tcl):
@@ -276,6 +276,7 @@ def generateTopHdl(formator, top_mod_ast, vertices_dict: Dict, edges_dict : Dict
   outputTopContents(formator, top_name, top_mod_ast)
 
   # add reset templates and remove ap_idle
+  print('[codegen] *** CRITICAL WARNING: post processing of reset signals are disabled! *** ')
   # if (type(formator) == FormatHLS):
   #   postProcess(formator, top_name)
 
@@ -294,7 +295,9 @@ def outputTopContents(formator, top_name, top_mod_ast):
     new_top.write(relay_station_template.relay_station_template)
   elif (formator.relay_station_template == 'reg'): 
     new_top.write(relay_station_template.reg_based_relay_station_template)
-    new_top.write(relay_station_template.yuze_fifo_template)
+    # hls ad-hoc fifos will be replaced by the same fifo template
+    if (type(formator) == FormatHLS):
+      new_top.write(relay_station_template.yuze_fifo_template)
   elif (formator.relay_station_template == 'reg_srl_fifo'): 
     new_top.write(relay_station_template.reg_srl_fifo_relay_station_template)
   else:
@@ -503,9 +506,9 @@ def constraintModulesTaskBased(formator, vertices, tcl):
         continue
 
       # sub-SLR level
-      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_X{x}_Y{y}] [get_cells -hierarchical -regexp {{\n')
+      tcl.write(f'add_cells_to_pblock [get_pblocks pblock_X{x}_Y{y}] [get_cells -regexp {{\n')
       for v in names:
-        tcl.write(f'\t(.*/)?{v}\n')
+        tcl.write(f'\tpfm_top_i/dynamic_region/.*/inst/{v}\n')
       tcl.write('}] -clear_locs \n')
 
   return assignment_v_sub
