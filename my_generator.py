@@ -14,19 +14,45 @@ def initPblocksU250(formator, tcl):
       # column X4 is DDR; X7 is static region
       # if the DDR is not instantiated, add X4 to the right half
       # adding X4Y0 to the left half seems to violate PR DRC rules
-      right_half_start = 5 if formator.DDR_enable[y] == 1 else 4
-      tcl.write(f'''
-        startgroup
-          create_pblock pblock_X{0}_Y{y}
-          resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
-        endgroup
+      if (formator.DDR_enable[y] == False):
+        # right_half_start = 5 if formator.DDR_enable[y] == 1 else 4
+        right_half_start = 4
+        tcl.write(f'''
+          startgroup
+            create_pblock pblock_X{0}_Y{y}
+            resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          endgroup
 
-        startgroup
-          create_pblock pblock_X{1}_Y{y}
-          resize_pblock pblock_X{1}_Y{y} -add CLOCKREGION_X{right_half_start}Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X6Y{3+y*NUM_PER_SLR_HORIZONTAL}
-        endgroup
-      ''')
+          startgroup
+            create_pblock pblock_X{1}_Y{y}
+            resize_pblock pblock_X{1}_Y{y} -add CLOCKREGION_X{right_half_start}Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X6Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          endgroup
+        ''')
+      else:
+        print(f'[initPblocksU250] steal 2 DSP columns from the DDR region')
+        getRange = lambda height, y : (height * y, height * (y+1) - 1)
+        SLICE_height = getRange(240, y)
+        DSP48E2_height = getRange(96, y)
+        RAMB18_height = getRange(96, y)
+        RAMB36_height = getRange(48, y)
+        URAM288_height = getRange(64, y)
+        tcl.write(f'''
+          startgroup
+            create_pblock pblock_X{0}_Y{y}
+            resize_pblock pblock_X{0}_Y{y} -add CLOCKREGION_X0Y{0+y*NUM_PER_SLR_HORIZONTAL}:CLOCKREGION_X3Y{3+y*NUM_PER_SLR_HORIZONTAL}
+          endgroup
 
+          startgroup 
+            create_pblock pblock_X1_Y{y}
+            resize_pblock pblock_X1_Y{y} -add {{
+              SLICE_X140Y{SLICE_height[0]}:SLICE_X205Y{SLICE_height[1]}
+              DSP48E2_X18Y{DSP48E2_height[0]}:DSP48E2_X29Y{DSP48E2_height[1]} 
+              RAMB18_X9Y{RAMB18_height[0]}:RAMB18_X11Y{RAMB18_height[1]} 
+              RAMB36_X9Y{RAMB36_height[0]}:RAMB36_X11Y{RAMB36_height[1]} 
+              URAM288_X3Y{URAM288_height[0]}:URAM288_X4Y{URAM288_height[1]}
+            }}
+          endgroup
+        ''')
 def initPblocksU280(formator, tcl):
   NUM_PER_SLR_HORIZONTAL = 4
   for y in range(formator.SLR_CNT):
