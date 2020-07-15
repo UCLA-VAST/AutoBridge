@@ -301,9 +301,14 @@ module fifo_reg #(
 );
 
   always @ (posedge clk) begin
-    if_dout <= if_din;
-    if_empty_n <= if_write;
-    if_full_n <= if_read;
+    if (reset) begin
+      if_empty_n <= 1'b0;
+      if_full_n <= 1'b0;
+    end
+    else begin
+      if_empty_n <= if_write;
+      if_full_n <= if_read;
+    end
   end
 
 endmodule
