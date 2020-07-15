@@ -5,6 +5,26 @@ from mip import *
 #from graph import *
 from typing import List
 
+def addUserConstraint(m, mods_p, formator):
+  # [constraint] DDR location constraint
+  for v, mod_p in mods_p.items():
+    if (v.name in formator.DDR_loc_2d_x):
+      print(f'[AssignSLR] user specified module {v.name} to be in X {formator.DDR_loc_2d_x[v.name]}')
+      m += mod_p['X'] == formator.DDR_loc_2d_x[v.name]
+    if (v.name in formator.DDR_loc_2d_y):
+      print(f'[AssignSLR] user specified module {v.name} to be in Y {formator.DDR_loc_2d_y[v.name]}')
+      m += mod_p['Y'] == formator.DDR_loc_2d_y[v.name]
+  
+  # assert that user specified modules are valid
+  for mod in formator.DDR_loc_2d_x.keys():
+    if not any(v.name == mod for v in mods_p.keys()):
+      print(f'[AssignSLR] CRITICAL WARNING: user specified module {mod} does not exist')
+      exit()
+  for mod in formator.DDR_loc_2d_y.keys():
+    if not any(v.name == mod for v in mods_p.keys()):
+      print(f'[AssignSLR] CRITICAL WARNING: user specified module {mod} does not exist')
+      exit()
+
 #
 # Multi-column SLR assignment problem
 #
@@ -78,13 +98,8 @@ def assignSLR(vertices : List, edges : List, formator):
         cmd += f'<= {int(formator.SLR_AREA[item][x] * formator.max_usage_ratio_2d[y][x])}, "{item}_SLR_{y}_sub_{x}_of_{column[y]}"'
         exec(cmd)
 
-  # [constraint] DDR location constraint
-  for v, mod_p in mods_p.items():
-    if (v.name in formator.DDR_loc_2d_x):
-      m += mod_p['X'] == formator.DDR_loc_2d_x[v.name]
-    if (v.name in formator.DDR_loc_2d_y):
-      m += mod_p['Y'] == formator.DDR_loc_2d_y[v.name]
-  
+  addUserConstraint(m, mods_p, formator)
+
   # run
   m.write('assignment.lp')
   m.optimize(max_seconds=formator.max_search_time)
