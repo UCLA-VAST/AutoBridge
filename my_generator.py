@@ -362,7 +362,7 @@ def addRelayStation(formator, node, edges_dict):
   else :
     node.module = 'fifo'
     new_depth = int(e.depth + e.additional_depth)
-    new_addr_width = int(math.log2(new_depth))
+    new_addr_width = int(math.log2(new_depth)+1)
 
     width = ast.ParamArg( 'DATA_WIDTH', ast.Rvalue(ast.IntConst(str(e.width))) )
     depth = ast.ParamArg( 'DEPTH', ast.Rvalue(ast.IntConst(str(new_depth))) )
