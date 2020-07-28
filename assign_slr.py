@@ -3,7 +3,7 @@
 import collections
 from mip import *
 #from graph import *
-from typing import List
+from typing import List, Callable, Dict
 
 def addUserConstraint(m, mods_p, formator):
   # [constraint] DDR location constraint
@@ -38,6 +38,7 @@ def assignSLR(vertices : List, edges : List, formator):
 
   # [var] if a module belongs to an SLR
   # FIXME: when there are modules of the same name there will be bug
+  # append an vertex id to make names unique
   mods_x = {} # str -> [mip_var]
   for i, v in enumerate(vertices):
     new_mod_x = [ [m.add_var(var_type=BINARY, name=f'{v.name}_{i}_x_{y}_{x}') for x in range(column[y]) ]  for y in range(SLR_CNT)] 
@@ -107,6 +108,287 @@ def assignSLR(vertices : List, edges : List, formator):
   writeBackAssignResult(vertices, edges, formator, mods_p)
 
   showAssignResult(vertices, edges, formator)
+
+
+def assignSLRDivideConquer(vertices : List, edges : List, formator):
+  # first do all the vertical splits, then do all the horizontal splits
+  # d = d0 * 2 + d1
+  # what if u280?
+  # d = d0 * 1 + d1
+  # should pass d() as a function pointer
+  # implement a routine to do one pass of vertical or horizontal split, using d to calculate distance
+
+  assert(formator.board_name == 'u250')
+
+  # #####################################
+  # for i in range(13):
+  #   for j in range(16):
+  #     formator.DDR_loc_2d_y[f'PE_wrapper_{i}_{j}_U0'] = int(j / 4)
+  #     formator.DDR_loc_2d_x[f'PE_wrapper_{i}_{j}_U0'] = 0 if i < 8 else 1
+  # #####################################
+
+  splitHalfHelper(formator, vertices, edges)
+
+  splitQuarterHelper(formator, vertices, edges)
+
+  splitHorizontalHelper(formator, vertices, edges)
+
+  commitSLRAssignment(formator, vertices, edges)
+
+  showAssignResult(vertices, edges, formator)
+
+  # exit()
+
+def commitSLRAssignment(formator, vertices, edges):
+  for v in vertices:
+    v.slr_loc = int( v.vertical_cut[0] * 2 + v.vertical_cut[1] )
+    v.slr_sub_loc = int( v.horizontal_cut[0] )
+
+  for e in edges:
+    e.mark = e.src.slr_loc != e.dst.slr_loc or e.src.slr_sub_loc != e.dst.slr_sub_loc
+
+  for e in edges:
+    if (e.mark):
+      step_v = abs(e.src.slr_loc - e.dst.slr_loc)
+      step_h = abs(e.src.slr_sub_loc - e.dst.slr_sub_loc)
+      e.latency = int( formator.relay_station_count(step_v + step_h) )
+
+def splitHorizontalHelper(formator, vertices, edges):
+  # after two vertical cut, do the horizontal cut
+  area_horizontal = defaultdict(lambda : defaultdict(dict))
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    for slr in range(4):
+      for sub_slr in range(2):
+        area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][sub_slr] * formator.max_usage_ratio_2d[slr][sub_slr]
+
+  loc_func_horizontal = lambda mod_x : mod_x 
+
+  user_constraint_horizontal = defaultdict()
+  for name, loc_x in formator.DDR_loc_2d_x.items():
+    user_constraint_horizontal[name] = loc_x == 1
+
+  results = splitHorizontal(formator, vertices, edges, area_horizontal, loc_func_horizontal, user_constraint_horizontal)
+
+  for v, loc in results.items():
+    print(f'{v.name}\t{v.vertical_cut[0] * 2 + v.vertical_cut[1]}\t{loc}')
+    v.horizontal_cut.append(loc)
+
+
+def splitHorizontal(
+    formator,
+    vertices : List,
+    edges : List,
+    area : Dict,
+    loc_func : Callable,
+    user_constraint : Dict
+):
+
+  m = Model()
+
+  mods_x = {} # str -> [mip_var]
+  for i, v in enumerate(vertices):
+    mods_x[v.name] = m.add_var(var_type=BINARY, name=f'{v.name}_{i}_x') 
+
+  # d = e.src.x xor e.dst.x
+  # attention here d_x is declared as binary
+  d_x = [m.add_var(var_type=BINARY, name=f'd_x_{e.name}_{i}') for i, e in enumerate(edges)]
+  for d_x_i, e in zip(d_x, edges):
+    m += d_x_i >= loc_func(mods_x[e.src.name]) - loc_func(mods_x[e.dst.name])
+    m += d_x_i >= loc_func(mods_x[e.dst.name]) - loc_func(mods_x[e.src.name])
+
+  # area constraints
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    for slr in range(4):
+      # for 0-area
+      cmd = 'm += 0'
+      for v in vertices:
+        if (v.vertical_cut[0] * 2 + v.vertical_cut[1] == slr):
+          cmd += f' + (1 - mods_x["{v.name}"]) * {getattr(v.area, item)}'
+      cmd += f' <= {area[slr][0][item]}'
+      exec(cmd)
+
+      # for 1-area
+      cmd = 'm += 0'
+      for v in vertices:
+        if (v.vertical_cut[0] * 2 + v.vertical_cut[1] == slr):
+          cmd += f' + (mods_x["{v.name}"]) * {getattr(v.area, item)}'
+      cmd += f' <= {area[slr][1][item]}'
+      exec(cmd)
+
+  # user constraints
+  for mod_name, loc in user_constraint.items():
+    assert(any(v.name == mod_name for v in vertices))
+    m += mods_x[mod_name] == loc
+
+  m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
+  m.optimize(max_seconds=formator.max_search_time)
+
+  # return the results
+  return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
+
+
+def splitQuarterHelper(formator, vertices, edges):
+  # second vertical cut
+  area_quarter = defaultdict(lambda: defaultdict(list))
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    for slr in range(4):
+      area_quarter[slr][item] =   formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[slr][0] \
+                                + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[slr][1]
+
+  loc_func_quarter = lambda mod_x, v : v.vertical_cut[0] * 2 + mod_x
+
+  user_constraint_quarter = defaultdict()
+  for name, loc_y in formator.DDR_loc_2d_y.items():
+    user_constraint_quarter[name] = loc_y == 1 or loc_y == 3   
+
+  result = splitQuarter(formator, vertices, edges, area_quarter, loc_func_quarter, user_constraint_quarter)
+  for v, loc in result.items():
+    print(f'{v.name}\t{loc_func_quarter(loc, v)}')
+    v.vertical_cut.append(loc)
+
+def splitQuarter(
+    formator,
+    vertices : List,
+    edges : List,
+    area : Dict,
+    loc_func : Callable,
+    user_constraint : Dict
+):
+
+  m = Model()
+
+  mods_x = {} # str -> [mip_var]
+  for i, v in enumerate(vertices):
+    mods_x[v.name] = m.add_var(var_type=BINARY, name=f'{v.name}_{i}_x') 
+
+  # d = e.src.x xor e.dst.x
+  d_x = [m.add_var(var_type=INTEGER, name=f'd_x_{e.name}_{i}') for i, e in enumerate(edges)]
+  for d_x_i, e in zip(d_x, edges):
+    m += d_x_i >= loc_func(mods_x[e.src.name], e.src) - loc_func(mods_x[e.dst.name], e.dst)
+    m += d_x_i >= loc_func(mods_x[e.dst.name], e.dst) - loc_func(mods_x[e.src.name], e.src)
+
+  # area constraints
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    # for slr 0
+    cmd = 'm += 0'
+    for v in vertices:
+      if v.vertical_cut[0] == 0:
+        cmd += f' + (1 - mods_x["{v.name}"]) * {getattr(v.area, item)}'
+    cmd += f'<= {area[0][item]}'
+    exec(cmd)
+
+    # for slr 1
+    cmd = 'm += 0'
+    for v in vertices:
+      if v.vertical_cut[0] == 0:
+        cmd += f' + (mods_x["{v.name}"]) * {getattr(v.area, item)}'
+    cmd += f'<= {area[1][item]}'
+    exec(cmd)    
+
+    # for slr 2
+    cmd = 'm += 0'
+    for v in vertices:
+      if v.vertical_cut[0] == 1:
+        cmd += f' + (1 - mods_x["{v.name}"]) * {getattr(v.area, item)}'
+    cmd += f'<= {area[2][item]}'
+    exec(cmd)
+
+    # for slr 3
+    cmd = 'm += 0'
+    for v in vertices:
+      if v.vertical_cut[0] == 1:    
+        cmd += f' + (mods_x["{v.name}"]) * {getattr(v.area, item)}'
+    cmd += f'<= {area[3][item]}'
+    exec(cmd)    
+
+  # user constraints
+  for mod_name, loc in user_constraint.items():
+    assert(any(v.name == mod_name for v in vertices))
+    m += mods_x[mod_name] == loc
+
+  m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
+  
+  m.write('test_quarter.lp')
+  m.optimize(max_seconds=formator.max_search_time)
+
+  # return the results
+  return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
+
+def splitHalfHelper(formator, vertices, edges):
+  # first vertical cut
+  area_0 = defaultdict()
+  area_1 = defaultdict()
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    area_0[item] =  formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[0][0] \
+                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[0][1] \
+                  + formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[1][0] \
+                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[1][1]
+
+    area_1[item] =  formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[2][0] \
+                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[2][1] \
+                  + formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[3][0] \
+                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[3][1]
+
+  loc_func = lambda mod_x, v : mod_x
+
+  user_constraint = defaultdict()
+  for name, loc_y in formator.DDR_loc_2d_y.items():
+    user_constraint[name] = loc_y >= 2 
+
+  result = splitHalf(formator, vertices, edges, area_0, area_1, loc_func, user_constraint)
+
+  for v, loc in result.items():
+    print(f'{v.name}\t{loc}')
+    v.vertical_cut.append(loc)
+
+def splitHalf(
+    formator,
+    vertices : List,
+    edges : List,
+    area_0 : Dict,
+    area_1 : Dict,
+    loc_func : Callable,
+    user_constraint : Dict
+):
+
+  m = Model()
+
+  mods_x = {} # str -> [mip_var]
+  for i, v in enumerate(vertices):
+    mods_x[v.name] = m.add_var(var_type=BINARY, name=f'{v.name}_{i}_x') 
+
+  # d = e.src.x xor e.dst.x
+  d_x = [m.add_var(var_type=BINARY, name=f'd_x_{e.name}_{i}') for i, e in enumerate(edges)]
+  for d_x_i, e in zip(d_x, edges):
+    m += d_x_i >= loc_func(mods_x[e.src.name], e.src) - loc_func(mods_x[e.dst.name], e.dst)
+    m += d_x_i >= loc_func(mods_x[e.dst.name], e.dst) - loc_func(mods_x[e.src.name], e.src)
+
+  # area constraints
+  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+    # for 1-area
+    cmd = 'm += 0'
+    for v in vertices:
+      cmd += f' + mods_x["{v.name}"] * {getattr(v.area, item)}'
+    cmd += f'<= {area_1[item]}'
+    exec(cmd)
+
+    # for 0-area
+    cmd = 'm += 0'
+    for v in vertices:
+      cmd += f' + (1 - mods_x["{v.name}"]) * {getattr(v.area, item)}'
+    cmd += f'<= {area_0[item]}'
+    exec(cmd)    
+
+  # user constraints
+  for mod_name, loc in user_constraint.items():
+    assert(any(v.name == mod_name for v in vertices))
+    m += mods_x[mod_name] == loc
+
+  m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
+  m.optimize(max_seconds=formator.max_search_time)
+
+  # return the results
+  return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
 
 ###############################################################################
 

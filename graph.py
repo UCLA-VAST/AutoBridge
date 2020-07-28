@@ -9,7 +9,7 @@ from collections import defaultdict
 import subprocess
 import os
 import autopilot_parser
-from assign_slr import assignSLR
+from assign_slr import assignSLR, assignSLRDivideConquer
 from assign_slr import reBalance
 from assign_slr import reBalanceNaive
 import my_generator
@@ -41,6 +41,8 @@ class Vertex:
     self.sub_vertices = {} # pp id -> sub vertex
     self.actual_to_sub = {} # map actual edge name -> sub vertex
     print(f'[Init vertex] create vertix {self.name} of type {self.type}')
+    self.vertical_cut = []
+    self.horizontal_cut = []
 
   def add_in(self, edge : Edge):
     self.out_edges.append(edge)
@@ -68,7 +70,8 @@ class Graph:
 
     self.dfs(top_mod_ast, set(), self.initEdges)
 
-    assignSLR(self.vertices.values(), self.edges.values(), self.formator)
+    #assignSLR(self.vertices.values(), self.edges.values(), self.formator)
+    assignSLRDivideConquer(self.vertices.values(), self.edges.values(), self.formator)
 
     if (formator.NaiveBalance):
       reBalanceNaive(self.vertices.values(), self.edges, self.formator)

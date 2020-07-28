@@ -46,6 +46,19 @@ class U280:
   SLR_AREA['FF'][1] = 330240
   SLR_AREA['LUT'][1] = 165120  
 
+class test:
+  SLR_CNT = 1
+  SLR_AREA = defaultdict(lambda: defaultdict(list))
+  SLR_AREA['BRAM'][0] = 768*4
+  SLR_AREA['DSP'][0] = 1536*4
+  SLR_AREA['FF'][0] = 433920*4
+  SLR_AREA['LUT'][0] = 216960*4
+
+  SLR_AREA['BRAM'][1] = 384*4
+  SLR_AREA['DSP'][1] = 1344*4
+  SLR_AREA['FF'][1] = 433920*4
+  SLR_AREA['LUT'][1] = 165120*4
+
 class FormatHLS:
   # either xxxx__dout or xxxx_dout
   fifo_dout_format = '([^ ]*[^_])_+dout'
@@ -107,7 +120,13 @@ class FormatHLS:
     elif (board_name == 'u280'):
       self.SLR_CNT = U280.SLR_CNT
       self.SLR_AREA = U280.SLR_AREA
-    
+    elif (board_name == 'test'):
+      self.SLR_CNT = test.SLR_CNT
+      self.SLR_AREA = test.SLR_AREA 
+    else:
+      print(f'unsupported board name: {board_name}')
+      exit()
+         
   # for non-dataflow use
   def init_taskbased(
       self,
