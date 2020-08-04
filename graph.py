@@ -14,6 +14,9 @@ from assign_slr import reBalance
 from assign_slr import reBalanceNaive
 import my_generator
 from formator import *
+import sys
+sys.setrecursionlimit(40000)
+
 
 class Edge:
   def __init__(self, name:str):
@@ -57,6 +60,7 @@ class Graph:
     self.formator = formator
 
     # must use list to wrap up the addr
+    print(f'[Graph] start parsing top RTL: {self.formator.top_hdl_path}')
     top_mod_ast, directives = rtl_parse([self.formator.top_hdl_path]) 
 
     self.vertices = {} # name -> Vertex
