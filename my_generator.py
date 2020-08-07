@@ -314,6 +314,7 @@ def outputTopContents(formator, top_name, top_mod_ast):
   result = codegen.visit(top_mod_ast)
 
   new_top = open(f'{formator.top_name}_{formator.top_name}.v', 'w')
+  new_top.write('`timescale 1 ns / 1 ps \n')
   new_top.write(result)
 
   # types of relay station
