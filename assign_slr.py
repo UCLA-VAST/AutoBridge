@@ -152,10 +152,14 @@ def commitSLRAssignment(formator, vertices, edges):
 def splitHorizontalHelper(formator, vertices, edges):
   # after two vertical cut, do the horizontal cut
   area_horizontal = defaultdict(lambda : defaultdict(dict))
+
+  relax_ratio = formator.max_usage_ratio_delta
+
   for item in ['BRAM', 'DSP', 'FF', 'LUT']:
-    for slr in range(4):
+    for slr in range(len(formator.column)):
       for sub_slr in range(2):
-        area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][sub_slr] * formator.max_usage_ratio_2d[slr][sub_slr]
+        area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][sub_slr] * (formator.max_usage_ratio_2d[slr][sub_slr] + relax_ratio)
+        print(f'[splitHorizontalHelper] area_horizontal[{slr}][{sub_slr}][{item}] = {area_horizontal[slr][sub_slr][item]}')
 
   loc_func_horizontal = lambda mod_x : mod_x 
 
@@ -194,7 +198,7 @@ def splitHorizontal(
 
   # area constraints
   for item in ['BRAM', 'DSP', 'FF', 'LUT']:
-    for slr in range(4):
+    for slr in range(len(formator.column)):
       # for 0-area
       cmd = 'm += 0'
       for v in vertices:

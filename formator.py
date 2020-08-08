@@ -89,7 +89,8 @@ class FormatHLS:
       only_keep_rs_hierarchy = False,
       max_search_time = 600,
       NaiveBalance = False,
-      AssignAxiSubSLR = False):
+      AssignAxiSubSLR = False,
+      max_usage_ratio_delta = 0.03):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -100,19 +101,47 @@ class FormatHLS:
     self.max_usage_ratio_2d = max_usage_ratio_2d
     self.column = column
     self.board_name = board_name
+
+    # [obsolete]
     self.coorinate_expansion_ratio = coorinate_expansion_ratio
+    
+    # maximum allowed SLR crossing
     self.max_width_threshold = max_width_threshold
+    
+    # how many rows (vertical height) are there in one SLR
     self.NUM_PER_SLR_HORIZONTAL = NUM_PER_SLR_HORIZONTAL
+    
+    # whether to treat horizontal crossing with less penalty
     self.horizontal_cross_weight = horizontal_cross_weight
+    
     self.target_dir = target_dir
+
+    # for each crossing, how many relay stations to allocate
     self.relay_station_count = relay_station_count
+
+    # different implementations of relay station available
     self.relay_station_template = relay_station_template
+
+    # [obsolete] whether to generate floorplan constraint for non-relay-station edges
     self.constraint_edge = constraint_edge
+
+    # [obsolete] whether to generate floorplan constraint for relay station edges
     self.constraint_marked_edge = constraint_marked_edge
+
+    # [obsolete] only add "keep_hierarchy" pragma to relay stations
     self.only_keep_rs_hierarchy = only_keep_rs_hierarchy
+
     self.max_search_time = max_search_time
+
+    # only utilize the dataflow-process-level topology. Do not analyze the internal FSM
     self.NaiveBalance = NaiveBalance
+
+    # whether to generate sub-slr level floorplan constraints for AXI related modules
     self.AssignAxiSubSLR = AssignAxiSubSLR
+
+    # in iterative divide and conquer, if a region is packed too full, there is the possibility that a further divide is infeasible as a function could not be split apart
+    # thus we allow some increase in the max_usage_ratio to accommodate the situation
+    self.max_usage_ratio_delta = max_usage_ratio_delta 
 
     if (board_name == 'u250'):
       self.SLR_CNT = U250.SLR_CNT
