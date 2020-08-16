@@ -158,7 +158,7 @@ def splitHorizontalHelper(formator, vertices, edges):
   for item in ['BRAM', 'DSP', 'FF', 'LUT']:
     for slr in range(len(formator.column)):
       for sub_slr in range(2):
-        area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][sub_slr] * (formator.max_usage_ratio_2d[slr][sub_slr] + relax_ratio)
+        area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][slr][sub_slr] * (formator.max_usage_ratio_2d[slr][sub_slr] + relax_ratio)
         print(f'[splitHorizontalHelper] area_horizontal[{slr}][{sub_slr}][{item}] = {area_horizontal[slr][sub_slr][item]}')
 
   loc_func_horizontal = lambda mod_x : mod_x 
@@ -237,13 +237,13 @@ def splitQuarterHelper(formator, vertices, edges):
     
     if (formator.board_name == 'u250'):
       for slr in range(4):
-        area_quarter[slr][item] =   formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[slr][0] \
-                                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[slr][1]
+        area_quarter[slr][item] =   formator.SLR_AREA[item][slr][0] * formator.max_usage_ratio_2d[slr][0] \
+                                  + formator.SLR_AREA[item][slr][1] * formator.max_usage_ratio_2d[slr][1]
 
     elif (formator.board_name == 'u280'):
       for slr in range(3):
-        area_quarter[slr][item] =   formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[slr][0] \
-                                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[slr][1]
+        area_quarter[slr][item] =   formator.SLR_AREA[item][slr][0] * formator.max_usage_ratio_2d[slr][0] \
+                                  + formator.SLR_AREA[item][slr][1] * formator.max_usage_ratio_2d[slr][1]
       area_quarter[3][item] =  0
 
     else :
@@ -335,19 +335,19 @@ def splitHalfHelper(formator, vertices, edges):
   # first vertical cut
   area = defaultdict(dict)
   for item in ['BRAM', 'DSP', 'FF', 'LUT']:
-    area[0][item] =  formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[0][0] \
-                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[0][1] \
-                  + formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[1][0] \
-                  + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[1][1]
+    area[0][item] =  formator.SLR_AREA[item][0][0] * formator.max_usage_ratio_2d[0][0] \
+                  + formator.SLR_AREA[item][0][1] * formator.max_usage_ratio_2d[0][1] \
+                  + formator.SLR_AREA[item][1][0] * formator.max_usage_ratio_2d[1][0] \
+                  + formator.SLR_AREA[item][1][1] * formator.max_usage_ratio_2d[1][1]
 
     if (formator.board_name == 'u250'):
-      area[1][item] = formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[2][0] \
-                    + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[2][1] \
-                    + formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[3][0] \
-                    + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[3][1]
+      area[1][item] = formator.SLR_AREA[item][2][0] * formator.max_usage_ratio_2d[2][0] \
+                    + formator.SLR_AREA[item][2][1] * formator.max_usage_ratio_2d[2][1] \
+                    + formator.SLR_AREA[item][3][0] * formator.max_usage_ratio_2d[3][0] \
+                    + formator.SLR_AREA[item][3][1] * formator.max_usage_ratio_2d[3][1]
     elif (formator.board_name == 'u280'):
-      area[1][item] = formator.SLR_AREA[item][0] * formator.max_usage_ratio_2d[2][0] \
-                    + formator.SLR_AREA[item][1] * formator.max_usage_ratio_2d[2][1]   
+      area[1][item] = formator.SLR_AREA[item][2][0] * formator.max_usage_ratio_2d[2][0] \
+                    + formator.SLR_AREA[item][2][1] * formator.max_usage_ratio_2d[2][1]   
 
     else :
       print(f'[splitHalfHelper] unsupported board name {formator.board_name}')
@@ -455,10 +455,10 @@ def showAssignResult(vertices : List, edges : List, formator):
             print(f'  {v.name} -> {v.area}')
             all.append(v.area)
         
-      print(f'\n    BRAM usage: {sum(int(v[0]) for v in all)} / {formator.SLR_AREA["BRAM"][x]} = { (sum(int(v[0]) for v in all)) / (formator.SLR_AREA["BRAM"][x]) }')
-      print(f'    DSP usage: {sum(int(v[1]) for v in all)} / {formator.SLR_AREA["DSP"][x]} = { (sum(int(v[1]) for v in all)) / (formator.SLR_AREA["DSP"][x]) }')
-      print(f'    FF usage: {sum(int(v[2]) for v in all)} / {formator.SLR_AREA["FF"][x]} = { (sum(int(v[2]) for v in all)) / (formator.SLR_AREA["FF"][x]) }')
-      print(f'    LUT usage: {sum(int(v[3]) for v in all)} / {formator.SLR_AREA["LUT"][x]} = { (sum(int(v[3]) for v in all)) / (formator.SLR_AREA["LUT"][x]) }\n')
+      print(f'\n    BRAM usage: {sum(int(v[0]) for v in all)} / {formator.SLR_AREA["BRAM"][y][x]} = { (sum(int(v[0]) for v in all)) / (formator.SLR_AREA["BRAM"][y][x]) }')
+      print(f'    DSP usage: {sum(int(v[1]) for v in all)} / {formator.SLR_AREA["DSP"][y][x]} = { (sum(int(v[1]) for v in all)) / (formator.SLR_AREA["DSP"][y][x]) }')
+      print(f'    FF usage: {sum(int(v[2]) for v in all)} / {formator.SLR_AREA["FF"][y][x]} = { (sum(int(v[2]) for v in all)) / (formator.SLR_AREA["FF"][y][x]) }')
+      print(f'    LUT usage: {sum(int(v[3]) for v in all)} / {formator.SLR_AREA["LUT"][y][x]} = { (sum(int(v[3]) for v in all)) / (formator.SLR_AREA["LUT"][y][x]) }\n')
 
 
   for e in edges:

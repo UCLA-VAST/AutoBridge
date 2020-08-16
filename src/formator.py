@@ -30,8 +30,19 @@ class U250:
 
   SLR_AREA['BRAM'][1] = 384
   SLR_AREA['DSP'][1] = 1344
-  SLR_AREA['FF'][1] = 433920
-  SLR_AREA['LUT'][1] = 165120
+  SLR_AREA['FF'][1] = 329280
+  SLR_AREA['LUT'][1] = 164640
+
+  SLR_AREA_DDR = defaultdict(lambda: defaultdict(list))
+  SLR_AREA_DDR['BRAM'][0] = 768
+  SLR_AREA_DDR['DSP'][0] = 1536
+  SLR_AREA_DDR['FF'][0] = 433920
+  SLR_AREA_DDR['LUT'][0] = 216960
+
+  SLR_AREA_DDR['BRAM'][1] = 288
+  SLR_AREA_DDR['DSP'][1] = 1152
+  SLR_AREA_DDR['FF'][1] = 245760
+  SLR_AREA_DDR['LUT'][1] = 122800
 
 class U280:
   SLR_CNT = 3
@@ -146,9 +157,24 @@ class FormatHLS:
     if (board_name == 'u250'):
       self.SLR_CNT = U250.SLR_CNT
       self.SLR_AREA = U250.SLR_AREA
+
+      self.SLR_AREA = defaultdict(lambda: defaultdict(dict))
+      for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+        for slr in range(len(self.column)):
+          for sub_slr in range(2):
+            if (self.DDR_enable[slr] == 1):
+              self.SLR_AREA[item][slr][sub_slr] = U250.SLR_AREA_DDR[item][sub_slr]
+            else:
+              self.SLR_AREA[item][slr][sub_slr] = U250.SLR_AREA[item][sub_slr]
+
     elif (board_name == 'u280'):
       self.SLR_CNT = U280.SLR_CNT
-      self.SLR_AREA = U280.SLR_AREA
+      self.SLR_AREA = defaultdict(lambda: defaultdict(dict))
+      for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+        for slr in range(len(self.column)):
+          for sub_slr in range(2):
+            self.SLR_AREA[item][slr][sub_slr] = U250.SLR_AREA[item][sub_slr]
+
     elif (board_name == 'test'):
       self.SLR_CNT = test.SLR_CNT
       self.SLR_AREA = test.SLR_AREA 
