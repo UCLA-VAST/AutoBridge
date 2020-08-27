@@ -6,6 +6,7 @@ import relay_station_template
 from formator import FormatHLS
 import math
 import subprocess
+from optimize_control_signals import *
 
 def initPblocksU250(formator, tcl):
   NUM_PER_SLR_HORIZONTAL = 4
@@ -298,22 +299,21 @@ def generateTopHdl(formator, top_mod_ast, vertices_dict: Dict, edges_dict : Dict
   level_traverse(formator, top_mod_ast, addPragmaKeepHier, edges_dict)
 
   # dump the new ast
-  top_name = f'{formator.top_name}_{formator.top_name}.v'
-  outputTopContents(formator, top_name, top_mod_ast)
+  new_file_name = f'{formator.top_name}_{formator.top_name}.v'
+  outputTopContents(formator, new_file_name, top_mod_ast)
 
   # add reset templates and remove ap_idle
-  print('[codegen] *** CRITICAL WARNING: post processing of reset signals are disabled! *** ')
-  # if (type(formator) == FormatHLS):
-  #   postProcess(formator, top_name)
+  if (type(formator) == FormatHLS):
+    postProcessingAPSignals(new_file_name)
 
 #
 # dump the modifies AST along with rs templates
 #
-def outputTopContents(formator, top_name, top_mod_ast):
+def outputTopContents(formator, file_name, top_mod_ast):
   codegen = ASTCodeGenerator()
   result = codegen.visit(top_mod_ast)
 
-  new_top = open(f'{formator.top_name}_{formator.top_name}.v', 'w')
+  new_top = open(file_name, 'w')
   new_top.write('`timescale 1 ns / 1 ps \n')
   new_top.write(result)
 
@@ -432,54 +432,6 @@ def level_traverse(formator, node, func, *arg):
     for c in curr.children():
       q.append(c)
     func(formator, curr, *arg)
-
-#
-# for HLS designs, generate the definition of regional resets
-# and remove ap_idle
-#
-def postProcess(formator, target_file):
-
-  new_file = f'{target_file}.temp'
-  fp = open(target_file, 'r')
-  pro = open(new_file, 'w')
-
-  def add_template(pro):
-    Q_LEVEL = 4
-    for Y in range(formator.SLR_CNT):
-      for X in range(formator.column[Y]):
-        pro.write(f'(* keep = "true" *) reg ap_rst_n_inv_X{X}_Y{Y};\n')
-        for q in range(1, Q_LEVEL):
-          pro.write(f'(* keep = "true" *) reg ap_rst_n_inv_X{X}_Y{Y}_{q};\n')
-
-    pro.write(f'always @ (posedge ap_clk) begin\n')
-    for Y in range(formator.SLR_CNT):
-      for X in range(formator.column[Y]):
-        pro.write(f'  ap_rst_n_inv_X{X}_Y{Y} <= ap_rst_n_inv_X{X}_Y{Y}_1;\n')
-        for q in range(1, Q_LEVEL-1):
-          pro.write(f'  ap_rst_n_inv_X{X}_Y{Y}_{q} <= ap_rst_n_inv_X{X}_Y{Y}_{q+1};\n')
-        pro.write(f'  ap_rst_n_inv_X{X}_Y{Y}_{Q_LEVEL-1} <= ~ap_rst_n;\n')
-    pro.write(f'end\n')
-
-  has_add_template = 0
-  for line in fp:
-    if ('wire ' in line and has_add_template == 0):
-      pro.write(line)
-
-      add_template(pro)
-
-      has_add_template = 1
-    elif ('.ap_start(' in line):
-      pro.write('    .ap_start(1),\n')
-    elif ('assign ap_idle =' in line ):
-      pro.write('assign ap_idle = 0;\n')
-    else:
-      pro.write(line)
-
-  pro.close()  
-
-  subprocess.run(['mv', target_file, f'{target_file}.backup'])
-  subprocess.run(['mv', new_file, target_file])
-
 
 def generateHLSPackXO(formator):
   pack_xo = open('pack_xo.tcl', 'w')
