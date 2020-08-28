@@ -465,6 +465,15 @@ def showAssignResult(vertices : List, edges : List, formator):
     if (e.mark):
       print(f'{e.name}: {e.src.name} @ {e.src.slr_loc, e.src.slr_sub_loc} --> {e.dst.name} @ {e.dst.slr_loc, e.dst.slr_sub_loc} ')
 
+  # show SLR crossing width
+  slr_crossing = [0] * formator.SLR_CNT
+  for e in edges:
+    src = min(e.src.slr_loc, e.dst.slr_loc)
+    dst = max(e.src.slr_loc, e.dst.slr_loc)
+    for i in range(src, dst):
+      slr_crossing[i] += e.width
+  print(f'[AssignSLR] total SLR crossing width are:', slr_crossing)
+
 def reBalance(vertices : List, edges_dict : Dict, formator):
   m = Model()
 
