@@ -304,7 +304,7 @@ def generateTopHdl(formator, top_mod_ast, vertices_dict: Dict, edges_dict : Dict
 
   # add reset templates and remove ap_idle
   if (type(formator) == FormatHLS):
-    postProcessingAPSignals(new_file_name)
+    postProcessingAPSignals(new_file_name, formator)
 
 #
 # dump the modifies AST along with rs templates

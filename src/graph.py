@@ -215,6 +215,7 @@ class Graph:
   # for each FIFO or relay station create an Edge
   #
   def initEdges(self, node):
+
     # only considers fifo/rs instances
     # for TLP we need to consider async_mmap, which contains an implicity FIFO
     if (not self.formator.isValidInstance(node)):
@@ -223,6 +224,9 @@ class Graph:
       #if (not self.formator.isAsyncMmap(node)):
         return 
 
+    if 'start_for' in node.name:
+      raise "ERROR: Must use disable_start_propagation!"
+      
     e = Edge(node.name)
 
     # extract width

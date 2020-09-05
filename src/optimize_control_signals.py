@@ -4,7 +4,7 @@ import re
 import subprocess
 
 # [FIXME] too messy, need to rewrite
-def modify_start(file_name):
+def modify_start(file_name, formator):
   with open(file_name, 'r') as f:
     lines = f.readlines()
   
@@ -24,13 +24,23 @@ def modify_start(file_name):
       else:
         m = re.search('.ap_start(.+?),', line)
         start_signal = m.group(1)[1:-1]
-        # get the module name
-        module_name = start_signal[:-12]
-        # if 'read_engine' in module_name:
+        
+        ######### non-IO modules set ap_start to 1 ##########
+        is_io = False
+        for io in formator.DDR_loc_2d_y.keys():
+          if io in start_signal:
+            is_io = True
+            break
+
+        if not is_io:
+          new_lines.append('    .ap_start(1\'b1),\n')
+          new_pos += 1          
+          continue
+        #####################################################
 
         insert_lines = []
         for i in range(4):
-          insert_lines.append(f'(* dont_touch = "yes" *) reg {start_signal}_q{i};\n')
+          insert_lines.append(f'(* keep = "true" *) reg {start_signal}_q{i};\n')
         insert_lines.append('initial begin\n')
         for i in range(4):
           insert_lines.append(f"#0 {start_signal}_q{i} = 1'b0;\n")
@@ -189,15 +199,7 @@ def modify_continue_done(file_name):
     f.writelines('// Applied preprocess_hls_dataflow.py\n')
     f.writelines(new_lines)
 
-def postProcessingAPSignals(file_name):
-  modify_start(file_name)
+def postProcessingAPSignals(file_name, formator):
+  modify_start(file_name, formator)
   modify_continue_done(file_name)
 
-if __name__ == '__main__':
-  rtl_path = '/home/einsx7/pr/application/bucket_sort/original_check_64bit/bucket_sort/solution/syn/verilog/'
-  top_name = 'bucket_sort_bucket_sort.v'
-
-  postProcessingAPSignals(f'{rtl_path}/{top_name}')
-
-  subprocess.run(['mv', f'{rtl_path}/{top_name}', f'{rtl_path}/{top_name}.backup'])
-  subprocess.run(['mv', top_name, rtl_path])
