@@ -186,6 +186,9 @@ def modify_continue_done(file_name):
       new_lines.append(insert_lines)
       new_lines += getApSyncDonePipeline('ap_sync_done_wire')
     
+    elif 'assign ap_done' in line:
+      new_lines.append('assign ap_done = ap_sync_done;')
+
     # add template for regional reset signals
     # only add once
     elif re.search('wire[ ]*ap_start[ ]*;', line):
