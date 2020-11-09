@@ -79,16 +79,35 @@ The tool will produce:
 
 - A `tcl` script containing the floorplanning information.
 
-To use the results, we first pack the new RTL files into an `xo` object, then invoke the `v++` tool from Xilinx Vitis (`https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/vitiscommandcompiler.html`). 
+To use the results, we first use Vivado HLS to pack the new RTL files into an `xo` object using the following script:
+```bash
+open_project XXXX
+open_solution solution
+export_design -rtl verilog -format ip_catalog -xo polysa.xo
+
+close_project
+puts "Pack XO successfully"
+exit
+```
+
+Then invoke the `v++` tool from Xilinx Vitis (`https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/vitiscommandcompiler.html`). 
 
 An example script is:
 
 ```bash
 OUTPUT_DIR=./output
-TOP=kernel_top # name of the top function
-PLATFORM=xilinx_u250_xdma_201830_2 # or xilinx_u280_xdma_201920_3 for U280
+
+# name of the top function
+TOP=kernel_top 
+
+# or xilinx_u280_xdma_201920_3 for U280
+PLATFORM=xilinx_u250_xdma_201830_2 
+
 XO="polysa.xo"
-STRATEGY="Default" # Another commonly used strategy is EarlyBlockPlacement. See UG904-vivado-implementation
+
+# Another commonly used strategy is "EarlyBlockPlacement". See UG904-vivado-implementation
+STRATEGY="Default" 
+
 output_dir="$(pwd)/vitis_run"
 
 v++ \
