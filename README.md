@@ -41,35 +41,73 @@ Currently AutoBridge supports two FPGA devices: the Alveo U250 and the Alveo U28
 
 ## Inputs
 
-To use the tool, the user needs to provide the following information:
+To use the tool, the user needs prepare for their  Vivado HLS project that has already been c-synthesized. 
 
-`project_path`: Directory of the HLS project. 
+  * Note that the current automated flow has some restriction on the HLS design.
+  * The HLS design should be a `dataflow` design.
+  * The top function of the HLS design should only contain `function instantiations` and `FIFO instantiations`. The tool will not work on designs that have computations in their top functions. 
+  
+    One such example that will not work well with AutoBridge can be found at the Rosetta benchmark: 
 
-`top_name`: The name of the top-level function of the HLS design
+      `https://github.com/cornell-zhang/rosetta/blob/master/optical-flow/src/sdsoc/optical_flow.cpp`
+    
+    The shown part should be wrapped into another function and be instantiated in the top function.
 
-`DDR_enable`: A vector representing which DDR controllers the design will connect to. In U250 and U280, each SLR of the FPGA contains the IO bank for one DDR controller that can be instantiated. For example, 
+  ```c++
+      446  static frames_t buf;
+      447  FRAMES_CP_OUTER: for (int r=0; r<MAX_HEIGHT; r++) 
+      448  {
+      449    FRAMES_CP_INNER: for (int c=0; c<MAX_WIDTH; c++) 
+      450    {
+      451      #pragma HLS pipeline II=1
+      452              
+      453      // one wide read
+      454      buf = frames[r][c];
+      455      // assign values to the FIFOs
+      456      frame1_a[r][c] = ((input_t)(buf(7 ,  0)) >> 8);
+      457      frame2_a[r][c] = ((input_t)(buf(15,  8)) >> 8);
+      458      frame3_a[r][c] = ((input_t)(buf(23, 16)) >> 8);
+      459      frame3_b[r][c] = ((input_t)(buf(23, 16)) >> 8);
+      460      frame4_a[r][c] = ((input_t)(buf(31, 24)) >> 8);
+      461      frame5_a[r][c] = ((input_t)(buf(39, 32)) >> 8);
+      462    }
+      463  }
+  ```
+
+  * The `dataflow` pragma should come with the `disable_start_propagation` property, i.e. `#pragma HLS dataflow disable_start_propagation`.
+
+To invoke AutoBridge, the following parameters should be provided by the user:
+
+* `project_path`: Directory of the HLS project. 
+
+* `top_name`: The name of the top-level function of the HLS design
+
+* `DDR_enable`: A vector representing which DDR controllers the design will connect to. In U250 and U280, each SLR of the FPGA contains the IO bank for one DDR controller that can be instantiated. For example, 
+
 ```python
-DDR_enable = [1, 0, 0, 1]
+      DDR_enable = [1, 0, 0, 1]
 ``` 
+
 means that there are four SLRs (U250) and the DDR controller on the SLR 0 and SLR 3 (the bottom one is the 0-th) are instantiated while the SLR 1 and SLR 2 are not instantiated. This parameter will affect the floorplanning step, as we must not use the area preserved for DDR controllers.
 
-`DDR_loc_2d_y`: A dictionary recording the y-dim location of user-specified modules. For each IO module (which will directly connect to peripheral IPs such as DMA or DDR controller) in the design, the user must explicity tell the tool which region this module should be placed, according to the location of the target peripheral IPs (which usually have fixed locations). For example, 
+- `DDR_loc_2d_y`: A dictionary recording the y-dim location of user-specified modules. For each IO module (which will directly connect to peripheral IPs such as DMA or DDR controller) in the design, the user must explicity tell the tool which region this module should be placed, according to the location of the target peripheral IPs (which usually have fixed locations). For example, 
 ```python
-DDR_loc_2d_y['B_IO_L3_in_wrapper_U0'] = 1
+      DDR_loc_2d_y['B_IO_L3_in_wrapper_U0'] = 1
 ```  
 means that the module (HLS function) **B_IO_L3_in_wrapper_U0** must be placed in the 1-st SLR of the FPGA.
 
-`DDR_loc_2d_x`: A dictionary recording the x-dim location of user-specified modules. By default we split each SLR by half. For example, 
+- `DDR_loc_2d_x`: A dictionary recording the x-dim location of user-specified modules. By default we split each SLR by half. For example, 
 ```python
-DDR_loc_2d_x['B_IO_L3_in_wrapper_U0'] = 1
+      DDR_loc_2d_x['B_IO_L3_in_wrapper_U0'] = 1
 ```  
 means that the module (HLS function) must be placed in the right half (1 for the right half and 0 for the left half) of the FPGA.
 
-`max_usage_ratio_2d`: A 2-dimensional vector specifying the maximum resource utilization ratio for each region. For example, 
+- `max_usage_ratio_2d`: A 2-dimensional vector specifying the maximum resource utilization ratio for each region. For example, 
 ```python
-max_usage_ratio_2d = [ [0.85, 0.6], [0.85, 0.6], [0.85, 0.85], [0.85, 0.6] ]
+      max_usage_ratio_2d = [ [0.85, 0.6], [0.85, 0.6], [0.85, 0.85], [0.85, 0.6] ]
 ```
 means that there are 8 regions in total (2x4), and at most 85% of the available resource on the left half of SLR 0 can be used, 60% of the right half of SLR 0 can be used, 85% of either the right and the left half of SLR 2 can be used, etc.
+
 
 ## Outputs
 
