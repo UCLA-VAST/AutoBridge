@@ -1,3 +1,10 @@
+# FPGA'21 Artifact Review
+
+The experiment results for all benchmarks in our submission to FPGA'21 are available at:
+`https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu`
+
+Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
+
 # Requirement
 
 - Python 3.6+
@@ -14,15 +21,7 @@ pip install pyverilog
 - Xilinx Vitis 2019.2
 - Xilinx Alveo Accelerator Card U250, U280
 
-# Issues
 
-[issue] should use mip version 1.8.1
-
-[issue] Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out
-
-[issue] in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function is atomic and cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little
-
-[issue] Function names in the HLS program should not contain "fifo" or "FIFO"
 
 # Introduction
 
@@ -51,7 +50,7 @@ To use the tool, the user needs prepare for their  Vivado HLS project that has a
 
       `https://github.com/cornell-zhang/rosetta/blob/master/optical-flow/src/sdsoc/optical_flow.cpp`
     
-    The shown part should be wrapped into another function and be instantiated in the top function.
+    In the top function "optical_flow()", the shown part should be wrapped into another function and be instantiated in the top function. Other than this issue, the coding style of this design is compatible with AutoBridge.
 
   ```c++
       446  static frames_t buf;
@@ -119,13 +118,13 @@ The tool will produce:
 
 To use the results, we first use Vivado HLS to pack the new RTL files into an `xo` object using the following script:
 ```bash
-open_project XXXX
-open_solution solution
-export_design -rtl verilog -format ip_catalog -xo polysa.xo
-
-close_project
-puts "Pack XO successfully"
-exit
+    open_project XXXX
+    open_solution solution
+    export_design -rtl verilog -format ip_catalog -xo polysa.xo
+    
+    close_project
+    puts "Pack XO successfully"
+    exit
 ```
 
 Then invoke the `v++` tool from Xilinx Vitis (`https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/vitiscommandcompiler.html`). 
@@ -133,38 +132,48 @@ Then invoke the `v++` tool from Xilinx Vitis (`https://www.xilinx.com/html_docs/
 An example script is:
 
 ```bash
-OUTPUT_DIR=./output
-
-# name of the top function
-TOP=kernel_top 
-
-# or xilinx_u280_xdma_201920_3 for U280
-PLATFORM=xilinx_u250_xdma_201830_2 
-
-XO="polysa.xo"
-
-# Another commonly used strategy is "EarlyBlockPlacement". See UG904-vivado-implementation
-STRATEGY="Default" 
-
-output_dir="$(pwd)/vitis_run"
-
-v++ \
-  --link \
-  --output "${output_dir}/${TOP}_${PLATFORM}.xclbin" \
-  --kernel ${TOP} \
-  --platform ${PLATFORM} \
-  --target hw \
-  --report_level 2 \
-  --temp_dir "${output_dir}/${TOP}_${PLATFORM}.temp" \
-  --optimize 3 \
-  --connectivity.nk ${TOP}:1:${TOP}_1 \
-  --max_memory_ports ${TOP} \
-  --save-temps \
-  ${XO} \
-  --connectivity.sp ${TOP}_1.A:DDR[0] \
-  --connectivity.sp ${TOP}_1.B:DDR[1] \
-  --connectivity.sp ${TOP}_1.C:DDR[3] \
-  --kernel_frequency 330 \
-  --vivado.prop run.impl_1.STEPS.PLACE_DESIGN.ARGS.DIRECTIVE=$STRATEGY \
-  --vivado.prop run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$CONSTRAINT
+    OUTPUT_DIR=./output
+    
+    # name of the top function
+    TOP=kernel_top 
+    
+    # or xilinx_u280_xdma_201920_3 for U280
+    PLATFORM=xilinx_u250_xdma_201830_2 
+    
+    XO="polysa.xo"
+    
+    # For different approaches see UG904-vivado-implementation
+    STRATEGY="Default" 
+    
+    output_dir="$(pwd)/vitis_run"
+    
+    v++ \
+      --link \
+      --output "${output_dir}/${TOP}_${PLATFORM}.xclbin" \
+      --kernel ${TOP} \
+      --platform ${PLATFORM} \
+      --target hw \
+      --report_level 2 \
+      --temp_dir "${output_dir}/${TOP}_${PLATFORM}.temp" \
+      --optimize 3 \
+      --connectivity.nk ${TOP}:1:${TOP}_1 \
+      --max_memory_ports ${TOP} \
+      --save-temps \
+      ${XO} \
+      --connectivity.sp ${TOP}_1.A:DDR[0] \
+      --connectivity.sp ${TOP}_1.B:DDR[1] \
+      --connectivity.sp ${TOP}_1.C:DDR[3] \
+      --kernel_frequency 330 \
+      --vivado.prop run.impl_1.STEPS.PLACE_DESIGN.ARGS.DIRECTIVE=$STRATEGY \
+      --vivado.prop run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$CONSTRAINT
 ```
+
+# Issues
+
+- should use mip version 1.8.1
+
+- Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out
+
+- in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function is atomic and cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little
+
+- Function names in the HLS program should not contain "fifo" or "FIFO"
