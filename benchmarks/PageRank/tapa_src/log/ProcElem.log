@@ -1,0 +1,279 @@
+
+****** Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2019.2 (64-bit)
+  **** SW Build 2700185 on Thu Oct 24 18:45:48 MDT 2019
+  **** IP Build 2699827 on Thu Oct 24 21:16:38 MDT 2019
+    ** Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+
+source /opt/tools/xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/opt/tools/xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Fri May 15 20:11:06 PDT 2020
+INFO: [HLS 200-10] On os Ubuntu 16.04.6 LTS
+INFO: [HLS 200-10] In directory '/tmp/vivado-hls-zugm6euz'
+Sourcing Tcl script '/tmp/vivado-hls-zugm6euz/commands.tcl'
+INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-3emb69kr/project'.
+INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp' to the project
+INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-3emb69kr/project/ProcElem'.
+INFO: [HLS 200-10] Setting target device to 'xcu280-fsvh2892-2L-e'
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 4ns.
+INFO: [XFORM 203-1161] The maximum of name length is set into 253.
+INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
+INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 81183 ; free virtual = 86351
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 81182 ; free virtual = 86351
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<TaskReq>::open' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:299).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<TaskReq>::open' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:165).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<tlp::packet<unsigned short, tlp::vec_t<Update, 8ul> > >::close' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:186).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<tlp::packet<unsigned short, tlp::vec_t<Update, 8ul> > >::close' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:169).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Update, 8ul> >::open' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:266).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Update, 8ul> >::open' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:173).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<TaskReq>::empty' into 'tlp::istream<TaskReq>::eos' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:34).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<TaskReq>::eos' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:181).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<TaskReq>::read' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:182).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<VertexAttrKernel, 16ul> >::read' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:275).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<VertexAttrKernel, 16ul> >::read' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:193).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<VertexAttrKernel, 16ul>::get' into 'tlp::vec_t<VertexAttrKernel, 16ul>::operator[]' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:110).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<VertexAttrKernel, 16ul>::operator[]' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:280).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<VertexAttrKernel, 16ul>::operator[]' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:196).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<unsigned int>::try_write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:205).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Edge, 8ul> >::try_read' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:212).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Edge, 8ul>::get' into 'tlp::vec_t<Edge, 8ul>::operator[]' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:110).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Edge, 8ul>::operator[]' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:219).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Edge, 8ul>::operator[]' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:216).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Update, 8ul>::set' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:228).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<tlp::packet<unsigned short, tlp::vec_t<Update, 8ul> > >::write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:232).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<UpdateReq>::write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:245).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Update, 8ul> >::empty' into 'tlp::istream<tlp::vec_t<Update, 8ul> >::eos' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:34).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Update, 8ul> >::eos' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:247).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<tlp::vec_t<Update, 8ul> >::read' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:251).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Update, 8ul>::get' into 'tlp::vec_t<Update, 8ul>::operator[]' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:110).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<Update, 8ul>::operator[]' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:255).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<VertexReq>::write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:268).
+INFO: [XFORM 203-603] Inlining function 'tlp::vec_t<VertexAttrKernel, 16ul>::set' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:287).
+INFO: [XFORM 203-603] Inlining function 'Max<float>' into 'Max<float, 2>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'Max<float>' into 'Max<float, 2>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:84).
+INFO: [XFORM 203-603] Inlining function 'std::max<float>' into 'Max<float, 2>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'std::max<float>' into 'Max<float, 4>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'std::max<float>' into 'Max<float, 8>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'std::max<float>' into 'Max<float, 16>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'std::max<float>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:290).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 2>' into 'Max<float, 4>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 2>' into 'Max<float, 4>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:84).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 4>' into 'Max<float, 8>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 4>' into 'Max<float, 8>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:84).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 8>' into 'Max<float, 16>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:85).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 8>' into 'Max<float, 16>' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/page-rank-kernel.h:84).
+INFO: [XFORM 203-603] Inlining function 'Max<float, 16>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:290).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<tlp::vec_t<VertexAttrKernel, 16ul> >::write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:291).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<TaskResp>::write' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:296).
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:29 ; elapsed = 00:00:31 . Memory (MB): peak = 968.691 ; gain = 538.887 ; free physical = 81086 ; free virtual = 86275
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::data' into 'fp_struct<float>::to_float' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/src/hls/utils/x_hls_utils.h:348) automatically.
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::to_float' into 'fp_struct<float>::to_ieee' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/src/hls/utils/x_hls_utils.h:369) automatically.
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::to_ieee' into 'generic_copysign<float>' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/include/FloatingPoint/hls_copysign.h:14) automatically.
+INFO: [XFORM 203-602] Inlining function 'generic_copysign<float>' into 'generic_fabs<float>' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/include/FloatingPoint/hls_fabs.h:13) automatically.
+INFO: [XFORM 203-602] Inlining function 'generic_fabs<float>' into 'fabsf' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/src/c/fabsfloat.cpp:8) automatically.
+INFO: [XFORM 203-602] Inlining function 'fabsf' into 'std::abs' (/opt/tools/xilinx/Vivado/2019.2/lnx64/tools/gcc/lib/gcc/x86_64-unknown-linux-gnu/4.6.3/../../../../include/c++/4.6.3/cmath:86) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [5]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [2]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [9]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [3]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [10]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<TaskReq>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:184) automatically.
+INFO: [XFORM 203-602] Inlining function 'tlp::widthof<VertexAttrKernel>' into 'ProcElem' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:106->/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:110->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:196) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [7]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:213) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<tlp::vec_t<Edge, 8ul> >' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:213) automatically.
+INFO: [XFORM 203-602] Inlining function 'tlp::widthof<Edge>' into 'ProcElem' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:106->/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:110->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:216) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [6]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:222) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<unsigned int>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:222) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<int>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:222) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<unsigned long>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:222) automatically.
+INFO: [XFORM 203-602] Inlining function 'tlp::widthof<Update>' into 'ProcElem' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:100->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:228) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<tlp::packet<unsigned short, tlp::vec_t<Update, 8ul> > >' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:233) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<tlp::vec_t<Update, 8ul> >' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:252) automatically.
+INFO: [XFORM 203-602] Inlining function 'std::abs' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:283) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [12]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:288) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<char [4]>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:288) automatically.
+INFO: [XFORM 203-602] Inlining function 'dummy::operator<<<VertexAttrKernel>' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:288) automatically.
+WARNING: [SYNCHK 200-23] /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:106: variable-indexed range selection may cause suboptimal QoR.
+INFO: [SYNCHK 200-10] 0 error(s), 1 warning(s).
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 968.691 ; gain = 538.887 ; free physical = 81331 ; free virtual = 86523
+INFO: [XFORM 203-1101] Packing variable 'task_req_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:133) into a 211-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'task_req_q.peek_val' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:133) into a 211-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'task_resp_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:135) into a 2-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'vertex_req_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:137) into a 65-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'vertex_in_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:138) into a 1025-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'vertex_in_q.peek_val' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:138) into a 1025-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'vertex_out_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:139) into a 1025-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'edge_req_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:141) into a 33-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'edge_resp_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:141) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'edge_resp_q.peek_val' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:141) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'update_req_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:143) into a 50-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'update_in_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:145) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'update_in_q.peek_val' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:145) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'update_out_q.fifo.V' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:147) into a 529-bit variable.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'vertex_reads' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:191) in function 'ProcElem' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'edge_reads' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:201) in function 'ProcElem' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'update_reads' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:247) in function 'ProcElem' for pipelining.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'vertex_writes' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:273) in function 'ProcElem' for pipelining.
+INFO: [HLS 200-489] Unrolling loop 'Loop-1.1.1' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:194) in function 'ProcElem' completely with a factor of 16.
+INFO: [HLS 200-489] Unrolling loop 'Loop-1.2.1' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:217) in function 'ProcElem' completely with a factor of 8.
+INFO: [XFORM 203-501] Unrolling loop 'vertex_resets' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:239) in function 'ProcElem' partially with a factor of 16.
+INFO: [HLS 200-489] Unrolling loop 'Loop-1.4.1' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:253) in function 'ProcElem' completely with a factor of 8.
+INFO: [HLS 200-489] Unrolling loop 'Loop-1.5.1' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:278) in function 'ProcElem' completely with a factor of 16.
+INFO: [XFORM 203-101] Partitioning array 'vertices_local' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) in dimension 1 with a cyclic factor 16.
+INFO: [XFORM 203-101] Partitioning array 'delta' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:276) in dimension 1 completely.
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::data' into 'fp_struct<float>::to_float' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/src/hls/utils/x_hls_utils.h:348) automatically.
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::to_float' into 'fp_struct<float>::to_ieee' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/src/hls/utils/x_hls_utils.h:369) automatically.
+INFO: [XFORM 203-602] Inlining function 'fp_struct<float>::to_ieee' into 'generic_copysign<float>' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/include/FloatingPoint/hls_copysign.h:14) automatically.
+INFO: [XFORM 203-602] Inlining function 'generic_copysign<float>' into 'generic_fabs<float>' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/include/FloatingPoint/hls_fabs.h:13) automatically.
+INFO: [XFORM 203-602] Inlining function 'generic_fabs<float>' into 'fabsf' (/wrk/2019.2/continuous/2019_10_24_2700185/src/products/hls/hls_lib/hlsmath/src/c/fabsfloat.cpp:8) automatically.
+INFO: [XFORM 203-602] Inlining function 'fabsf' into 'std::abs' (/opt/tools/xilinx/Vivado/2019.2/lnx64/tools/gcc/lib/gcc/x86_64-unknown-linux-gnu/4.6.3/../../../../include/c++/4.6.3/cmath:86) automatically.
+INFO: [XFORM 203-602] Inlining function 'std::abs' into 'ProcElem' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:283) automatically.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:221:48) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:230:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:256:35) to (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15) in function 'ProcElem'... converting 4 basic blocks.
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 1031.684 ; gain = 601.879 ; free physical = 81278 ; free virtual = 86498
+WARNING: [XFORM 203-542] Cannot flatten a loop nest 'task_requests' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:181:100) in function 'ProcElem' : 
+
+more than one sub loop.
+WARNING: [XFORM 203-631] Renaming function 'tlp::reg<float>' to 'reg<float>' (/usr/include/tlp/synthesizable/util.h:16)
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[0]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[1]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[2]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[3]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[4]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[5]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[6]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[7]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[8]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[9]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[10]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[11]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[12]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[13]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[14]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [ANALYSIS 214-51] Found inter dependency for variable 'vertices_local[15]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175) (distance = 5).
+INFO: [HLS 200-472] Inferring partial write operation for 'vertices_local[0]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:196:42)
+INFO: [HLS 200-472] Inferring partial write operation for 'vertices_local[0]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:242:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'vertices_local[7]' (/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262:15)
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 1031.684 ; gain = 601.879 ; free physical = 81673 ; free virtual = 86899
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'ProcElem' ...
+WARNING: [SYN 201-103] Legalizing function name 'reg<float>' to 'reg_float_s'.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'reg_float_s' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining function 'reg<float>'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 2.
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111]  Elapsed time: 37.71 seconds; current allocated memory: 207.338 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111]  Elapsed time: 0.02 seconds; current allocated memory: 207.389 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'ProcElem' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'vertex_reads'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 2.
+INFO: [SCHED 204-61] Pipelining loop 'edge_reads'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 36.
+INFO: [SCHED 204-61] Pipelining loop 'vertex_resets'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 1.
+INFO: [SCHED 204-61] Pipelining loop 'update_reads'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 5.
+INFO: [SCHED 204-61] Pipelining loop 'vertex_writes'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 25.
+WARNING: [SCHED 204-21] Estimated clock period (4.163ns) exceeds the target (target clock period: 4ns, clock uncertainty: 0.5ns, effective delay budget: 3.5ns).
+WARNING: [SCHED 204-21] The critical path in module 'ProcElem' consists of the following:
+	'load' operation ('vertices_local_0_load_2', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262) on array 'vertices_local[0]', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:175 [779]  (1.16 ns)
+	'select' operation ('select_ln262', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262) [781]  (0.227 ns)
+	'fadd' operation ('tmp_s', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/ProcElem.cpp:262) [782]  (2.78 ns)
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111]  Elapsed time: 2.64 seconds; current allocated memory: 212.999 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_0' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_1' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_2' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_3' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_4' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_5' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_6' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_7' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_8' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_9' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_10' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_11' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_12' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_13' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_14' will be ignored if a simpler one can be used.
+WARNING: [BIND 205-102] The specified resource core for memory 'vertices_local_15' will be ignored if a simpler one can be used.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111]  Elapsed time: 2.33 seconds; current allocated memory: 219.989 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'reg_float_s' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Finished creating RTL model for 'reg_float_s'.
+INFO: [HLS 200-111]  Elapsed time: 2.74 seconds; current allocated memory: 220.931 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'ProcElem' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/task_req_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/task_req_q_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/task_resp_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/vertex_req_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/vertex_in_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/vertex_in_q_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/vertex_out_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/edge_req_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/edge_resp_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/edge_resp_q_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/update_req_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/update_in_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/update_in_q_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'ProcElem/update_out_q_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'ProcElem' to 'ap_ctrl_hs'.
+WARNING: [RTGEN 206-101] Port 'ProcElem/vertex_in_q_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'ProcElem/edge_resp_q_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+INFO: [RTGEN 206-104] Estimated max fanout for 'ProcElem' is 12996 from HDL expression: (1'b0 == ap_block_pp1_stage0_11001)
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_fadd_32ns_32ns_32_4_no_dsp_1': 8 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_fadd_32ns_32ns_32_5_full_dsp_1': 16 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_fcmp_32ns_32ns_1_2_1': 16 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_fmul_32ns_32ns_32_4_max_dsp_1': 32 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_fsub_32ns_32ns_32_5_full_dsp_1': 16 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_mux_164_32_1_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ProcElem_udiv_32ns_32ns_16_36_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'ProcElem'.
+INFO: [HLS 200-111]  Elapsed time: 1.2 seconds; current allocated memory: 236.348 MB.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 240.21 MHz
+INFO: [RTMG 210-282] Generating pipelined core: 'ProcElem_ProcElem_udiv_32ns_32ns_16_36_1_div'
+INFO: [RTMG 210-278] Implementing memory 'ProcElem_ProcElem_vertices_local_0_ram (RAM_S2P_URAM)' using ultra RAMs.
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:52 ; elapsed = 00:00:58 . Memory (MB): peak = 1095.684 ; gain = 665.879 ; free physical = 82017 ; free virtual = 87234
+INFO: [VHDL 208-304] Generating VHDL RTL for ProcElem with prefix ProcElem_.
+INFO: [VLOG 209-307] Generating Verilog RTL for ProcElem with prefix ProcElem_.
+INFO: [HLS 200-112] Total elapsed time: 58.48 seconds; peak allocated memory: 236.348 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Fri May 15 20:12:04 2020...

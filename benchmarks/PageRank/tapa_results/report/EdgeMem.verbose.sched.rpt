@@ -1,0 +1,199 @@
+
+
+================================================================
+== Vivado HLS Report for 'EdgeMem'
+================================================================
+* Date:           Fri May 15 20:11:35 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       EdgeMem
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns | 2.786 ns |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |          |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        | Loop Name|   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |- Loop 1  |        ?|        ?|         2|          1|          1|  inf |    yes   |
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+
+============================================================
++ Verbose Summary: Synthesis Manager
+============================================================
+InlineROM: 1
+ExposeGlobal: 0
+============================================================
++ Verbose Summary: CDFG Model
+============================================================
+IsTopModel: 1
+ResetActiveHigh: 1
+IsCombinational: 0
+IsDatapathOnly: 0
+HasWiredReturn: 0
+HasMFsm: 0
+HasVarLatency: 1
+IsPipeline: 0
+IsRtlPipelined: 0
+IsInstanceOverlapped: 0
+IsDontTouch: 0
+HasImplIP: 0
+IsGatedGlobalClock: 0
+
++ Individual pipeline summary: 
+  * Pipeline-0: initiation interval (II) = 1, depth = 2
+
+
+============================================================
++ Verbose Summary: Schedule
+============================================================
+* Number of FSM states : 3
+* Pipeline : 1
+  Pipeline-0 : II = 1, D = 2, States = { 2 3 }
+* Dataflow Pipeline: 0
+
+* FSM state transitions: 
+1 --> 2 
+2 --> 3 
+3 --> 2 
+
+* FSM state operations: 
+
+State 1 <SV = 0> <Delay = 0.60>
+ST_1 : Operation 4 [1/1] (0.00ns)   --->   "%empty = call i32 (...)* @_ssdm_op_SpecInterface(i512* %edges_read_data_V_data_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 4 'specinterface' 'empty' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 5 [1/1] (0.00ns)   --->   "%empty_14 = call i32 (...)* @_ssdm_op_SpecInterface(i64* %edges_read_addr_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 5 'specinterface' 'empty_14' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 6 [1/1] (0.00ns)   --->   "%empty_15 = call i32 (...)* @_ssdm_op_SpecInterface(i513* %edge_resp_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 6 'specinterface' 'empty_15' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 7 [1/1] (0.00ns)   --->   "%empty_16 = call i32 (...)* @_ssdm_op_SpecInterface(i33* %edge_req_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 7 'specinterface' 'empty_16' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 8 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %edge_resp_q_fifo_V), !map !48"   --->   Operation 8 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 9 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i33* %edge_req_q_peek_val), !map !55"   --->   Operation 9 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 10 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i33* %edge_req_q_fifo_V), !map !62"   --->   Operation 10 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 11 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64* %edges_read_addr_V), !map !69"   --->   Operation 11 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 12 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %edges_read_data_V_data_V), !map !73"   --->   Operation 12 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 13 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %edges_read_peek_data_V), !map !77"   --->   Operation 13 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 14 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64* %edges_write_addr_V), !map !81"   --->   Operation 14 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 15 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %edges_write_data_V_data_V), !map !85"   --->   Operation 15 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 16 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([8 x i8]* @EdgeMem_str) nounwind"   --->   Operation 16 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 17 [1/1] (0.60ns)   --->   "br label %hls_label_0_begin" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:135]   --->   Operation 17 'br' <Predicate = true> <Delay = 0.60>
+
+State 2 <SV = 1> <Delay = 2.06>
+ST_2 : Operation 18 [1/1] (0.00ns)   --->   "%valid_0 = phi i1 [ false, %0 ], [ %valid_3, %hls_label_0_end ]" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 18 'phi' 'valid_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 19 [1/1] (0.00ns)   --->   "%rbegin5 = call i32 (...)* @_ssdm_op_SpecRegionBegin([67 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_read_data_try_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 19 'specregionbegin' 'rbegin5' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 20 [1/1] (1.45ns)   --->   "%edges_read = call { i1, i512 } @_ssdm_op_NbRead.ap_fifo.volatile.i512P(i512* %edges_read_data_V_data_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 20 'nbread' 'edges_read' <Predicate = (!valid_0)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 33> <Depth = 0> <FIFO>
+ST_2 : Operation 21 [1/1] (0.00ns)   --->   "%empty_n = extractvalue { i1, i512 } %edges_read, 0" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 21 'extractvalue' 'empty_n' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 22 [1/1] (0.00ns)   --->   "%tmp_data_V = extractvalue { i1, i512 } %edges_read, 1" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 22 'extractvalue' 'tmp_data_V' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 23 [1/1] (0.60ns)   --->   "br i1 %empty_n, label %"tlp::ostream<tlp::vec_t<Edge, 8ul> >::try_write.region", label %"tlp::istream<unsigned int>::empty.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 23 'br' <Predicate = (!valid_0)> <Delay = 0.60>
+ST_2 : Operation 24 [1/1] (0.00ns)   --->   "%rbegin1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_empty_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:144]   --->   Operation 24 'specregionbegin' 'rbegin1' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 25 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:21->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:144]   --->   Operation 25 'specprotocol' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 26 [1/1] (0.00ns)   --->   "%tmp_1 = call i1 @_ssdm_op_NbReadReq.ap_fifo.i33P(i33* %edge_req_q_fifo_V, i32 1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:22->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:144]   --->   Operation 26 'nbreadreq' 'tmp_1' <Predicate = true> <Delay = 0.00> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 33> <Depth = 0> <FIFO>
+ST_2 : Operation 27 [1/1] (0.00ns)   --->   "%rend11 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_empty_OC_region_str, i32 %rbegin1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:144]   --->   Operation 27 'specregionend' 'rend11' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 28 [1/1] (0.00ns)   --->   "br i1 %tmp_1, label %"tlp::istream<unsigned int>::peek.region", label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:144]   --->   Operation 28 'br' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 29 [1/1] (0.00ns)   --->   "%rbegin2 = call i32 (...)* @_ssdm_op_SpecRegionBegin([40 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_peek_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 29 'specregionbegin' 'rbegin2' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 30 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:59->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 30 'specprotocol' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 31 [1/1] (0.00ns)   --->   "%edge_req_q_peek_val_read = call i33 @_ssdm_op_Read.ap_auto.i33P(i33* %edge_req_q_peek_val)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 31 'read' 'edge_req_q_peek_val_read' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 32 [1/1] (0.00ns)   --->   "%trunc_ln60 = trunc i33 %edge_req_q_peek_val_read to i32" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 32 'trunc' 'trunc_ln60' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 33 [1/1] (0.00ns)   --->   "%rend13 = call i32 (...)* @_ssdm_op_SpecRegionEnd([40 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_peek_OC_region_str, i32 %rbegin2) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 33 'specregionend' 'rend13' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 34 [1/1] (0.00ns)   --->   "%tmp_2 = zext i32 %trunc_ln60 to i64" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 34 'zext' 'tmp_2' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 35 [1/1] (0.00ns)   --->   "%rbegin3 = call i32 (...)* @_ssdm_op_SpecRegionBegin([68 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_read_addr_try_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 35 'specregionbegin' 'rbegin3' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 36 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:26->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 36 'specprotocol' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 37 [1/1] (1.45ns)   --->   "%full_n_1 = call i1 @_ssdm_op_NbWrite.ap_fifo.volatile.i64P(i64* %edges_read_addr_V, i64 %tmp_2)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:27->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 37 'nbwrite' 'full_n_1' <Predicate = (tmp_1)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 33> <Depth = 0> <FIFO>
+ST_2 : Operation 38 [1/1] (0.00ns)   --->   "%rend15 = call i32 (...)* @_ssdm_op_SpecRegionEnd([68 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_read_addr_try_write_OC_region_str, i32 %rbegin3) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 38 'specregionend' 'rend15' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 39 [1/1] (0.00ns)   --->   "br i1 %full_n_1, label %"tlp::istream<unsigned int>::read.region", label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:145]   --->   Operation 39 'br' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 40 [1/1] (0.00ns)   --->   "%rbegin4 = call i32 (...)* @_ssdm_op_SpecRegionBegin([40 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:146]   --->   Operation 40 'specregionbegin' 'rbegin4' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_2 : Operation 41 [1/1] (1.45ns)   --->   "%empty_17 = call { i1, i33 } @_ssdm_op_NbRead.ap_fifo.volatile.i33P(i33* %edge_req_q_fifo_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:146]   --->   Operation 41 'nbread' 'empty_17' <Predicate = (tmp_1 & full_n_1)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 33> <Depth = 0> <FIFO>
+
+State 3 <SV = 2> <Delay = 2.78>
+ST_3 : Operation 42 [1/1] (0.00ns)   --->   "%edge_v_01 = phi i512 [ undef, %0 ], [ %edge_v_2, %hls_label_0_end ]" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 42 'phi' 'edge_v_01' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 43 [1/1] (0.00ns)   --->   "%tmp = call i32 (...)* @_ssdm_op_SpecRegionBegin([12 x i8]* @p_str1)" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:135]   --->   Operation 43 'specregionbegin' 'tmp' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 44 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:136]   --->   Operation 44 'specpipeline' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 45 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:137]   --->   Operation 45 'specpipeline' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 46 [1/1] (0.60ns)   --->   "br i1 %valid_0, label %"tlp::ostream<tlp::vec_t<Edge, 8ul> >::try_write.region", label %"tlp::async_mmap<tlp::vec_t<Edge, 8ul> >::read_data_try_read.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 46 'br' <Predicate = true> <Delay = 0.60>
+ST_3 : Operation 47 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:36->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 47 'speclatency' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_3 : Operation 48 [1/1] (0.00ns)   --->   "%rend6 = call i32 (...)* @_ssdm_op_SpecRegionEnd([67 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_read_data_try_read_OC_region_str, i32 %rbegin5) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139]   --->   Operation 48 'specregionend' 'rend6' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_3 : Operation 49 [1/1] (0.00ns)   --->   "%tmp_val_data_V = phi i512 [ %edge_v_01, %hls_label_0_begin ], [ %tmp_data_V, %"tlp::async_mmap<tlp::vec_t<Edge, 8ul> >::read_data_try_read.region" ]"   --->   Operation 49 'phi' 'tmp_val_data_V' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 50 [1/1] (0.00ns) (grouped into LUT with out node and_ln140)   --->   "%valid_1 = phi i1 [ %valid_0, %hls_label_0_begin ], [ %empty_n, %"tlp::async_mmap<tlp::vec_t<Edge, 8ul> >::read_data_try_read.region" ]"   --->   Operation 50 'phi' 'valid_1' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 51 [1/1] (0.00ns)   --->   "%rbegin7 = call i32 (...)* @_ssdm_op_SpecRegionBegin([55 x i8]* @tlp_KD_KD_ostream_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_try_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 51 'specregionbegin' 'rbegin7' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 52 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:137->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 52 'specprotocol' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 53 [1/1] (0.00ns)   --->   "%tmp4 = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_data_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 53 'bitconcatenate' 'tmp4' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 54 [1/1] (1.45ns)   --->   "%full_n = call i1 @_ssdm_op_NbWrite.ap_fifo.volatile.i513P(i513* %edge_resp_q_fifo_V, i513 %tmp4)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 54 'nbwrite' 'full_n' <Predicate = (empty_n) | (valid_0)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 33> <Depth = 0> <FIFO>
+ST_3 : Operation 55 [1/1] (0.00ns)   --->   "%rend8 = call i32 (...)* @_ssdm_op_SpecRegionEnd([55 x i8]* @tlp_KD_KD_ostream_MD_tlp_KD_KD_vec_t_MD_Edge_MC_AC_8ul_OD_AC_OD_KD_KD_try_write_OC_region_str, i32 %rbegin7) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 55 'specregionend' 'rend8' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 56 [1/1] (0.00ns) (grouped into LUT with out node and_ln140)   --->   "%xor_ln140 = xor i1 %full_n, true" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 56 'xor' 'xor_ln140' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.12> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_3 : Operation 57 [1/1] (0.12ns) (out node of the LUT)   --->   "%and_ln140 = and i1 %valid_1, %xor_ln140" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140]   --->   Operation 57 'and' 'and_ln140' <Predicate = (empty_n) | (valid_0)> <Delay = 0.12> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.12> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_3 : Operation 58 [1/1] (0.60ns)   --->   "br label %"tlp::istream<unsigned int>::empty.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:141]   --->   Operation 58 'br' <Predicate = (empty_n) | (valid_0)> <Delay = 0.60>
+ST_3 : Operation 59 [1/1] (0.00ns)   --->   "%edge_v_2 = phi i512 [ %tmp_val_data_V, %"tlp::ostream<tlp::vec_t<Edge, 8ul> >::try_write.region" ], [ %tmp_data_V, %"tlp::async_mmap<tlp::vec_t<Edge, 8ul> >::read_data_try_read.region" ]"   --->   Operation 59 'phi' 'edge_v_2' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 60 [1/1] (0.00ns)   --->   "%valid_3 = phi i1 [ %and_ln140, %"tlp::ostream<tlp::vec_t<Edge, 8ul> >::try_write.region" ], [ %empty_n, %"tlp::async_mmap<tlp::vec_t<Edge, 8ul> >::read_data_try_read.region" ]"   --->   Operation 60 'phi' 'valid_3' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 61 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:94->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:146]   --->   Operation 61 'speclatency' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 62 [1/1] (0.00ns)   --->   "%rend19 = call i32 (...)* @_ssdm_op_SpecRegionEnd([40 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_int_OD_KD_KD_read_OC_region_str, i32 %rbegin4) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:147]   --->   Operation 62 'specregionend' 'rend19' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 63 [1/1] (0.00ns)   --->   "br label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:147]   --->   Operation 63 'br' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 64 [1/1] (0.00ns)   --->   "%empty_18 = call i32 (...)* @_ssdm_op_SpecRegionEnd([12 x i8]* @p_str1, i32 %tmp)" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:148]   --->   Operation 64 'specregionend' 'empty_18' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 65 [1/1] (0.00ns)   --->   "br label %hls_label_0_begin" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:148]   --->   Operation 65 'br' <Predicate = true> <Delay = 0.00>
+
+
+============================================================
++ Verbose Summary: Timing violations
+============================================================
+Target clock period: 4ns, clock uncertainty: 0.5ns.
+
+ <State 1>: 0.603ns
+The critical path consists of the following:
+	multiplexor before 'phi' operation ('edge_v_01', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [24]  (0.603 ns)
+
+ <State 2>: 2.06ns
+The critical path consists of the following:
+	fifo read on port 'edges_read_data_V_data_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [33]  (1.46 ns)
+	multiplexor before 'phi' operation ('edge_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [39]  (0.603 ns)
+
+ <State 3>: 2.79ns
+The critical path consists of the following:
+	'phi' operation ('edge_v_01', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [24]  (0 ns)
+	multiplexor before 'phi' operation ('edge_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [39]  (0.603 ns)
+	'phi' operation ('edge_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) [39]  (0 ns)
+	fifo write on port 'edge_resp_q_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140) [44]  (1.46 ns)
+	'xor' operation ('xor_ln140', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140) [46]  (0 ns)
+	'and' operation ('and_ln140', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140) [47]  (0.122 ns)
+	multiplexor before 'phi' operation ('empty_n') with incoming values : ('empty_n', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) ('and_ln140', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140) [51]  (0.603 ns)
+	'phi' operation ('empty_n') with incoming values : ('empty_n', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:139) ('and_ln140', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/EdgeMem.cpp:140) [51]  (0 ns)
+
+
+============================================================
++ Verbose Summary: Binding
+============================================================
+N/A
+* FSMD analyzer results:
+  - Output states:
+ - Input state : 
+  - Chain level:
+	State 1
+	State 2
+	State 3
+
+
+============================================================
++ Verbose Summary: Datapath Resource usage 
+============================================================
+N/A

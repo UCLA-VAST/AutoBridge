@@ -1,0 +1,241 @@
+
+
+================================================================
+== Vivado HLS Report for 'UpdateMem'
+================================================================
+* Date:           Fri May 15 20:11:36 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       UpdateMem
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns | 2.786 ns |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |          |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        | Loop Name|   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |- Loop 1  |        ?|        ?|         2|          1|          1|  inf |    yes   |
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+
+============================================================
++ Verbose Summary: Synthesis Manager
+============================================================
+InlineROM: 1
+ExposeGlobal: 0
+============================================================
++ Verbose Summary: CDFG Model
+============================================================
+IsTopModel: 1
+ResetActiveHigh: 1
+IsCombinational: 0
+IsDatapathOnly: 0
+HasWiredReturn: 0
+HasMFsm: 0
+HasVarLatency: 1
+IsPipeline: 0
+IsRtlPipelined: 0
+IsInstanceOverlapped: 0
+IsDontTouch: 0
+HasImplIP: 0
+IsGatedGlobalClock: 0
+
++ Individual pipeline summary: 
+  * Pipeline-0: initiation interval (II) = 1, depth = 2
+
+
+============================================================
++ Verbose Summary: Schedule
+============================================================
+* Number of FSM states : 3
+* Pipeline : 1
+  Pipeline-0 : II = 1, D = 2, States = { 2 3 }
+* Dataflow Pipeline: 0
+
+* FSM state transitions: 
+1 --> 2 
+2 --> 3 
+3 --> 2 
+
+* FSM state operations: 
+
+State 1 <SV = 0> <Delay = 0.60>
+ST_1 : Operation 4 [1/1] (0.00ns)   --->   "%empty = call i32 (...)* @_ssdm_op_SpecInterface(i512* %updates_write_data_V_data_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 4 'specinterface' 'empty' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 5 [1/1] (0.00ns)   --->   "%empty_18 = call i32 (...)* @_ssdm_op_SpecInterface(i64* %updates_write_addr_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 5 'specinterface' 'empty_18' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 6 [1/1] (0.00ns)   --->   "%empty_19 = call i32 (...)* @_ssdm_op_SpecInterface(i512* %updates_read_data_V_data_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 6 'specinterface' 'empty_19' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 7 [1/1] (0.00ns)   --->   "%empty_20 = call i32 (...)* @_ssdm_op_SpecInterface(i64* %updates_read_addr_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 7 'specinterface' 'empty_20' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 8 [1/1] (0.00ns)   --->   "%empty_21 = call i32 (...)* @_ssdm_op_SpecInterface(i513* %write_data_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 8 'specinterface' 'empty_21' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 9 [1/1] (0.00ns)   --->   "%empty_22 = call i32 (...)* @_ssdm_op_SpecInterface(i65* %write_addr_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 9 'specinterface' 'empty_22' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 10 [1/1] (0.00ns)   --->   "%empty_23 = call i32 (...)* @_ssdm_op_SpecInterface(i513* %read_data_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 10 'specinterface' 'empty_23' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 11 [1/1] (0.00ns)   --->   "%empty_24 = call i32 (...)* @_ssdm_op_SpecInterface(i65* %read_addr_q_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str, [1 x i8]* @p_str)"   --->   Operation 11 'specinterface' 'empty_24' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 12 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %write_data_q_peek_val), !map !54"   --->   Operation 12 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 13 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %write_data_q_fifo_V), !map !61"   --->   Operation 13 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 14 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i65* %write_addr_q_peek_val), !map !68"   --->   Operation 14 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 15 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i65* %write_addr_q_fifo_V), !map !75"   --->   Operation 15 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 16 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %read_data_q_fifo_V), !map !82"   --->   Operation 16 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 17 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i65* %read_addr_q_peek_val), !map !89"   --->   Operation 17 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 18 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i65* %read_addr_q_fifo_V), !map !96"   --->   Operation 18 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 19 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64* %updates_read_addr_V), !map !103"   --->   Operation 19 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 20 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %updates_read_data_V_data_V), !map !107"   --->   Operation 20 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 21 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %updates_read_peek_data_V), !map !111"   --->   Operation 21 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 22 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64* %updates_write_addr_V), !map !115"   --->   Operation 22 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 23 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %updates_write_data_V_data_V), !map !119"   --->   Operation 23 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 24 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([10 x i8]* @UpdateMem_str) nounwind"   --->   Operation 24 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 25 [1/1] (0.60ns)   --->   "br label %hls_label_0_begin" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:145]   --->   Operation 25 'br' <Predicate = true> <Delay = 0.60>
+
+State 2 <SV = 1> <Delay = 2.06>
+ST_2 : Operation 26 [1/1] (0.00ns)   --->   "%valid_0 = phi i1 [ false, %0 ], [ %valid_3, %hls_label_0_end ]" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 26 'phi' 'valid_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 27 [1/1] (0.00ns)   --->   "%rbegin8 = call i32 (...)* @_ssdm_op_SpecRegionBegin([69 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_data_try_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 27 'specregionbegin' 'rbegin8' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 28 [1/1] (1.45ns)   --->   "%updates_read = call { i1, i512 } @_ssdm_op_NbRead.ap_fifo.volatile.i512P(i512* %updates_read_data_V_data_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 28 'nbread' 'updates_read' <Predicate = (!valid_0)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 29 [1/1] (0.00ns)   --->   "%empty_n = extractvalue { i1, i512 } %updates_read, 0" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 29 'extractvalue' 'empty_n' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 30 [1/1] (0.00ns)   --->   "%tmp_data_V_1 = extractvalue { i1, i512 } %updates_read, 1" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 30 'extractvalue' 'tmp_data_V_1' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_2 : Operation 31 [1/1] (0.60ns)   --->   "br i1 %empty_n, label %"tlp::ostream<tlp::vec_t<Update, 8ul> >::try_write.region", label %"tlp::istream<unsigned long>::empty.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 31 'br' <Predicate = (!valid_0)> <Delay = 0.60>
+ST_2 : Operation 32 [1/1] (0.00ns)   --->   "%rbegin2 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_empty_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:154]   --->   Operation 32 'specregionbegin' 'rbegin2' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 33 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:21->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:154]   --->   Operation 33 'specprotocol' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 34 [1/1] (0.00ns)   --->   "%tmp_1 = call i1 @_ssdm_op_NbReadReq.ap_fifo.i65P(i65* %read_addr_q_fifo_V, i32 1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:22->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:154]   --->   Operation 34 'nbreadreq' 'tmp_1' <Predicate = true> <Delay = 0.00> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 35 [1/1] (0.00ns)   --->   "%rend16 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_empty_OC_region_str, i32 %rbegin2) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:154]   --->   Operation 35 'specregionend' 'rend16' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 36 [1/1] (0.00ns)   --->   "br i1 %tmp_1, label %"tlp::istream<unsigned long>::peek.region", label %"tlp::istream<unsigned long>::empty.region1"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:154]   --->   Operation 36 'br' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 37 [1/1] (0.00ns)   --->   "%rbegin3 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_peek_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 37 'specregionbegin' 'rbegin3' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 38 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:59->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 38 'specprotocol' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 39 [1/1] (0.00ns)   --->   "%read_addr_q_peek_val_read = call i65 @_ssdm_op_Read.ap_auto.i65P(i65* %read_addr_q_peek_val)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 39 'read' 'read_addr_q_peek_val_read' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 40 [1/1] (0.00ns)   --->   "%tmp_2 = trunc i65 %read_addr_q_peek_val_read to i64" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 40 'trunc' 'tmp_2' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 41 [1/1] (0.00ns)   --->   "%rend19 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_peek_OC_region_str, i32 %rbegin3) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 41 'specregionend' 'rend19' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 42 [1/1] (0.00ns)   --->   "%rbegin4 = call i32 (...)* @_ssdm_op_SpecRegionBegin([70 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_addr_try_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 42 'specregionbegin' 'rbegin4' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 43 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:26->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 43 'specprotocol' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 44 [1/1] (1.45ns)   --->   "%full_n_1 = call i1 @_ssdm_op_NbWrite.ap_fifo.volatile.i64P(i64* %updates_read_addr_V, i64 %tmp_2)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:27->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 44 'nbwrite' 'full_n_1' <Predicate = (tmp_1)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 45 [1/1] (0.00ns)   --->   "%rend23 = call i32 (...)* @_ssdm_op_SpecRegionEnd([70 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_addr_try_write_OC_region_str, i32 %rbegin4) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 45 'specregionend' 'rend23' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 46 [1/1] (0.00ns)   --->   "br i1 %full_n_1, label %"tlp::istream<unsigned long>::read.region", label %"tlp::istream<unsigned long>::empty.region1"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:155]   --->   Operation 46 'br' <Predicate = (tmp_1)> <Delay = 0.00>
+ST_2 : Operation 47 [1/1] (0.00ns)   --->   "%rbegin5 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:156]   --->   Operation 47 'specregionbegin' 'rbegin5' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_2 : Operation 48 [1/1] (1.45ns)   --->   "%empty_25 = call { i1, i65 } @_ssdm_op_NbRead.ap_fifo.volatile.i65P(i65* %read_addr_q_fifo_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:156]   --->   Operation 48 'nbread' 'empty_25' <Predicate = (tmp_1 & full_n_1)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 49 [1/1] (0.00ns)   --->   "%rbegin6 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_empty_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 49 'specregionbegin' 'rbegin6' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 50 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:21->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 50 'specprotocol' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 51 [1/1] (0.00ns)   --->   "%tmp_3 = call i1 @_ssdm_op_NbReadReq.ap_fifo.i65P(i65* %write_addr_q_fifo_V, i32 1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:22->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 51 'nbreadreq' 'tmp_3' <Predicate = true> <Delay = 0.00> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 52 [1/1] (0.00ns)   --->   "%rend14 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_empty_OC_region_str, i32 %rbegin6) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 52 'specregionend' 'rend14' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 53 [1/1] (0.00ns)   --->   "br i1 %tmp_3, label %"tlp::istream<tlp::vec_t<Update, 8ul> >::empty.region", label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 53 'br' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 54 [1/1] (0.00ns)   --->   "%rbegin7 = call i32 (...)* @_ssdm_op_SpecRegionBegin([53 x i8]* @tlp_KD_KD_istream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_empty_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 54 'specregionbegin' 'rbegin7' <Predicate = (tmp_3)> <Delay = 0.00>
+ST_2 : Operation 55 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:21->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 55 'specprotocol' <Predicate = (tmp_3)> <Delay = 0.00>
+ST_2 : Operation 56 [1/1] (0.00ns)   --->   "%tmp_4 = call i1 @_ssdm_op_NbReadReq.ap_fifo.i513P(i513* %write_data_q_fifo_V, i32 1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:22->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 56 'nbreadreq' 'tmp_4' <Predicate = (tmp_3)> <Delay = 0.00> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 57 [1/1] (0.00ns)   --->   "%rend38 = call i32 (...)* @_ssdm_op_SpecRegionEnd([53 x i8]* @tlp_KD_KD_istream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_empty_OC_region_str, i32 %rbegin7) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 57 'specregionend' 'rend38' <Predicate = (tmp_3)> <Delay = 0.00>
+ST_2 : Operation 58 [1/1] (0.00ns)   --->   "br i1 %tmp_4, label %"tlp::istream<unsigned long>::peek.region1", label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:160]   --->   Operation 58 'br' <Predicate = (tmp_3)> <Delay = 0.00>
+ST_2 : Operation 59 [1/1] (0.00ns)   --->   "%rbegin9 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_peek_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 59 'specregionbegin' 'rbegin9' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 60 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:59->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 60 'specprotocol' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 61 [1/1] (0.00ns)   --->   "%write_addr_q_peek_val_read = call i65 @_ssdm_op_Read.ap_auto.i65P(i65* %write_addr_q_peek_val)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 61 'read' 'write_addr_q_peek_val_read' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 62 [1/1] (0.00ns)   --->   "%tmp_5 = trunc i65 %write_addr_q_peek_val_read to i64" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:60->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 62 'trunc' 'tmp_5' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 63 [1/1] (0.00ns)   --->   "%rend21 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_peek_OC_region_str, i32 %rbegin9) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 63 'specregionend' 'rend21' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 64 [1/1] (0.00ns)   --->   "%rbegin = call i32 (...)* @_ssdm_op_SpecRegionBegin([71 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_write_addr_try_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 64 'specregionbegin' 'rbegin' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 65 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:48->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 65 'specprotocol' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 66 [1/1] (1.45ns)   --->   "%full_n_2 = call i1 @_ssdm_op_NbWrite.ap_fifo.volatile.i64P(i64* %updates_write_addr_V, i64 %tmp_5)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:49->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 66 'nbwrite' 'full_n_2' <Predicate = (tmp_3 & tmp_4)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 67 [1/1] (0.00ns)   --->   "%rend41 = call i32 (...)* @_ssdm_op_SpecRegionEnd([71 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_write_addr_try_write_OC_region_str, i32 %rbegin) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 67 'specregionend' 'rend41' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 68 [1/1] (0.00ns)   --->   "br i1 %full_n_2, label %"tlp::istream<unsigned long>::read.region1", label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:161]   --->   Operation 68 'br' <Predicate = (tmp_3 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 69 [1/1] (0.00ns)   --->   "%rbegin10 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:162]   --->   Operation 69 'specregionbegin' 'rbegin10' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_2 : Operation 70 [1/1] (1.45ns)   --->   "%empty_26 = call { i1, i65 } @_ssdm_op_NbRead.ap_fifo.volatile.i65P(i65* %write_addr_q_fifo_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:162]   --->   Operation 70 'nbread' 'empty_26' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 71 [1/1] (0.00ns)   --->   "%rbegin11 = call i32 (...)* @_ssdm_op_SpecRegionBegin([52 x i8]* @tlp_KD_KD_istream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 71 'specregionbegin' 'rbegin11' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_2 : Operation 72 [1/1] (1.45ns)   --->   "%write_data_q_fifo_V_read = call { i1, i513 } @_ssdm_op_NbRead.ap_fifo.volatile.i513P(i513* %write_data_q_fifo_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 72 'nbread' 'write_data_q_fifo_V_read' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_2 : Operation 73 [1/1] (0.00ns)   --->   "%tmp_32 = extractvalue { i1, i513 } %write_data_q_fifo_V_read, 1" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 73 'extractvalue' 'tmp_32' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_2 : Operation 74 [1/1] (0.00ns)   --->   "%tmp_data_V = trunc i513 %tmp_32 to i512" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp.h:82->/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:11->/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:96->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 74 'trunc' 'tmp_data_V' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+
+State 3 <SV = 2> <Delay = 2.78>
+ST_3 : Operation 75 [1/1] (0.00ns)   --->   "%update_v_01 = phi i512 [ undef, %0 ], [ %update_v_2, %hls_label_0_end ]" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 75 'phi' 'update_v_01' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 76 [1/1] (0.00ns)   --->   "%tmp = call i32 (...)* @_ssdm_op_SpecRegionBegin([12 x i8]* @p_str1)" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:145]   --->   Operation 76 'specregionbegin' 'tmp' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 77 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:146]   --->   Operation 77 'specpipeline' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 78 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:147]   --->   Operation 78 'specpipeline' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 79 [1/1] (0.60ns)   --->   "br i1 %valid_0, label %"tlp::ostream<tlp::vec_t<Update, 8ul> >::try_write.region", label %"tlp::async_mmap<tlp::vec_t<Update, 8ul> >::read_data_try_read.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 79 'br' <Predicate = true> <Delay = 0.60>
+ST_3 : Operation 80 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:36->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 80 'speclatency' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_3 : Operation 81 [1/1] (0.00ns)   --->   "%rend9 = call i32 (...)* @_ssdm_op_SpecRegionEnd([69 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_data_try_read_OC_region_str, i32 %rbegin8) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149]   --->   Operation 81 'specregionend' 'rend9' <Predicate = (!valid_0)> <Delay = 0.00>
+ST_3 : Operation 82 [1/1] (0.00ns)   --->   "%tmp_val_data_V = phi i512 [ %update_v_01, %hls_label_0_begin ], [ %tmp_data_V_1, %"tlp::async_mmap<tlp::vec_t<Update, 8ul> >::read_data_try_read.region" ]"   --->   Operation 82 'phi' 'tmp_val_data_V' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 83 [1/1] (0.00ns) (grouped into LUT with out node and_ln150)   --->   "%valid_1 = phi i1 [ %valid_0, %hls_label_0_begin ], [ %empty_n, %"tlp::async_mmap<tlp::vec_t<Update, 8ul> >::read_data_try_read.region" ]"   --->   Operation 83 'phi' 'valid_1' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 84 [1/1] (0.00ns)   --->   "%rbegin1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([57 x i8]* @tlp_KD_KD_ostream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_try_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 84 'specregionbegin' 'rbegin1' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 85 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:137->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 85 'specprotocol' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 86 [1/1] (0.00ns)   --->   "%tmp12 = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_data_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 86 'bitconcatenate' 'tmp12' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 87 [1/1] (1.45ns)   --->   "%full_n = call i1 @_ssdm_op_NbWrite.ap_fifo.volatile.i513P(i513* %read_data_q_fifo_V, i513 %tmp12)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 87 'nbwrite' 'full_n' <Predicate = (empty_n) | (valid_0)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_3 : Operation 88 [1/1] (0.00ns)   --->   "%rend11 = call i32 (...)* @_ssdm_op_SpecRegionEnd([57 x i8]* @tlp_KD_KD_ostream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_try_write_OC_region_str, i32 %rbegin1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 88 'specregionend' 'rend11' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00>
+ST_3 : Operation 89 [1/1] (0.00ns) (grouped into LUT with out node and_ln150)   --->   "%xor_ln150 = xor i1 %full_n, true" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 89 'xor' 'xor_ln150' <Predicate = (empty_n) | (valid_0)> <Delay = 0.00> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.12> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_3 : Operation 90 [1/1] (0.12ns) (out node of the LUT)   --->   "%and_ln150 = and i1 %valid_1, %xor_ln150" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150]   --->   Operation 90 'and' 'and_ln150' <Predicate = (empty_n) | (valid_0)> <Delay = 0.12> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.12> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_3 : Operation 91 [1/1] (0.60ns)   --->   "br label %"tlp::istream<unsigned long>::empty.region"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:151]   --->   Operation 91 'br' <Predicate = (empty_n) | (valid_0)> <Delay = 0.60>
+ST_3 : Operation 92 [1/1] (0.00ns)   --->   "%update_v_2 = phi i512 [ %tmp_val_data_V, %"tlp::ostream<tlp::vec_t<Update, 8ul> >::try_write.region" ], [ %tmp_data_V_1, %"tlp::async_mmap<tlp::vec_t<Update, 8ul> >::read_data_try_read.region" ]"   --->   Operation 92 'phi' 'update_v_2' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 93 [1/1] (0.00ns)   --->   "%valid_3 = phi i1 [ %and_ln150, %"tlp::ostream<tlp::vec_t<Update, 8ul> >::try_write.region" ], [ %empty_n, %"tlp::async_mmap<tlp::vec_t<Update, 8ul> >::read_data_try_read.region" ]"   --->   Operation 93 'phi' 'valid_3' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 94 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:94->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:156]   --->   Operation 94 'speclatency' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 95 [1/1] (0.00ns)   --->   "%rend27 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_read_OC_region_str, i32 %rbegin5) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:157]   --->   Operation 95 'specregionend' 'rend27' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 96 [1/1] (0.00ns)   --->   "br label %"tlp::istream<unsigned long>::empty.region1"" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:157]   --->   Operation 96 'br' <Predicate = (tmp_1 & full_n_1)> <Delay = 0.00>
+ST_3 : Operation 97 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:94->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:162]   --->   Operation 97 'speclatency' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 98 [1/1] (0.00ns)   --->   "%rend32 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_unsigned_AC_long_OD_KD_KD_read_OC_region_str, i32 %rbegin10) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 98 'specregionend' 'rend32' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 99 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:94->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 99 'speclatency' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 100 [1/1] (0.00ns)   --->   "%rend45 = call i32 (...)* @_ssdm_op_SpecRegionEnd([52 x i8]* @tlp_KD_KD_istream_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_read_OC_region_str, i32 %rbegin11) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 100 'specregionend' 'rend45' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 101 [1/1] (0.00ns)   --->   "%rbegin12 = call i32 (...)* @_ssdm_op_SpecRegionBegin([67 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_write_data_write_OC_region_str) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 101 'specregionbegin' 'rbegin12' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 102 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:53->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 102 'specprotocol' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 103 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i512P(i512* %updates_write_data_V_data_V, i512 %tmp_data_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:54->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:163]   --->   Operation 103 'write' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 512> <Depth = 0> <FIFO>
+ST_3 : Operation 104 [1/1] (0.00ns)   --->   "%rend49 = call i32 (...)* @_ssdm_op_SpecRegionEnd([67 x i8]* @tlp_KD_KD_async_mmap_MD_tlp_KD_KD_vec_t_MD_Update_MC_AC_8ul_OD_AC_OD_KD_KD_write_data_write_OC_region_str, i32 %rbegin12) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:164]   --->   Operation 104 'specregionend' 'rend49' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 105 [1/1] (0.00ns)   --->   "br label %hls_label_0_end" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:164]   --->   Operation 105 'br' <Predicate = (tmp_3 & tmp_4 & full_n_2)> <Delay = 0.00>
+ST_3 : Operation 106 [1/1] (0.00ns)   --->   "%empty_27 = call i32 (...)* @_ssdm_op_SpecRegionEnd([12 x i8]* @p_str1, i32 %tmp)" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:165]   --->   Operation 106 'specregionend' 'empty_27' <Predicate = true> <Delay = 0.00>
+ST_3 : Operation 107 [1/1] (0.00ns)   --->   "br label %hls_label_0_begin" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:165]   --->   Operation 107 'br' <Predicate = true> <Delay = 0.00>
+
+
+============================================================
++ Verbose Summary: Timing violations
+============================================================
+Target clock period: 4ns, clock uncertainty: 0.5ns.
+
+ <State 1>: 0.603ns
+The critical path consists of the following:
+	multiplexor before 'phi' operation ('update_v_01', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [36]  (0.603 ns)
+
+ <State 2>: 2.06ns
+The critical path consists of the following:
+	fifo read on port 'updates_read_data_V_data_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [45]  (1.46 ns)
+	multiplexor before 'phi' operation ('update_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [51]  (0.603 ns)
+
+ <State 3>: 2.79ns
+The critical path consists of the following:
+	'phi' operation ('update_v_01', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [36]  (0 ns)
+	multiplexor before 'phi' operation ('update_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [51]  (0.603 ns)
+	'phi' operation ('update_v.data.V') with incoming values : ('tmp.data.V', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) [51]  (0 ns)
+	fifo write on port 'read_data_q_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:138->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150) [56]  (1.46 ns)
+	'xor' operation ('xor_ln150', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150) [58]  (0 ns)
+	'and' operation ('and_ln150', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150) [59]  (0.122 ns)
+	multiplexor before 'phi' operation ('empty_n') with incoming values : ('empty_n', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) ('and_ln150', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150) [63]  (0.603 ns)
+	'phi' operation ('empty_n') with incoming values : ('empty_n', /curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/mmap.h:37->/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:149) ('and_ln150', /home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/UpdateMem.cpp:150) [63]  (0 ns)
+
+
+============================================================
++ Verbose Summary: Binding
+============================================================
+N/A
+* FSMD analyzer results:
+  - Output states:
+ - Input state : 
+  - Chain level:
+	State 1
+	State 2
+	State 3
+
+
+============================================================
++ Verbose Summary: Datapath Resource usage 
+============================================================
+N/A

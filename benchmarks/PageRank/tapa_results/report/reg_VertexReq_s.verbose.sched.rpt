@@ -1,0 +1,117 @@
+
+
+================================================================
+== Vivado HLS Report for 'reg_VertexReq_s'
+================================================================
+* Date:           Fri May 15 20:11:38 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       VertexMem
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns |   0 ns   |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        1|        1| 4.000 ns | 4.000 ns |    1|    1|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        N/A
+
+============================================================
++ Verbose Summary: Synthesis Manager
+============================================================
+InlineROM: 1
+ExposeGlobal: 0
+============================================================
++ Verbose Summary: CDFG Model
+============================================================
+IsTopModel: 0
+ResetActiveHigh: 1
+IsCombinational: 0
+IsDatapathOnly: 0
+HasWiredReturn: 2
+HasMFsm: 0
+HasVarLatency: 1
+IsPipeline: 0
+IsRtlPipelined: 0
+IsInstanceOverlapped: 0
+IsDontTouch: 0
+HasImplIP: 0
+IsGatedGlobalClock: 0
+
+
+============================================================
++ Verbose Summary: Schedule
+============================================================
+* Number of FSM states : 2
+* Pipeline : 0
+* Dataflow Pipeline: 0
+
+* FSM state transitions: 
+1 --> 2 
+2 --> 
+
+* FSM state operations: 
+
+State 1 <SV = 0> <Delay = 0.00>
+ST_1 : Operation 3 [1/1] (0.00ns)   --->   "%agg_result_length_write_read = call i32 @_ssdm_op_Read.ap_auto.i32(i32 %agg_result_length_write)"   --->   Operation 3 'read' 'agg_result_length_write_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 4 [1/1] (0.00ns)   --->   "%agg_result_offset_write_read = call i32 @_ssdm_op_Read.ap_auto.i32(i32 %agg_result_offset_write)"   --->   Operation 4 'read' 'agg_result_offset_write_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 5 [1/1] (0.00ns)   --->   "%mrv = insertvalue { i32, i32 } undef, i32 %agg_result_offset_write_read, 0" [/usr/include/tlp/synthesizable/util.h:19]   --->   Operation 5 'insertvalue' 'mrv' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 6 [1/1] (0.00ns)   --->   "%mrv_1 = insertvalue { i32, i32 } %mrv, i32 %agg_result_length_write_read, 1" [/usr/include/tlp/synthesizable/util.h:19]   --->   Operation 6 'insertvalue' 'mrv_1' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 7 [2/2] (0.00ns)   --->   "ret { i32, i32 } %mrv_1" [/usr/include/tlp/synthesizable/util.h:19]   --->   Operation 7 'ret' <Predicate = true> <Delay = 0.00>
+
+State 2 <SV = 1> <Delay = 0.00>
+ST_2 : Operation 8 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i32 0, [8 x i8]* @p_str9, i32 1, i32 1, [1 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str, [1 x i8]* @p_str, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str, [1 x i8]* @p_str) nounwind" [/usr/include/tlp/synthesizable/util.h:18]   --->   Operation 8 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 9 [1/2] (0.00ns)   --->   "ret { i32, i32 } %mrv_1" [/usr/include/tlp/synthesizable/util.h:19]   --->   Operation 9 'ret' <Predicate = true> <Delay = 0.00>
+
+
+============================================================
++ Verbose Summary: Timing violations
+============================================================
+Target clock period: 4ns, clock uncertainty: 0.5ns.
+
+ <State 1>: 0ns
+The critical path consists of the following:
+
+ <State 2>: 0ns
+The critical path consists of the following:
+
+
+============================================================
++ Verbose Summary: Binding
+============================================================
+N/A
+* FSMD analyzer results:
+  - Output states:
+ - Input state : 
+  - Chain level:
+	State 1
+	State 2
+
+
+============================================================
++ Verbose Summary: Datapath Resource usage 
+============================================================
+N/A

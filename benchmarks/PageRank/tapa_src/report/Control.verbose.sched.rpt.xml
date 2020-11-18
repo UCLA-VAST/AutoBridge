@@ -1,0 +1,54 @@
+<profile>
+
+<section name = "Vivado HLS Report for 'Control'" level="0">
+<item name = "Date">Fri May 15 20:11:47 2020
+</item>
+<item name = "Version">2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)</item>
+<item name = "Project">project</item>
+<item name = "Solution">Control</item>
+<item name = "Product family">virtexuplus</item>
+<item name = "Target device">xcu280-fsvh2892-2L-e</item>
+</section>
+
+<section name = "Performance Estimates" level="0">
+<item name = "Timing">
+<section name = "" level="1">
+<item name = "Summary"><table name="" hasTotal="0">
+<keys size="4">Clock, Target, Estimated, Uncertainty</keys>
+<column name="ap_clk">4.00 ns, 8.810 ns, 0.50 ns</column>
+</table>
+</item>
+</section>
+</item>
+<item name = "Latency">
+<section name = "" level="1">
+<item name = "Summary"><table name="" hasTotal="0">
+<keys size="8">, min, max, min, max, min, max, Type</keys>
+<column name="">?, ?, ?, ?, ?, ?, none</column>
+</table>
+</item>
+<item name = "Detail">
+<section name = "" level="1">
+<item name = "Instance"><table name="" hasTotal="0">
+<keys size="9">Instance, Module, min, max, min, max, min, max, Type</keys>
+</table>
+</item>
+<item name = "Loop"><table name="" hasTotal="0">
+<keys size="8">Loop Name, min, max, Latency, achieved, target, Count, Pipelined</keys>
+<column name="- memset_eid_offset_acc">7, 7, 1, -, -, 8, no</column>
+<column name="- load_config">0, 524281, 3, 1, 1, 0 ~ 524280, yes</column>
+<column name="- config_update_offsets">?, ?, 3, 1, 1, ?, yes</column>
+<column name="- bulk_steps">?, ?, ?, -, -, ?, no</column>
+<column name=" + scatter">?, ?, 3, -, -, ?, no</column>
+<column name=" + reset_num_updates">?, ?, 1, 1, 1, ?, yes</column>
+<column name=" + collect_num_updates">?, ?, 4, 1, 1, ?, yes</column>
+<column name=" + memset_pid_send">7, 7, 1, -, -, 8, no</column>
+<column name=" + gather">?, ?, 8, 8, 1, ?, yes</column>
+</table>
+</item>
+</section>
+</item>
+</section>
+</item>
+</section>
+</profile>

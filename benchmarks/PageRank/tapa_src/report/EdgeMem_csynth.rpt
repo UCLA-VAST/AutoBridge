@@ -1,0 +1,172 @@
+
+
+================================================================
+== Vivado HLS Report for 'EdgeMem'
+================================================================
+* Date:           Fri May 15 20:11:35 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       EdgeMem
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns | 2.786 ns |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |          |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        | Loop Name|   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |- Loop 1  |        ?|        ?|         2|          1|          1|  inf |    yes   |
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+
+
+
+================================================================
+== Utilization Estimates
+================================================================
+* Summary: 
++---------------------+---------+-------+---------+---------+-----+
+|         Name        | BRAM_18K| DSP48E|    FF   |   LUT   | URAM|
++---------------------+---------+-------+---------+---------+-----+
+|DSP                  |        -|      -|        -|        -|    -|
+|Expression           |        -|      -|        0|       12|    -|
+|FIFO                 |        -|      -|        -|        -|    -|
+|Instance             |        -|      -|        -|        -|    -|
+|Memory               |        -|      -|        -|        -|    -|
+|Multiplexer          |        -|      -|        -|      114|    -|
+|Register             |        -|      -|     1544|        -|    -|
++---------------------+---------+-------+---------+---------+-----+
+|Total                |        0|      0|     1544|      126|    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available SLR        |     1344|   3008|   869120|   434560|  320|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization SLR (%)  |        0|      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available            |     4032|   9024|  2607360|  1303680|  960|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization (%)      |        0|      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+
++ Detail: 
+    * Instance: 
+    N/A
+
+    * DSP48E: 
+    N/A
+
+    * Memory: 
+    N/A
+
+    * FIFO: 
+    N/A
+
+    * Expression: 
+    +------------------------------+----------+-------+---+----+------------+------------+
+    |         Variable Name        | Operation| DSP48E| FF| LUT| Bitwidth P0| Bitwidth P1|
+    +------------------------------+----------+-------+---+----+------------+------------+
+    |and_ln140_fu_218_p2           |    and   |      0|  0|   2|           1|           1|
+    |ap_condition_107              |    and   |      0|  0|   2|           1|           1|
+    |edges_read_nbread_fu_80_p2_0  |    and   |      0|  0|   2|           1|           0|
+    |tmp_1_nbreadreq_fu_86_p3      |    and   |      0|  0|   2|           1|           0|
+    |ap_enable_pp0                 |    xor   |      0|  0|   2|           1|           2|
+    |xor_ln140_fu_212_p2           |    xor   |      0|  0|   2|           1|           2|
+    +------------------------------+----------+-------+---+----+------------+------------+
+    |Total                         |          |      0|  0|  12|           6|           6|
+    +------------------------------+----------+-------+---+----+------------+------------+
+
+    * Multiplexer: 
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |                     Name                    | LUT| Input Size| Bits| Total Bits|
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |ap_NS_fsm                                    |  15|          3|    1|          3|
+    |ap_enable_reg_pp0_iter1                      |   9|          2|    1|          2|
+    |ap_phi_mux_edge_v_2_phi_fu_167_p4            |   9|          2|  512|       1024|
+    |ap_phi_mux_tmp_val_data_V_phi_fu_146_p4      |   9|          2|  512|       1024|
+    |ap_phi_mux_valid_0_phi_fu_124_p4             |   9|          2|    1|          2|
+    |ap_phi_mux_valid_1_phi_fu_156_p4             |   9|          2|    1|          2|
+    |ap_phi_mux_valid_3_phi_fu_179_p4             |   9|          2|    1|          2|
+    |ap_phi_reg_pp0_iter1_edge_v_2_reg_163        |   9|          2|  512|       1024|
+    |ap_phi_reg_pp0_iter1_tmp_val_data_V_reg_143  |   9|          2|  512|       1024|
+    |ap_phi_reg_pp0_iter1_valid_1_reg_153         |   9|          2|    1|          2|
+    |ap_phi_reg_pp0_iter1_valid_3_reg_175         |   9|          2|    1|          2|
+    |valid_0_reg_120                              |   9|          2|    1|          2|
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |Total                                        | 114|         25| 2056|       4113|
+    +---------------------------------------------+----+-----------+-----+-----------+
+
+    * Register: 
+    +---------------------------------------------+-----+----+-----+-----------+
+    |                     Name                    |  FF | LUT| Bits| Const Bits|
+    +---------------------------------------------+-----+----+-----+-----------+
+    |ap_CS_fsm                                    |    2|   0|    2|          0|
+    |ap_enable_reg_pp0_iter0                      |    1|   0|    1|          0|
+    |ap_enable_reg_pp0_iter1                      |    1|   0|    1|          0|
+    |ap_phi_reg_pp0_iter1_edge_v_2_reg_163        |  512|   0|  512|          0|
+    |ap_phi_reg_pp0_iter1_tmp_val_data_V_reg_143  |  512|   0|  512|          0|
+    |ap_phi_reg_pp0_iter1_valid_1_reg_153         |    1|   0|    1|          0|
+    |ap_phi_reg_pp0_iter1_valid_3_reg_175         |    1|   0|    1|          0|
+    |edge_v_01_reg_132                            |  512|   0|  512|          0|
+    |empty_n_reg_225                              |    1|   0|    1|          0|
+    |valid_0_reg_120                              |    1|   0|    1|          0|
+    +---------------------------------------------+-----+----+-----+-----------+
+    |Total                                        | 1544|   0| 1544|          0|
+    +---------------------------------------------+-----+----+-----+-----------+
+
+
+
+================================================================
+== Interface
+================================================================
+* Summary: 
++----------------------------------+-----+-----+------------+---------------------------+--------------+
+|             RTL Ports            | Dir | Bits|  Protocol  |       Source Object       |    C Type    |
++----------------------------------+-----+-----+------------+---------------------------+--------------+
+|ap_clk                            |  in |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|ap_rst_n                          |  in |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|ap_start                          |  in |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|ap_done                           | out |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|ap_idle                           | out |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|ap_ready                          | out |    1| ap_ctrl_hs |          EdgeMem          | return value |
+|edge_req_q_fifo_V_dout            |  in |   33|   ap_fifo  |     edge_req_q_fifo_V     |    pointer   |
+|edge_req_q_fifo_V_empty_n         |  in |    1|   ap_fifo  |     edge_req_q_fifo_V     |    pointer   |
+|edge_req_q_fifo_V_read            | out |    1|   ap_fifo  |     edge_req_q_fifo_V     |    pointer   |
+|edge_req_q_peek_val               |  in |   33|   ap_none  |    edge_req_q_peek_val    |    pointer   |
+|edge_resp_q_fifo_V_din            | out |  513|   ap_fifo  |     edge_resp_q_fifo_V    |    pointer   |
+|edge_resp_q_fifo_V_full_n         |  in |    1|   ap_fifo  |     edge_resp_q_fifo_V    |    pointer   |
+|edge_resp_q_fifo_V_write          | out |    1|   ap_fifo  |     edge_resp_q_fifo_V    |    pointer   |
+|edges_read_addr_V_din             | out |   64|   ap_fifo  |     edges_read_addr_V     |    pointer   |
+|edges_read_addr_V_full_n          |  in |    1|   ap_fifo  |     edges_read_addr_V     |    pointer   |
+|edges_read_addr_V_write           | out |    1|   ap_fifo  |     edges_read_addr_V     |    pointer   |
+|edges_read_data_V_data_V_dout     |  in |  512|   ap_fifo  |  edges_read_data_V_data_V |    pointer   |
+|edges_read_data_V_data_V_empty_n  |  in |    1|   ap_fifo  |  edges_read_data_V_data_V |    pointer   |
+|edges_read_data_V_data_V_read     | out |    1|   ap_fifo  |  edges_read_data_V_data_V |    pointer   |
+|edges_read_peek_data_V            |  in |  512|   ap_none  |   edges_read_peek_data_V  |    pointer   |
+|edges_write_addr_V                |  in |   64|   ap_none  |     edges_write_addr_V    |    pointer   |
+|edges_write_data_V_data_V         |  in |  512|   ap_none  | edges_write_data_V_data_V |    pointer   |
++----------------------------------+-----+-----+------------+---------------------------+--------------+
+

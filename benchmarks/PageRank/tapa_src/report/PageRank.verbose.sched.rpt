@@ -1,0 +1,240 @@
+
+
+================================================================
+== Vivado HLS Report for 'PageRank'
+================================================================
+* Date:           Fri May 15 20:11:36 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       PageRank
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns | 1.000 ns |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        1|        1| 4.000 ns | 4.000 ns |    1|    1|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        N/A
+
+============================================================
++ Verbose Summary: Synthesis Manager
+============================================================
+InlineROM: 1
+ExposeGlobal: 0
+============================================================
++ Verbose Summary: CDFG Model
+============================================================
+IsTopModel: 1
+ResetActiveHigh: 1
+IsCombinational: 0
+IsDatapathOnly: 0
+HasWiredReturn: 1
+HasMFsm: 0
+HasVarLatency: 1
+IsPipeline: 0
+IsRtlPipelined: 0
+IsInstanceOverlapped: 0
+IsDontTouch: 0
+HasImplIP: 0
+IsGatedGlobalClock: 0
+
+
+============================================================
++ Verbose Summary: Schedule
+============================================================
+* Number of FSM states : 2
+* Pipeline : 0
+* Dataflow Pipeline: 0
+
+* FSM state transitions: 
+1 --> 2 
+2 --> 
+
+* FSM state operations: 
+
+State 1 <SV = 0> <Delay = 1.00>
+ST_1 : Operation 3 [1/1] (1.00ns)   --->   "%updates_7_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_7) nounwind"   --->   Operation 3 'read' 'updates_7_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 4 [1/1] (1.00ns)   --->   "%updates_6_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_6) nounwind"   --->   Operation 4 'read' 'updates_6_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 5 [1/1] (1.00ns)   --->   "%updates_5_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_5) nounwind"   --->   Operation 5 'read' 'updates_5_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 6 [1/1] (1.00ns)   --->   "%updates_4_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_4) nounwind"   --->   Operation 6 'read' 'updates_4_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 7 [1/1] (1.00ns)   --->   "%updates_3_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_3) nounwind"   --->   Operation 7 'read' 'updates_3_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 8 [1/1] (1.00ns)   --->   "%updates_2_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_2) nounwind"   --->   Operation 8 'read' 'updates_2_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 9 [1/1] (1.00ns)   --->   "%updates_1_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_1) nounwind"   --->   Operation 9 'read' 'updates_1_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 10 [1/1] (1.00ns)   --->   "%updates_0_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %updates_0) nounwind"   --->   Operation 10 'read' 'updates_0_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 11 [1/1] (1.00ns)   --->   "%edges_7_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_7) nounwind"   --->   Operation 11 'read' 'edges_7_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 12 [1/1] (1.00ns)   --->   "%edges_6_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_6) nounwind"   --->   Operation 12 'read' 'edges_6_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 13 [1/1] (1.00ns)   --->   "%edges_5_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_5) nounwind"   --->   Operation 13 'read' 'edges_5_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 14 [1/1] (1.00ns)   --->   "%edges_4_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_4) nounwind"   --->   Operation 14 'read' 'edges_4_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 15 [1/1] (1.00ns)   --->   "%edges_3_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_3) nounwind"   --->   Operation 15 'read' 'edges_3_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 16 [1/1] (1.00ns)   --->   "%edges_2_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_2) nounwind"   --->   Operation 16 'read' 'edges_2_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 17 [1/1] (1.00ns)   --->   "%edges_1_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_1) nounwind"   --->   Operation 17 'read' 'edges_1_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 18 [1/1] (1.00ns)   --->   "%edges_0_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %edges_0) nounwind"   --->   Operation 18 'read' 'edges_0_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 19 [1/1] (1.00ns)   --->   "%tmps_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %tmps) nounwind"   --->   Operation 19 'read' 'tmps_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 20 [1/1] (1.00ns)   --->   "%rankings_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %rankings) nounwind"   --->   Operation 20 'read' 'rankings_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 21 [1/1] (1.00ns)   --->   "%degrees_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %degrees) nounwind"   --->   Operation 21 'read' 'degrees_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 22 [1/1] (1.00ns)   --->   "%metadata_read = call i64 @_ssdm_op_Read.s_axilite.i64(i64 %metadata) nounwind"   --->   Operation 22 'read' 'metadata_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 23 [1/1] (1.00ns)   --->   "%num_partitions_read = call i16 @_ssdm_op_Read.s_axilite.i16(i16 %num_partitions) nounwind"   --->   Operation 23 'read' 'num_partitions_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
+ST_1 : Operation 24 [1/1] (0.00ns)   --->   "%num_partitions_assign = alloca i16, align 2"   --->   Operation 24 'alloca' 'num_partitions_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 25 [1/1] (0.00ns)   --->   "%metadata_assign = alloca i64, align 8"   --->   Operation 25 'alloca' 'metadata_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 26 [1/1] (0.00ns)   --->   "%degrees_assign = alloca i64, align 8"   --->   Operation 26 'alloca' 'degrees_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 27 [1/1] (0.00ns)   --->   "%rankings_assign = alloca i64, align 8"   --->   Operation 27 'alloca' 'rankings_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 28 [1/1] (0.00ns)   --->   "%tmps_assign = alloca i64, align 8"   --->   Operation 28 'alloca' 'tmps_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 29 [1/1] (0.00ns)   --->   "%edges_0_assign = alloca i64, align 8"   --->   Operation 29 'alloca' 'edges_0_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 30 [1/1] (0.00ns)   --->   "%edges_1_assign = alloca i64, align 8"   --->   Operation 30 'alloca' 'edges_1_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 31 [1/1] (0.00ns)   --->   "%edges_2_assign = alloca i64, align 8"   --->   Operation 31 'alloca' 'edges_2_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 32 [1/1] (0.00ns)   --->   "%edges_3_assign = alloca i64, align 8"   --->   Operation 32 'alloca' 'edges_3_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 33 [1/1] (0.00ns)   --->   "%edges_4_assign = alloca i64, align 8"   --->   Operation 33 'alloca' 'edges_4_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 34 [1/1] (0.00ns)   --->   "%edges_5_assign = alloca i64, align 8"   --->   Operation 34 'alloca' 'edges_5_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 35 [1/1] (0.00ns)   --->   "%edges_6_assign = alloca i64, align 8"   --->   Operation 35 'alloca' 'edges_6_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 36 [1/1] (0.00ns)   --->   "%edges_7_assign = alloca i64, align 8"   --->   Operation 36 'alloca' 'edges_7_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 37 [1/1] (0.00ns)   --->   "%updates_0_assign = alloca i64, align 8"   --->   Operation 37 'alloca' 'updates_0_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 38 [1/1] (0.00ns)   --->   "%updates_1_assign = alloca i64, align 8"   --->   Operation 38 'alloca' 'updates_1_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 39 [1/1] (0.00ns)   --->   "%updates_2_assign = alloca i64, align 8"   --->   Operation 39 'alloca' 'updates_2_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 40 [1/1] (0.00ns)   --->   "%updates_3_assign = alloca i64, align 8"   --->   Operation 40 'alloca' 'updates_3_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 41 [1/1] (0.00ns)   --->   "%updates_4_assign = alloca i64, align 8"   --->   Operation 41 'alloca' 'updates_4_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 42 [1/1] (0.00ns)   --->   "%updates_5_assign = alloca i64, align 8"   --->   Operation 42 'alloca' 'updates_5_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 43 [1/1] (0.00ns)   --->   "%updates_6_assign = alloca i64, align 8"   --->   Operation 43 'alloca' 'updates_6_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 44 [1/1] (0.00ns)   --->   "%updates_7_assign = alloca i64, align 8"   --->   Operation 44 'alloca' 'updates_7_assign' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 45 [1/1] (0.00ns)   --->   "store i16 %num_partitions_read, i16* %num_partitions_assign, align 2"   --->   Operation 45 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 46 [1/1] (0.00ns)   --->   "store i64 %metadata_read, i64* %metadata_assign, align 8"   --->   Operation 46 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 47 [1/1] (0.00ns)   --->   "store i64 %degrees_read, i64* %degrees_assign, align 8"   --->   Operation 47 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 48 [1/1] (0.00ns)   --->   "store i64 %rankings_read, i64* %rankings_assign, align 8"   --->   Operation 48 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 49 [1/1] (0.00ns)   --->   "store i64 %tmps_read, i64* %tmps_assign, align 8"   --->   Operation 49 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 50 [1/1] (0.00ns)   --->   "store i64 %edges_0_read, i64* %edges_0_assign, align 8"   --->   Operation 50 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 51 [1/1] (0.00ns)   --->   "store i64 %edges_1_read, i64* %edges_1_assign, align 8"   --->   Operation 51 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 52 [1/1] (0.00ns)   --->   "store i64 %edges_2_read, i64* %edges_2_assign, align 8"   --->   Operation 52 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 53 [1/1] (0.00ns)   --->   "store i64 %edges_3_read, i64* %edges_3_assign, align 8"   --->   Operation 53 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 54 [1/1] (0.00ns)   --->   "store i64 %edges_4_read, i64* %edges_4_assign, align 8"   --->   Operation 54 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 55 [1/1] (0.00ns)   --->   "store i64 %edges_5_read, i64* %edges_5_assign, align 8"   --->   Operation 55 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 56 [1/1] (0.00ns)   --->   "store i64 %edges_6_read, i64* %edges_6_assign, align 8"   --->   Operation 56 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 57 [1/1] (0.00ns)   --->   "store i64 %edges_7_read, i64* %edges_7_assign, align 8"   --->   Operation 57 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 58 [1/1] (0.00ns)   --->   "store i64 %updates_0_read, i64* %updates_0_assign, align 8"   --->   Operation 58 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 59 [1/1] (0.00ns)   --->   "store i64 %updates_1_read, i64* %updates_1_assign, align 8"   --->   Operation 59 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 60 [1/1] (0.00ns)   --->   "store i64 %updates_2_read, i64* %updates_2_assign, align 8"   --->   Operation 60 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 61 [1/1] (0.00ns)   --->   "store i64 %updates_3_read, i64* %updates_3_assign, align 8"   --->   Operation 61 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 62 [1/1] (0.00ns)   --->   "store i64 %updates_4_read, i64* %updates_4_assign, align 8"   --->   Operation 62 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 63 [1/1] (0.00ns)   --->   "store i64 %updates_5_read, i64* %updates_5_assign, align 8"   --->   Operation 63 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 64 [1/1] (0.00ns)   --->   "store i64 %updates_6_read, i64* %updates_6_assign, align 8"   --->   Operation 64 'store' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 65 [1/1] (0.00ns)   --->   "store i64 %updates_7_read, i64* %updates_7_assign, align 8"   --->   Operation 65 'store' <Predicate = true> <Delay = 0.00>
+
+State 2 <SV = 1> <Delay = 0.00>
+ST_2 : Operation 66 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i16 %num_partitions) nounwind, !map !14"   --->   Operation 66 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 67 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %metadata) nounwind, !map !20"   --->   Operation 67 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 68 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %degrees) nounwind, !map !24"   --->   Operation 68 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 69 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %rankings) nounwind, !map !28"   --->   Operation 69 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 70 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %tmps) nounwind, !map !32"   --->   Operation 70 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 71 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_0) nounwind, !map !36"   --->   Operation 71 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 72 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_1) nounwind, !map !40"   --->   Operation 72 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 73 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_2) nounwind, !map !44"   --->   Operation 73 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 74 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_3) nounwind, !map !48"   --->   Operation 74 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 75 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_4) nounwind, !map !52"   --->   Operation 75 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 76 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_5) nounwind, !map !56"   --->   Operation 76 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 77 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_6) nounwind, !map !60"   --->   Operation 77 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 78 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %edges_7) nounwind, !map !64"   --->   Operation 78 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 79 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_0) nounwind, !map !68"   --->   Operation 79 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 80 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_1) nounwind, !map !72"   --->   Operation 80 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 81 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_2) nounwind, !map !76"   --->   Operation 81 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 82 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_3) nounwind, !map !80"   --->   Operation 82 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 83 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_4) nounwind, !map !84"   --->   Operation 83 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 84 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_5) nounwind, !map !88"   --->   Operation 84 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 85 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_6) nounwind, !map !92"   --->   Operation 85 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 86 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i64 %updates_7) nounwind, !map !96"   --->   Operation 86 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 87 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([9 x i8]* @PageRank_str) nounwind"   --->   Operation 87 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 88 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i16 %num_partitions, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:141]   --->   Operation 88 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 89 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %metadata, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:142]   --->   Operation 89 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 90 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %degrees, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:143]   --->   Operation 90 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 91 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %rankings, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:144]   --->   Operation 91 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 92 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %tmps, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:145]   --->   Operation 92 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 93 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_0, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:146]   --->   Operation 93 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 94 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_1, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:147]   --->   Operation 94 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 95 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_2, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:148]   --->   Operation 95 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 96 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_3, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:149]   --->   Operation 96 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 97 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_4, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:150]   --->   Operation 97 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 98 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_5, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:151]   --->   Operation 98 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 99 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_6, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:152]   --->   Operation 99 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 100 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %edges_7, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:153]   --->   Operation 100 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 101 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_0, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:154]   --->   Operation 101 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 102 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_1, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:155]   --->   Operation 102 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 103 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_2, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:156]   --->   Operation 103 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 104 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_3, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:157]   --->   Operation 104 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 105 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_4, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:158]   --->   Operation 105 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 106 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_5, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:159]   --->   Operation 106 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 107 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_6, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:160]   --->   Operation 107 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 108 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i64 %updates_7, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:161]   --->   Operation 108 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 109 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i32 0, [10 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [8 x i8]* @p_str2, [1 x i8]* @p_str1, [1 x i8]* @p_str1, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:162]   --->   Operation 109 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 110 [1/1] (0.00ns)   --->   "%val_0 = load volatile i16* %num_partitions_assign, align 2" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:164]   --->   Operation 110 'load' 'val_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 111 [1/1] (0.00ns)   --->   "%val1_0 = load volatile i64* %metadata_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:165]   --->   Operation 111 'load' 'val1_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 112 [1/1] (0.00ns)   --->   "%val2_0 = load volatile i64* %degrees_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:166]   --->   Operation 112 'load' 'val2_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 113 [1/1] (0.00ns)   --->   "%val3_0 = load volatile i64* %rankings_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:167]   --->   Operation 113 'load' 'val3_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 114 [1/1] (0.00ns)   --->   "%val4_0 = load volatile i64* %tmps_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:168]   --->   Operation 114 'load' 'val4_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 115 [1/1] (0.00ns)   --->   "%val5_0 = load volatile i64* %edges_0_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:169]   --->   Operation 115 'load' 'val5_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 116 [1/1] (0.00ns)   --->   "%val6_0 = load volatile i64* %edges_1_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:170]   --->   Operation 116 'load' 'val6_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 117 [1/1] (0.00ns)   --->   "%val7_0 = load volatile i64* %edges_2_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:171]   --->   Operation 117 'load' 'val7_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 118 [1/1] (0.00ns)   --->   "%val8_0 = load volatile i64* %edges_3_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:172]   --->   Operation 118 'load' 'val8_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 119 [1/1] (0.00ns)   --->   "%val9_0 = load volatile i64* %edges_4_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:173]   --->   Operation 119 'load' 'val9_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 120 [1/1] (0.00ns)   --->   "%val10_0 = load volatile i64* %edges_5_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:174]   --->   Operation 120 'load' 'val10_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 121 [1/1] (0.00ns)   --->   "%val11_0 = load volatile i64* %edges_6_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:175]   --->   Operation 121 'load' 'val11_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 122 [1/1] (0.00ns)   --->   "%val12_0 = load volatile i64* %edges_7_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:176]   --->   Operation 122 'load' 'val12_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 123 [1/1] (0.00ns)   --->   "%val13_0 = load volatile i64* %updates_0_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:177]   --->   Operation 123 'load' 'val13_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 124 [1/1] (0.00ns)   --->   "%val14_0 = load volatile i64* %updates_1_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:178]   --->   Operation 124 'load' 'val14_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 125 [1/1] (0.00ns)   --->   "%val15_0 = load volatile i64* %updates_2_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:179]   --->   Operation 125 'load' 'val15_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 126 [1/1] (0.00ns)   --->   "%val16_0 = load volatile i64* %updates_3_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:180]   --->   Operation 126 'load' 'val16_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 127 [1/1] (0.00ns)   --->   "%val17_0 = load volatile i64* %updates_4_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:181]   --->   Operation 127 'load' 'val17_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 128 [1/1] (0.00ns)   --->   "%val18_0 = load volatile i64* %updates_5_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:182]   --->   Operation 128 'load' 'val18_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 129 [1/1] (0.00ns)   --->   "%val19_0 = load volatile i64* %updates_6_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:183]   --->   Operation 129 'load' 'val19_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 130 [1/1] (0.00ns)   --->   "%val20_0 = load volatile i64* %updates_7_assign, align 8" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:184]   --->   Operation 130 'load' 'val20_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 131 [1/1] (0.00ns)   --->   "ret void" [/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/cpp/PageRank.cpp:185]   --->   Operation 131 'ret' <Predicate = true> <Delay = 0.00>
+
+
+============================================================
++ Verbose Summary: Timing violations
+============================================================
+Target clock period: 4ns, clock uncertainty: 0.5ns.
+
+ <State 1>: 1ns
+The critical path consists of the following:
+	s_axi read on port 'updates_7' [44]  (1 ns)
+
+ <State 2>: 0ns
+The critical path consists of the following:
+
+
+============================================================
++ Verbose Summary: Binding
+============================================================
+N/A
+* FSMD analyzer results:
+  - Output states:
+ - Input state : 
+  - Chain level:
+	State 1
+	State 2
+
+
+============================================================
++ Verbose Summary: Datapath Resource usage 
+============================================================
+N/A

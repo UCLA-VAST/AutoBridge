@@ -1,0 +1,3242 @@
+{
+  "tasks": {
+    "Control": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\nvoid Control(Pid num_partitions, tlp::mmap<uint64_t> metadata,\n             // to VertexMem\n             tlp::ostream<VertexReq>& vertex_req_q,\n             // to UpdateHandler\n             tlp::ostreams<Eid, kNumPes>& update_config_q,\n             tlp::ostreams<bool, kNumPes>& update_phase_q,\n             // from UpdateHandler\n             tlp::istreams<NumUpdates, kNumPes>& num_updates_q,\n             // to ProcElem\n             tlp::ostreams<TaskReq, kNumPes>& task_req_q,\n             // from ProcElem\n             tlp::istreams<TaskResp, kNumPes>& task_resp_q) {\n#pragma HLS data_pack variable = update_config_q._[0].fifo\n#pragma HLS data_pack variable = update_phase_q._[0].fifo\n#pragma HLS data_pack variable = num_updates_q._[0].fifo\n#pragma HLS data_pack variable = num_updates_q._[0].peek_val\n#pragma HLS array_partition variable = num_updates_q._[0].peek_val complete\n#pragma HLS data_pack variable = task_req_q._[0].fifo\n#pragma HLS data_pack variable = task_resp_q._[0].fifo\n#pragma HLS data_pack variable = task_resp_q._[0].peek_val\n#pragma HLS array_partition variable = task_resp_q._[0].peek_val complete\n#pragma HLS interface m_axi port = metadata offset = direct bundle = metadata\n#pragma HLS data_pack variable = vertex_req_q.fifo\n#pragma HLS data_pack variable = metadata\n\n\n  // HLS crashes without this...\n  for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n    update_config_q[pe].close();\n    update_phase_q[pe].close();\n    task_req_q[pe].close();\n  }\n\n  // Keeps track of all partitions.\n  // Vid of the 0-th vertex in each partition.\n  const Vid base_vid = metadata[0];\n  const Vid partition_size = metadata[1];\n  const Vid total_num_vertices = partition_size * num_partitions;\n  // Number of edges in each partition of each PE.\n  Eid num_edges_local[kMaxNumPartitions][kNumPes];\n#pragma HLS array_partition complete variable = num_edges_local dim = 2\n  // Number of updates in each partition.\n  Eid num_updates_local[kMaxNumPartitions];\n  // Memory offset of the 0-th edge in each partition.\n  Eid eid_offsets[kMaxNumPartitions][kNumPes];\n#pragma HLS array_partition complete variable = eid_offsets dim = 2\n\n  Eid eid_offset_acc[kNumPes] = {};\n#pragma HLS array_partition complete variable = eid_offset_acc\n\nload_config:\n  for (Pid i = 0; i < num_partitions * kNumPes; ++i) {\n#pragma HLS pipeline II = 1\n    Pid pid = i / kNumPes;\n    Pid pe = i % kNumPes;\n    Eid num_edges_delta = metadata[i + 2];\n    num_edges_local[pid][pe] = num_edges_delta;\n    eid_offsets[pid][pe] = eid_offset_acc[pe];\n    eid_offset_acc[pe] += num_edges_delta;\n  }\n\n  // Initialize UpdateMem, needed only once per execution.\nconfig_update_offsets:\n  for (Pid pid = 0; pid < num_partitions; ++pid) {\n#pragma HLS pipeline II = 1\n    auto update_offset = metadata[2 + num_partitions * kNumPes + pid];\n    VLOG_F(8, info) << \"update offset[\" << pid << \"]: \" << update_offset;\n    update_config_q[pid % kNumPes].write(update_offset);\n  }\n  // Tells UpdateHandler start to wait for phase requests.\n  for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n    update_config_q[pe].close();\n  }\n\n  bool all_done = false;\n  int iter = 0;\nbulk_steps:\n  while (!all_done) {\n    all_done = true;\n\n    // Do the scatter phase for each partition, if active.\n    // Wait until all PEs are done with the scatter phase.\n    VLOG_F(5, info) << \"Phase: \" << TaskReq::kScatter;\n    for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n      update_phase_q[pe].write(false);\n    }\n\n  scatter:\n    for (Pid pid = 0; pid < num_partitions; ++pid) {\n      // Tell VertexMem to start broadcasting source vertices.\n      Vid vid_offset = pid * partition_size;\n      vertex_req_q.write({vid_offset, partition_size});\n      for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n        TaskReq req{\n            /* phase            = */ TaskReq::kScatter,\n            /* pid              = */ 0,  // unused\n            /* overall_base_vid = */ base_vid,\n            /* partition_size   = */ partition_size,\n            /* num_edges        = */ num_edges_local[pid][pe],\n            /* vid_offset       = */ vid_offset,\n            /* eid_offset       = */ eid_offsets[pid][pe],\n            /* init             = */ 0.f,   // unused\n            /* scatter_done     = */ false  // unused\n        };\n        task_req_q[pe].write(req);\n      }\n\n#ifdef __SYNTHESIS__\n      ap_wait();\n#endif\n\n      for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n        task_resp_q[pe].read();\n      }\n    }\n\n    // Tell PEs to tell UpdateHandlers that the scatter phase is done.\n    TaskReq req = {};\n    req.scatter_done = true;\n    for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n      task_req_q[pe].write(req);\n    }\n\n    // Get prepared for the gather phase.\n    VLOG_F(5, info) << \"Phase: \" << TaskReq::kGather;\n    for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n      update_phase_q[pe].write(true);\n    }\n\n  reset_num_updates:\n    for (Pid pid = 0; pid < num_partitions; ++pid) {\n#pragma HLS pipeline II = 1\n      num_updates_local[pid] = 0;\n    }\n\n  collect_num_updates:\n    for (Pid pid_recv = 0; pid_recv < RoundUp<kNumPes>(num_partitions);) {\n#pragma HLS pipeline II = 1\n#pragma HLS dependence false variable = num_updates_local\n      NumUpdates num_updates;\n      bool done = false;\n      Pid pid;\n      for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n        if (!done && num_updates_q[pe].try_read(num_updates)) {\n          done |= true;\n          pid = num_updates.addr * kNumPes + pe;\n          ++pid_recv;\n        }\n      }\n      if (done && pid < num_partitions) {\n        VLOG_F(5, recv) << \"num_updates: \" << num_updates;\n        num_updates_local[pid] += num_updates.payload;\n      }\n    }\n\n    // updates.fence()\n#ifdef __SYNTHESIS__\n    ap_wait_n(80);\n#endif\n\n    // Do the gather phase for each partition.\n    // Wait until all partitions are done with the gather phase.\n  gather:\n    for (Pid pid_send[kNumPes] = {}, pid_recv = 0; pid_recv < num_partitions;) {\n#pragma HLS pipeline II = 1\n      for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n        Pid pid = pid_send[pe] * kNumPes + pe;\n        if (pid < num_partitions) {\n          TaskReq req{TaskReq::kGather,\n                      pid,\n                      base_vid,\n                      partition_size,\n                      num_updates_local[pid],\n                      partition_size * pid,\n                      0,  // eid_offset, unused\n                      (1.f - kDampingFactor) / total_num_vertices,\n                      false};\n          if (task_req_q[pe].try_write(req)) ++pid_send[pe];\n        }\n      }\n\n      TaskResp resp;\n      for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n        if (task_resp_q[pe].try_read(resp)) {\n          VLOG_F(3, recv) << resp;\n          if (resp.active) all_done = false;\n          ++pid_recv;\n        }\n      }\n    }\n    VLOG_F(3, info) << \"iter #\" << iter << (all_done ? \" \" : \" not \")\n                    << \"all done\";\n    ++iter;\n  }\n  // Terminates UpdateHandler.\n  for (int pe = 0; pe < kNumPes; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n    update_phase_q[pe].close();\n    task_req_q[pe].close();\n  }\n\n  metadata[2 + num_partitions * kNumPes + num_partitions] = iter;\n}\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\n\n\n\n\n\n\n\n",
+      "level": "lower"
+    },
+    "EdgeMem": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\nvoid EdgeMem(tlp::istream<Eid>& edge_req_q, tlp::ostream<EdgeVec>& edge_resp_q,\n             tlp::async_mmap<EdgeVec> edges) {\n#pragma HLS data_pack variable = edge_req_q.fifo\n#pragma HLS data_pack variable = edge_req_q.peek_val\n#pragma HLS data_pack variable = edge_resp_q.fifo\n#pragma HLS data_pack variable = edges.read_data\n\n\n  bool valid = false;\n  EdgeVec edge_v;\n  for (;;) {\n#pragma HLS pipeline II = 1\n#pragma HLS pipeline II = 1\n    // Handle responses.\n    if (valid || (valid = edges.read_data_try_read(edge_v))) {\n      if (edge_resp_q.try_write(edge_v)) valid = false;\n    }\n\n    // Handle requests.\n    if (!edge_req_q.empty() &&\n        edges.read_addr_try_write(edge_req_q.peek(nullptr))) {\n      edge_req_q.read(nullptr);\n    }\n  }\n}\n\n\n\n\n\n\n\n\n",
+      "level": "lower"
+    },
+    "PageRank": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\n\n\n\n\n\n\nextern \"C\" {\n\nvoid PageRank(Pid num_partitions, uint64_t metadata,\n              uint64_t degrees,\n              uint64_t rankings,\n              uint64_t tmps,\n              uint64_t edges_0, uint64_t edges_1, uint64_t edges_2, uint64_t edges_3, uint64_t edges_4, uint64_t edges_5, uint64_t edges_6, uint64_t edges_7,\n              uint64_t updates_0, uint64_t updates_1, uint64_t updates_2, uint64_t updates_3, uint64_t updates_4, uint64_t updates_5, uint64_t updates_6, uint64_t updates_7) {\n#pragma HLS interface s_axilite port = num_partitions bundle = control\n#pragma HLS interface s_axilite port = metadata bundle = control\n#pragma HLS interface s_axilite port = degrees bundle = control\n#pragma HLS interface s_axilite port = rankings bundle = control\n#pragma HLS interface s_axilite port = tmps bundle = control\n#pragma HLS interface s_axilite port = edges_0 bundle = control\n#pragma HLS interface s_axilite port = edges_1 bundle = control\n#pragma HLS interface s_axilite port = edges_2 bundle = control\n#pragma HLS interface s_axilite port = edges_3 bundle = control\n#pragma HLS interface s_axilite port = edges_4 bundle = control\n#pragma HLS interface s_axilite port = edges_5 bundle = control\n#pragma HLS interface s_axilite port = edges_6 bundle = control\n#pragma HLS interface s_axilite port = edges_7 bundle = control\n#pragma HLS interface s_axilite port = updates_0 bundle = control\n#pragma HLS interface s_axilite port = updates_1 bundle = control\n#pragma HLS interface s_axilite port = updates_2 bundle = control\n#pragma HLS interface s_axilite port = updates_3 bundle = control\n#pragma HLS interface s_axilite port = updates_4 bundle = control\n#pragma HLS interface s_axilite port = updates_5 bundle = control\n#pragma HLS interface s_axilite port = updates_6 bundle = control\n#pragma HLS interface s_axilite port = updates_7 bundle = control\n#pragma HLS interface s_axilite port = return bundle = control\n\n{ auto val = reinterpret_cast<volatile uint8_t&>(num_partitions); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(metadata); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(degrees); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(rankings); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(tmps); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_0); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_1); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_2); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_3); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_4); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_5); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_6); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(edges_7); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_0); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_1); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_2); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_3); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_4); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_5); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_6); }\n{ auto val = reinterpret_cast<volatile uint8_t&>(updates_7); }\n}\n\n\n}  // extern \"C\"\n\n",
+      "fifos": {
+        "edge_req[0]": {
+          "consumed_by": [
+            "EdgeMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "edge_req[1]": {
+          "consumed_by": [
+            "EdgeMem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "edge_req[2]": {
+          "consumed_by": [
+            "EdgeMem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "edge_req[3]": {
+          "consumed_by": [
+            "EdgeMem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "edge_req[4]": {
+          "consumed_by": [
+            "EdgeMem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "edge_req[5]": {
+          "consumed_by": [
+            "EdgeMem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "edge_req[6]": {
+          "consumed_by": [
+            "EdgeMem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "edge_req[7]": {
+          "consumed_by": [
+            "EdgeMem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        },
+        "edge_resp[0]": {
+          "consumed_by": [
+            "ProcElem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            0
+          ]
+        },
+        "edge_resp[1]": {
+          "consumed_by": [
+            "ProcElem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            1
+          ]
+        },
+        "edge_resp[2]": {
+          "consumed_by": [
+            "ProcElem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            2
+          ]
+        },
+        "edge_resp[3]": {
+          "consumed_by": [
+            "ProcElem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            3
+          ]
+        },
+        "edge_resp[4]": {
+          "consumed_by": [
+            "ProcElem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            4
+          ]
+        },
+        "edge_resp[5]": {
+          "consumed_by": [
+            "ProcElem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            5
+          ]
+        },
+        "edge_resp[6]": {
+          "consumed_by": [
+            "ProcElem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            6
+          ]
+        },
+        "edge_resp[7]": {
+          "consumed_by": [
+            "ProcElem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "EdgeMem",
+            7
+          ]
+        },
+        "num_updates[0]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            0
+          ]
+        },
+        "num_updates[1]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            1
+          ]
+        },
+        "num_updates[2]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            2
+          ]
+        },
+        "num_updates[3]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            3
+          ]
+        },
+        "num_updates[4]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            4
+          ]
+        },
+        "num_updates[5]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            5
+          ]
+        },
+        "num_updates[6]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            6
+          ]
+        },
+        "num_updates[7]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            7
+          ]
+        },
+        "scatter_phase_vertex_req": {
+          "consumed_by": [
+            "VertexMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[0]": {
+          "consumed_by": [
+            "ProcElem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[1]": {
+          "consumed_by": [
+            "ProcElem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[2]": {
+          "consumed_by": [
+            "ProcElem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[3]": {
+          "consumed_by": [
+            "ProcElem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[4]": {
+          "consumed_by": [
+            "ProcElem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[5]": {
+          "consumed_by": [
+            "ProcElem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[6]": {
+          "consumed_by": [
+            "ProcElem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_req[7]": {
+          "consumed_by": [
+            "ProcElem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "task_resp[0]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "task_resp[1]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "task_resp[2]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "task_resp[3]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "task_resp[4]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "task_resp[5]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "task_resp[6]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "task_resp[7]": {
+          "consumed_by": [
+            "Control",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        },
+        "update_config[0]": {
+          "consumed_by": [
+            "UpdateHandler",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[1]": {
+          "consumed_by": [
+            "UpdateHandler",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[2]": {
+          "consumed_by": [
+            "UpdateHandler",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[3]": {
+          "consumed_by": [
+            "UpdateHandler",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[4]": {
+          "consumed_by": [
+            "UpdateHandler",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[5]": {
+          "consumed_by": [
+            "UpdateHandler",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[6]": {
+          "consumed_by": [
+            "UpdateHandler",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_config[7]": {
+          "consumed_by": [
+            "UpdateHandler",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_mm2pe[0]": {
+          "consumed_by": [
+            "ProcElem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            0
+          ]
+        },
+        "update_mm2pe[1]": {
+          "consumed_by": [
+            "ProcElem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            1
+          ]
+        },
+        "update_mm2pe[2]": {
+          "consumed_by": [
+            "ProcElem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            2
+          ]
+        },
+        "update_mm2pe[3]": {
+          "consumed_by": [
+            "ProcElem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            3
+          ]
+        },
+        "update_mm2pe[4]": {
+          "consumed_by": [
+            "ProcElem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            4
+          ]
+        },
+        "update_mm2pe[5]": {
+          "consumed_by": [
+            "ProcElem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            5
+          ]
+        },
+        "update_mm2pe[6]": {
+          "consumed_by": [
+            "ProcElem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            6
+          ]
+        },
+        "update_mm2pe[7]": {
+          "consumed_by": [
+            "ProcElem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            7
+          ]
+        },
+        "update_pe2mm[0]": {
+          "consumed_by": [
+            "UpdateHandler",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "update_pe2mm[1]": {
+          "consumed_by": [
+            "UpdateHandler",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "update_pe2mm[2]": {
+          "consumed_by": [
+            "UpdateHandler",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "update_pe2mm[3]": {
+          "consumed_by": [
+            "UpdateHandler",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "update_pe2mm[4]": {
+          "consumed_by": [
+            "UpdateHandler",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "update_pe2mm[5]": {
+          "consumed_by": [
+            "UpdateHandler",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "update_pe2mm[6]": {
+          "consumed_by": [
+            "UpdateHandler",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "update_pe2mm[7]": {
+          "consumed_by": [
+            "UpdateHandler",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        },
+        "update_phase[0]": {
+          "consumed_by": [
+            "UpdateHandler",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[1]": {
+          "consumed_by": [
+            "UpdateHandler",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[2]": {
+          "consumed_by": [
+            "UpdateHandler",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[3]": {
+          "consumed_by": [
+            "UpdateHandler",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[4]": {
+          "consumed_by": [
+            "UpdateHandler",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[5]": {
+          "consumed_by": [
+            "UpdateHandler",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[6]": {
+          "consumed_by": [
+            "UpdateHandler",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_phase[7]": {
+          "consumed_by": [
+            "UpdateHandler",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "Control",
+            0
+          ]
+        },
+        "update_read_addr[0]": {
+          "consumed_by": [
+            "UpdateMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            0
+          ]
+        },
+        "update_read_addr[1]": {
+          "consumed_by": [
+            "UpdateMem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            1
+          ]
+        },
+        "update_read_addr[2]": {
+          "consumed_by": [
+            "UpdateMem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            2
+          ]
+        },
+        "update_read_addr[3]": {
+          "consumed_by": [
+            "UpdateMem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            3
+          ]
+        },
+        "update_read_addr[4]": {
+          "consumed_by": [
+            "UpdateMem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            4
+          ]
+        },
+        "update_read_addr[5]": {
+          "consumed_by": [
+            "UpdateMem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            5
+          ]
+        },
+        "update_read_addr[6]": {
+          "consumed_by": [
+            "UpdateMem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            6
+          ]
+        },
+        "update_read_addr[7]": {
+          "consumed_by": [
+            "UpdateMem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            7
+          ]
+        },
+        "update_read_data[0]": {
+          "consumed_by": [
+            "UpdateHandler",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            0
+          ]
+        },
+        "update_read_data[1]": {
+          "consumed_by": [
+            "UpdateHandler",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            1
+          ]
+        },
+        "update_read_data[2]": {
+          "consumed_by": [
+            "UpdateHandler",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            2
+          ]
+        },
+        "update_read_data[3]": {
+          "consumed_by": [
+            "UpdateHandler",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            3
+          ]
+        },
+        "update_read_data[4]": {
+          "consumed_by": [
+            "UpdateHandler",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            4
+          ]
+        },
+        "update_read_data[5]": {
+          "consumed_by": [
+            "UpdateHandler",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            5
+          ]
+        },
+        "update_read_data[6]": {
+          "consumed_by": [
+            "UpdateHandler",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            6
+          ]
+        },
+        "update_read_data[7]": {
+          "consumed_by": [
+            "UpdateHandler",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateMem",
+            7
+          ]
+        },
+        "update_req[0]": {
+          "consumed_by": [
+            "UpdateHandler",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "update_req[1]": {
+          "consumed_by": [
+            "UpdateHandler",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "update_req[2]": {
+          "consumed_by": [
+            "UpdateHandler",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "update_req[3]": {
+          "consumed_by": [
+            "UpdateHandler",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "update_req[4]": {
+          "consumed_by": [
+            "UpdateHandler",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "update_req[5]": {
+          "consumed_by": [
+            "UpdateHandler",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "update_req[6]": {
+          "consumed_by": [
+            "UpdateHandler",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "update_req[7]": {
+          "consumed_by": [
+            "UpdateHandler",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        },
+        "update_write_addr[0]": {
+          "consumed_by": [
+            "UpdateMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            0
+          ]
+        },
+        "update_write_addr[1]": {
+          "consumed_by": [
+            "UpdateMem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            1
+          ]
+        },
+        "update_write_addr[2]": {
+          "consumed_by": [
+            "UpdateMem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            2
+          ]
+        },
+        "update_write_addr[3]": {
+          "consumed_by": [
+            "UpdateMem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            3
+          ]
+        },
+        "update_write_addr[4]": {
+          "consumed_by": [
+            "UpdateMem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            4
+          ]
+        },
+        "update_write_addr[5]": {
+          "consumed_by": [
+            "UpdateMem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            5
+          ]
+        },
+        "update_write_addr[6]": {
+          "consumed_by": [
+            "UpdateMem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            6
+          ]
+        },
+        "update_write_addr[7]": {
+          "consumed_by": [
+            "UpdateMem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            7
+          ]
+        },
+        "update_write_data[0]": {
+          "consumed_by": [
+            "UpdateMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            0
+          ]
+        },
+        "update_write_data[1]": {
+          "consumed_by": [
+            "UpdateMem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            1
+          ]
+        },
+        "update_write_data[2]": {
+          "consumed_by": [
+            "UpdateMem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            2
+          ]
+        },
+        "update_write_data[3]": {
+          "consumed_by": [
+            "UpdateMem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            3
+          ]
+        },
+        "update_write_data[4]": {
+          "consumed_by": [
+            "UpdateMem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            4
+          ]
+        },
+        "update_write_data[5]": {
+          "consumed_by": [
+            "UpdateMem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            5
+          ]
+        },
+        "update_write_data[6]": {
+          "consumed_by": [
+            "UpdateMem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            6
+          ]
+        },
+        "update_write_data[7]": {
+          "consumed_by": [
+            "UpdateMem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "UpdateHandler",
+            7
+          ]
+        },
+        "vertex_mm2pe_r0[0]": {
+          "consumed_by": [
+            "ProcElem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexMem",
+            0
+          ]
+        },
+        "vertex_mm2pe_r0[1]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexMem",
+            0
+          ]
+        },
+        "vertex_mm2pe_r1[0]": {
+          "consumed_by": [
+            "ProcElem",
+            1
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_mm2pe_r1[1]": {
+          "consumed_by": [
+            "ProcElem",
+            2
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_mm2pe_r1[2]": {
+          "consumed_by": [
+            "ProcElem",
+            3
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_mm2pe_r1[3]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_mm2pe_r2[0]": {
+          "consumed_by": [
+            "ProcElem",
+            4
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_mm2pe_r2[1]": {
+          "consumed_by": [
+            "ProcElem",
+            5
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_mm2pe_r2[2]": {
+          "consumed_by": [
+            "ProcElem",
+            6
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_mm2pe_r2[3]": {
+          "consumed_by": [
+            "ProcElem",
+            7
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_pe2mm_r0[0]": {
+          "consumed_by": [
+            "VertexMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "vertex_pe2mm_r0[1]": {
+          "consumed_by": [
+            "VertexMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_pe2mm_r1[0]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "vertex_pe2mm_r1[1]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "vertex_pe2mm_r1[2]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "vertex_pe2mm_r1[3]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_pe2mm_r2[0]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "vertex_pe2mm_r2[1]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "vertex_pe2mm_r2[2]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "vertex_pe2mm_r2[3]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        },
+        "vertex_req_r0[0]": {
+          "consumed_by": [
+            "VertexMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            0
+          ]
+        },
+        "vertex_req_r0[1]": {
+          "consumed_by": [
+            "VertexMem",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR1",
+            0
+          ]
+        },
+        "vertex_req_r1[0]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            1
+          ]
+        },
+        "vertex_req_r1[1]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            2
+          ]
+        },
+        "vertex_req_r1[2]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            3
+          ]
+        },
+        "vertex_req_r1[3]": {
+          "consumed_by": [
+            "VertexRouterR1",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "VertexRouterR2",
+            0
+          ]
+        },
+        "vertex_req_r2[0]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            4
+          ]
+        },
+        "vertex_req_r2[1]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            5
+          ]
+        },
+        "vertex_req_r2[2]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            6
+          ]
+        },
+        "vertex_req_r2[3]": {
+          "consumed_by": [
+            "VertexRouterR2",
+            0
+          ],
+          "depth": 2,
+          "produced_by": [
+            "ProcElem",
+            7
+          ]
+        }
+      },
+      "level": "upper",
+      "ports": [
+        {
+          "cat": "scalar",
+          "name": "num_partitions",
+          "type": "Pid",
+          "width": 16
+        },
+        {
+          "cat": "mmap",
+          "name": "metadata",
+          "type": "uint64_t*",
+          "width": 64
+        },
+        {
+          "cat": "async_mmap",
+          "name": "degrees",
+          "type": "FloatVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "rankings",
+          "type": "FloatVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "tmps",
+          "type": "FloatVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[0]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[1]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[2]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[3]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[4]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[5]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[6]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "edges[7]",
+          "type": "EdgeVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[0]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[1]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[2]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[3]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[4]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[5]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[6]",
+          "type": "UpdateVec*",
+          "width": 512
+        },
+        {
+          "cat": "async_mmap",
+          "name": "updates[7]",
+          "type": "UpdateVec*",
+          "width": 512
+        }
+      ],
+      "tasks": {
+        "Control": [
+          {
+            "args": {
+              "metadata": {
+                "cat": "mmap",
+                "port": "metadata"
+              },
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[0]": {
+                "cat": "istream",
+                "port": "num_updates_q[0]"
+              },
+              "num_updates[1]": {
+                "cat": "istream",
+                "port": "num_updates_q[1]"
+              },
+              "num_updates[2]": {
+                "cat": "istream",
+                "port": "num_updates_q[2]"
+              },
+              "num_updates[3]": {
+                "cat": "istream",
+                "port": "num_updates_q[3]"
+              },
+              "num_updates[4]": {
+                "cat": "istream",
+                "port": "num_updates_q[4]"
+              },
+              "num_updates[5]": {
+                "cat": "istream",
+                "port": "num_updates_q[5]"
+              },
+              "num_updates[6]": {
+                "cat": "istream",
+                "port": "num_updates_q[6]"
+              },
+              "num_updates[7]": {
+                "cat": "istream",
+                "port": "num_updates_q[7]"
+              },
+              "scatter_phase_vertex_req": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              },
+              "task_req[0]": {
+                "cat": "ostream",
+                "port": "task_req_q[0]"
+              },
+              "task_req[1]": {
+                "cat": "ostream",
+                "port": "task_req_q[1]"
+              },
+              "task_req[2]": {
+                "cat": "ostream",
+                "port": "task_req_q[2]"
+              },
+              "task_req[3]": {
+                "cat": "ostream",
+                "port": "task_req_q[3]"
+              },
+              "task_req[4]": {
+                "cat": "ostream",
+                "port": "task_req_q[4]"
+              },
+              "task_req[5]": {
+                "cat": "ostream",
+                "port": "task_req_q[5]"
+              },
+              "task_req[6]": {
+                "cat": "ostream",
+                "port": "task_req_q[6]"
+              },
+              "task_req[7]": {
+                "cat": "ostream",
+                "port": "task_req_q[7]"
+              },
+              "task_resp[0]": {
+                "cat": "istream",
+                "port": "task_resp_q[0]"
+              },
+              "task_resp[1]": {
+                "cat": "istream",
+                "port": "task_resp_q[1]"
+              },
+              "task_resp[2]": {
+                "cat": "istream",
+                "port": "task_resp_q[2]"
+              },
+              "task_resp[3]": {
+                "cat": "istream",
+                "port": "task_resp_q[3]"
+              },
+              "task_resp[4]": {
+                "cat": "istream",
+                "port": "task_resp_q[4]"
+              },
+              "task_resp[5]": {
+                "cat": "istream",
+                "port": "task_resp_q[5]"
+              },
+              "task_resp[6]": {
+                "cat": "istream",
+                "port": "task_resp_q[6]"
+              },
+              "task_resp[7]": {
+                "cat": "istream",
+                "port": "task_resp_q[7]"
+              },
+              "update_config[0]": {
+                "cat": "ostream",
+                "port": "update_config_q[0]"
+              },
+              "update_config[1]": {
+                "cat": "ostream",
+                "port": "update_config_q[1]"
+              },
+              "update_config[2]": {
+                "cat": "ostream",
+                "port": "update_config_q[2]"
+              },
+              "update_config[3]": {
+                "cat": "ostream",
+                "port": "update_config_q[3]"
+              },
+              "update_config[4]": {
+                "cat": "ostream",
+                "port": "update_config_q[4]"
+              },
+              "update_config[5]": {
+                "cat": "ostream",
+                "port": "update_config_q[5]"
+              },
+              "update_config[6]": {
+                "cat": "ostream",
+                "port": "update_config_q[6]"
+              },
+              "update_config[7]": {
+                "cat": "ostream",
+                "port": "update_config_q[7]"
+              },
+              "update_phase[0]": {
+                "cat": "ostream",
+                "port": "update_phase_q[0]"
+              },
+              "update_phase[1]": {
+                "cat": "ostream",
+                "port": "update_phase_q[1]"
+              },
+              "update_phase[2]": {
+                "cat": "ostream",
+                "port": "update_phase_q[2]"
+              },
+              "update_phase[3]": {
+                "cat": "ostream",
+                "port": "update_phase_q[3]"
+              },
+              "update_phase[4]": {
+                "cat": "ostream",
+                "port": "update_phase_q[4]"
+              },
+              "update_phase[5]": {
+                "cat": "ostream",
+                "port": "update_phase_q[5]"
+              },
+              "update_phase[6]": {
+                "cat": "ostream",
+                "port": "update_phase_q[6]"
+              },
+              "update_phase[7]": {
+                "cat": "ostream",
+                "port": "update_phase_q[7]"
+              }
+            },
+            "name": "Control",
+            "step": 0
+          }
+        ],
+        "EdgeMem": [
+          {
+            "args": {
+              "edge_req[0]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[0]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[0]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[1]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[1]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[1]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[2]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[2]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[2]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[3]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[3]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[3]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[4]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[4]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[4]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[5]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[5]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[5]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[6]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[6]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[6]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "edge_req[7]": {
+                "cat": "istream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[7]": {
+                "cat": "ostream",
+                "port": "edge_resp_q"
+              },
+              "edges[7]": {
+                "cat": "async_mmap",
+                "port": "edges"
+              }
+            },
+            "name": "EdgeMem",
+            "step": -1
+          }
+        ],
+        "ProcElem": [
+          {
+            "args": {
+              "edge_req[0]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[0]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[0]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[0]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[0]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[0]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[0]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r0[0]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r0[0]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r0[0]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[0]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[1]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[1]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[1]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[1]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[1]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[1]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[1]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r1[0]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r1[0]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r1[0]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[1]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[2]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[2]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[2]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[2]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[2]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[2]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[2]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r1[1]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r1[1]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r1[1]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[2]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[3]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[3]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[3]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[3]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[3]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[3]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[3]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r1[2]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r1[2]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r1[2]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[3]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[4]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[4]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[4]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[4]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[4]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[4]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[4]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r2[0]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r2[0]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r2[0]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[4]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[5]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[5]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[5]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[5]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[5]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[5]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[5]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r2[1]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r2[1]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r2[1]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[5]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[6]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[6]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[6]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[6]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[6]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[6]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[6]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r2[2]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r2[2]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r2[2]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[6]",
+            "step": 0
+          },
+          {
+            "args": {
+              "edge_req[7]": {
+                "cat": "ostream",
+                "port": "edge_req_q"
+              },
+              "edge_resp[7]": {
+                "cat": "istream",
+                "port": "edge_resp_q"
+              },
+              "task_req[7]": {
+                "cat": "istream",
+                "port": "task_req_q"
+              },
+              "task_resp[7]": {
+                "cat": "ostream",
+                "port": "task_resp_q"
+              },
+              "update_mm2pe[7]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_pe2mm[7]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_req[7]": {
+                "cat": "ostream",
+                "port": "update_req_q"
+              },
+              "vertex_mm2pe_r2[3]": {
+                "cat": "istream",
+                "port": "vertex_in_q"
+              },
+              "vertex_pe2mm_r2[3]": {
+                "cat": "ostream",
+                "port": "vertex_out_q"
+              },
+              "vertex_req_r2[3]": {
+                "cat": "ostream",
+                "port": "vertex_req_q"
+              }
+            },
+            "name": "ProcElem[7]",
+            "step": 0
+          }
+        ],
+        "UpdateHandler": [
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[0]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[0]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[0]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[0]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[0]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[0]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[0]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[0]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[0]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[0]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[1]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[1]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[1]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[1]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[1]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[1]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[1]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[1]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[1]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[1]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[2]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[2]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[2]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[2]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[2]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[2]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[2]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[2]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[2]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[2]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[3]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[3]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[3]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[3]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[3]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[3]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[3]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[3]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[3]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[3]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[4]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[4]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[4]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[4]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[4]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[4]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[4]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[4]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[4]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[4]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[5]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[5]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[5]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[5]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[5]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[5]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[5]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[5]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[5]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[5]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[6]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[6]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[6]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[6]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[6]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[6]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[6]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[6]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[6]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[6]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          },
+          {
+            "args": {
+              "num_partitions": {
+                "cat": "scalar",
+                "port": "num_partitions"
+              },
+              "num_updates[7]": {
+                "cat": "ostream",
+                "port": "num_updates_out_q"
+              },
+              "update_config[7]": {
+                "cat": "istream",
+                "port": "update_config_q"
+              },
+              "update_mm2pe[7]": {
+                "cat": "ostream",
+                "port": "update_out_q"
+              },
+              "update_pe2mm[7]": {
+                "cat": "istream",
+                "port": "update_in_q"
+              },
+              "update_phase[7]": {
+                "cat": "istream",
+                "port": "update_phase_q"
+              },
+              "update_read_addr[7]": {
+                "cat": "ostream",
+                "port": "updates_read_addr_q"
+              },
+              "update_read_data[7]": {
+                "cat": "istream",
+                "port": "updates_read_data_q"
+              },
+              "update_req[7]": {
+                "cat": "istream",
+                "port": "update_req_q"
+              },
+              "update_write_addr[7]": {
+                "cat": "ostream",
+                "port": "updates_write_addr_q"
+              },
+              "update_write_data[7]": {
+                "cat": "ostream",
+                "port": "updates_write_data_q"
+              }
+            },
+            "name": "UpdateHandler",
+            "step": 0
+          }
+        ],
+        "UpdateMem": [
+          {
+            "args": {
+              "update_read_addr[0]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[0]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[0]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[0]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[0]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[1]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[1]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[1]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[1]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[1]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[2]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[2]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[2]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[2]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[2]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[3]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[3]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[3]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[3]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[3]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[4]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[4]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[4]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[4]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[4]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[5]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[5]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[5]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[5]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[5]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[6]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[6]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[6]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[6]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[6]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          },
+          {
+            "args": {
+              "update_read_addr[7]": {
+                "cat": "istream",
+                "port": "read_addr_q"
+              },
+              "update_read_data[7]": {
+                "cat": "ostream",
+                "port": "read_data_q"
+              },
+              "update_write_addr[7]": {
+                "cat": "istream",
+                "port": "write_addr_q"
+              },
+              "update_write_data[7]": {
+                "cat": "istream",
+                "port": "write_data_q"
+              },
+              "updates[7]": {
+                "cat": "async_mmap",
+                "port": "updates"
+              }
+            },
+            "name": "UpdateMem",
+            "step": -1
+          }
+        ],
+        "VertexMem": [
+          {
+            "args": {
+              "degrees": {
+                "cat": "async_mmap",
+                "port": "degrees"
+              },
+              "rankings": {
+                "cat": "async_mmap",
+                "port": "rankings"
+              },
+              "scatter_phase_vertex_req": {
+                "cat": "istream",
+                "port": "scatter_req_q"
+              },
+              "tmps": {
+                "cat": "async_mmap",
+                "port": "tmps"
+              },
+              "vertex_mm2pe_r0[0]": {
+                "cat": "ostream",
+                "port": "vertex_out_q[0]"
+              },
+              "vertex_mm2pe_r0[1]": {
+                "cat": "ostream",
+                "port": "vertex_out_q[1]"
+              },
+              "vertex_pe2mm_r0[0]": {
+                "cat": "istream",
+                "port": "vertex_in_q[0]"
+              },
+              "vertex_pe2mm_r0[1]": {
+                "cat": "istream",
+                "port": "vertex_in_q[1]"
+              },
+              "vertex_req_r0[0]": {
+                "cat": "istream",
+                "port": "vertex_req_q[0]"
+              },
+              "vertex_req_r0[1]": {
+                "cat": "istream",
+                "port": "vertex_req_q[1]"
+              }
+            },
+            "name": "VertexMem",
+            "step": -1
+          }
+        ],
+        "VertexRouterR1": [
+          {
+            "args": {
+              "vertex_mm2pe_r0[1]": {
+                "cat": "istream",
+                "port": "mm_in_q"
+              },
+              "vertex_mm2pe_r1[0]": {
+                "cat": "ostream",
+                "port": "pe_out_q[0]"
+              },
+              "vertex_mm2pe_r1[1]": {
+                "cat": "ostream",
+                "port": "pe_out_q[1]"
+              },
+              "vertex_mm2pe_r1[2]": {
+                "cat": "ostream",
+                "port": "pe_out_q[2]"
+              },
+              "vertex_mm2pe_r1[3]": {
+                "cat": "ostream",
+                "port": "pe_out_q[3]"
+              },
+              "vertex_pe2mm_r0[1]": {
+                "cat": "ostream",
+                "port": "mm_out_q"
+              },
+              "vertex_pe2mm_r1[0]": {
+                "cat": "istream",
+                "port": "pe_in_q[0]"
+              },
+              "vertex_pe2mm_r1[1]": {
+                "cat": "istream",
+                "port": "pe_in_q[1]"
+              },
+              "vertex_pe2mm_r1[2]": {
+                "cat": "istream",
+                "port": "pe_in_q[2]"
+              },
+              "vertex_pe2mm_r1[3]": {
+                "cat": "istream",
+                "port": "pe_in_q[3]"
+              },
+              "vertex_req_r0[1]": {
+                "cat": "ostream",
+                "port": "mm_req_q"
+              },
+              "vertex_req_r1[0]": {
+                "cat": "istream",
+                "port": "pe_req_q[0]"
+              },
+              "vertex_req_r1[1]": {
+                "cat": "istream",
+                "port": "pe_req_q[1]"
+              },
+              "vertex_req_r1[2]": {
+                "cat": "istream",
+                "port": "pe_req_q[2]"
+              },
+              "vertex_req_r1[3]": {
+                "cat": "istream",
+                "port": "pe_req_q[3]"
+              }
+            },
+            "name": "VertexRouterR1",
+            "step": -1
+          }
+        ],
+        "VertexRouterR2": [
+          {
+            "args": {
+              "vertex_mm2pe_r1[3]": {
+                "cat": "istream",
+                "port": "mm_in_q"
+              },
+              "vertex_mm2pe_r2[0]": {
+                "cat": "ostream",
+                "port": "pe_out_q[0]"
+              },
+              "vertex_mm2pe_r2[1]": {
+                "cat": "ostream",
+                "port": "pe_out_q[1]"
+              },
+              "vertex_mm2pe_r2[2]": {
+                "cat": "ostream",
+                "port": "pe_out_q[2]"
+              },
+              "vertex_mm2pe_r2[3]": {
+                "cat": "ostream",
+                "port": "pe_out_q[3]"
+              },
+              "vertex_pe2mm_r1[3]": {
+                "cat": "ostream",
+                "port": "mm_out_q"
+              },
+              "vertex_pe2mm_r2[0]": {
+                "cat": "istream",
+                "port": "pe_in_q[0]"
+              },
+              "vertex_pe2mm_r2[1]": {
+                "cat": "istream",
+                "port": "pe_in_q[1]"
+              },
+              "vertex_pe2mm_r2[2]": {
+                "cat": "istream",
+                "port": "pe_in_q[2]"
+              },
+              "vertex_pe2mm_r2[3]": {
+                "cat": "istream",
+                "port": "pe_in_q[3]"
+              },
+              "vertex_req_r1[3]": {
+                "cat": "ostream",
+                "port": "mm_req_q"
+              },
+              "vertex_req_r2[0]": {
+                "cat": "istream",
+                "port": "pe_req_q[0]"
+              },
+              "vertex_req_r2[1]": {
+                "cat": "istream",
+                "port": "pe_req_q[1]"
+              },
+              "vertex_req_r2[2]": {
+                "cat": "istream",
+                "port": "pe_req_q[2]"
+              },
+              "vertex_req_r2[3]": {
+                "cat": "istream",
+                "port": "pe_req_q[3]"
+              }
+            },
+            "name": "VertexRouterR2",
+            "step": -1
+          }
+        ]
+      }
+    },
+    "ProcElem": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\n\n\n\n\nvoid ProcElem(\n    // from Control\n    tlp::istream<TaskReq>& task_req_q,\n    // to Control\n    tlp::ostream<TaskResp>& task_resp_q,\n    // to and from VertexMem\n    tlp::ostream<VertexReq>& vertex_req_q,\n    tlp::istream<VertexAttrVec>& vertex_in_q,\n    tlp::ostream<VertexAttrVec>& vertex_out_q,\n    // to and from EdgeMem\n    tlp::ostream<Eid>& edge_req_q, tlp::istream<EdgeVec>& edge_resp_q,\n    // to UpdateHandler\n    tlp::ostream<UpdateReq>& update_req_q,\n    // from UpdateHandler via UpdateReorderer\n    tlp::istream<UpdateVec>& update_in_q,\n    // to UpdateHandler via UpdateRouter\n    tlp::ostream<UpdateVecPacket>& update_out_q) {\n#pragma HLS data_pack variable = task_req_q.fifo\n#pragma HLS data_pack variable = task_req_q.peek_val\n#pragma HLS data_pack variable = task_resp_q.fifo\n#pragma HLS data_pack variable = vertex_req_q.fifo\n#pragma HLS data_pack variable = vertex_in_q.fifo\n#pragma HLS data_pack variable = vertex_in_q.peek_val\n#pragma HLS data_pack variable = vertex_out_q.fifo\n#pragma HLS data_pack variable = edge_req_q.fifo\n#pragma HLS data_pack variable = edge_resp_q.fifo\n#pragma HLS data_pack variable = edge_resp_q.peek_val\n#pragma HLS data_pack variable = update_req_q.fifo\n#pragma HLS data_pack variable = update_in_q.fifo\n#pragma HLS data_pack variable = update_in_q.peek_val\n#pragma HLS data_pack variable = update_out_q.fifo\n\n\n  // HLS crashes without this...\n  task_req_q.open();\n#ifdef __SYNTHESIS__\n  ap_wait();\n#endif  // __SYNTEHSIS__\n  update_out_q.close();\n#ifdef __SYNTHESIS__\n  ap_wait();\n#endif  // __SYNTEHSIS__\n  update_in_q.open();\n\n  decltype(VertexAttr::tmp) vertices_local[kMaxPartitionSize];\n#pragma HLS array_partition variable = vertices_local cyclic factor = \\\n    kVertexPartitionFactor\n#pragma HLS resource variable = vertices_local core = RAM_S2P_URAM\n\ntask_requests:\n  TLP_WHILE_NOT_EOS(task_req_q) {\n    const auto req = task_req_q.read();\n    auto base_vid = req.overall_base_vid + req.vid_offset;\n    VLOG_F(5, recv) << \"TaskReq: \" << req;\n    if (req.scatter_done) {\n      update_out_q.close();\n    } else {\n      bool active = false;\n      if (req.phase == TaskReq::kScatter) {\n      vertex_reads:\n        for (Vid i = 0; i * kVertexVecLen < req.partition_size; ++i) {\n#pragma HLS pipeline II = 1\n          auto vertex_vec = vertex_in_q.read();\n          for (uint64_t j = 0; j < kVertexVecLen; ++j) {\n#pragma HLS unroll\n            vertices_local[i * kVertexVecLen + j] = vertex_vec[j].tmp;\n          }\n        }\n\n      edge_reads:\n        for (Eid eid_resp = 0, eid_req = 0; eid_resp < req.num_edges;) {\n#pragma HLS pipeline II = 1\n          if (eid_req < req.num_edges &&\n              eid_resp < eid_req + kEstimatedLatency * kEdgeVecLen &&\n              edge_req_q.try_write(req.eid_offset / kEdgeVecLen +\n                                   eid_req / kEdgeVecLen)) {\n            eid_req += kEdgeVecLen;\n          }\n          EdgeVec edge_v;\n          // empty edge is indicated by src == 0\n          // first edge in a vector must have valid dst for routing purpose\n          if (edge_resp_q.try_read(edge_v)) {\n            VLOG_F(10, recv) << \"Edge: \" << edge_v;\n            UpdateVecPacket update_v = {};\n            update_v.addr =\n                (edge_v[0].dst - req.overall_base_vid) / req.partition_size;\n            for (int i = 0; i < kEdgeVecLen; ++i) {\n#pragma HLS unroll\n              const auto& edge = edge_v[i];\n              if (edge.src != 0) {\n                auto addr = edge.src - base_vid;\n                LOG_IF(ERROR, addr % kEdgeVecLen != i)\n                    << \"addr \" << addr << \" != \" << i << \" mod \" << kEdgeVecLen;\n                addr /= kEdgeVecLen;\n                // pre-compute pid for routing\n                // use pre-computed src.tmp = src.ranking / src.out_degree\n                auto tmp = tlp::reg(vertices_local[addr * kEdgeVecLen + i]);\n                update_v.payload.set((edge.dst - base_vid) % kEdgeVecLen,\n                                     {edge.dst, tmp});\n              }\n            }\n            update_out_q.write(update_v);\n            VLOG_F(5, send) << \"Update: \" << update_v;\n            eid_resp += kEdgeVecLen;\n          }\n        }\n      } else {\n      vertex_resets:\n        for (Vid i = 0; i < req.partition_size; ++i) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll factor = kVertexPartitionFactor\n          vertices_local[i] = 0.f;\n        }\n\n        update_req_q.write({req.phase, req.pid, req.num_edges});\n      update_reads:\n        TLP_WHILE_NOT_EOS(update_in_q) {\n#pragma HLS pipeline II = 1\n#pragma HLS dependence variable = vertices_local inter true distance = \\\n    kVertexUpdateDepDist\n          auto update_v = update_in_q.read(nullptr);\n          VLOG_F(5, recv) << \"Update: \" << update_v;\n          for (int i = 0; i < kUpdateVecLen; ++i) {\n#pragma HLS unroll\n            auto update = update_v[i];\n            if (update.dst != 0) {\n              auto addr = update.dst - base_vid;\n              LOG_IF(ERROR, addr % kEdgeVecLen != i)\n                  << \"addr \" << addr << \" != \" << i << \" mod \" << kEdgeVecLen;\n#pragma HLS latency max = kVertexUpdateLatency\n              addr /= kEdgeVecLen;\n              vertices_local[addr * kEdgeVecLen + i] += update.delta;\n            }\n          }\n        }\n        update_in_q.open();\n\n        vertex_req_q.write({req.vid_offset, req.partition_size});\n\n        float max_delta = 0.f;\n\n      vertex_writes:\n        for (Vid i = 0; i * kVertexVecLen < req.partition_size; ++i) {\n#pragma HLS pipeline II = 1\n          VertexAttrVec vertex_vec = vertex_in_q.read();\n          float delta[kVertexVecLen];\n#pragma HLS array_partition variable = delta complete\n          for (uint64_t j = 0; j < kVertexVecLen; ++j) {\n#pragma HLS unroll\n            auto vertex = vertex_vec[j];\n            auto tmp = vertices_local[i * kVertexVecLen + j];\n            const float new_ranking = req.init + tmp * kDampingFactor;\n            delta[j] = std::abs(new_ranking - vertex.ranking);\n            vertex.ranking = new_ranking;\n            // pre-compute vertex.tmp = vertex.ranking / vertex.out_degree\n            vertex.tmp = vertex.ranking * vertex.tmp;\n            vertex_vec.set(j, vertex);\n            VLOG_F(5, send) << \"VertexAttr[\" << j << \"]: \" << vertex;\n          }\n          max_delta = std::max(max_delta, Max(delta));\n          vertex_out_q.write(vertex_vec);\n        }\n        active = max_delta > kConvergenceThreshold;\n      }\n      TaskResp resp{active};\n      task_resp_q.write(resp);\n    }\n  }\n  task_req_q.open();\n}\n\n\n",
+      "level": "lower"
+    },
+    "UpdateHandler": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\n\n\nvoid UpdateHandler(Pid num_partitions,\n                   // from Control\n                   tlp::istream<Eid>& update_config_q,\n                   tlp::istream<bool>& update_phase_q,\n                   // to Control\n                   tlp::ostream<NumUpdates>& num_updates_out_q,\n                   // from ProcElem via UpdateRouter\n                   tlp::istream<UpdateReq>& update_req_q,\n                   tlp::istream<UpdateVecPacket>& update_in_q,\n                   // to ProcElem via UpdateReorderer\n                   tlp::ostream<UpdateVec>& update_out_q,\n                   // to and from UpdateMem\n                   tlp::ostream<uint64_t>& updates_read_addr_q,\n                   tlp::istream<UpdateVec>& updates_read_data_q,\n                   tlp::ostream<uint64_t>& updates_write_addr_q,\n                   tlp::ostream<UpdateVec>& updates_write_data_q) {\n#pragma HLS data_pack variable = update_config_q.fifo\n#pragma HLS data_pack variable = update_config_q.peek_val\n#pragma HLS data_pack variable = update_phase_q.fifo\n#pragma HLS data_pack variable = update_phase_q.peek_val\n#pragma HLS data_pack variable = num_updates_out_q.fifo\n#pragma HLS data_pack variable = update_req_q.fifo\n#pragma HLS data_pack variable = update_req_q.peek_val\n#pragma HLS data_pack variable = update_in_q.fifo\n#pragma HLS data_pack variable = update_in_q.peek_val\n#pragma HLS data_pack variable = update_out_q.fifo\n#pragma HLS data_pack variable = updates_read_addr_q.fifo\n#pragma HLS data_pack variable = updates_read_data_q.fifo\n#pragma HLS data_pack variable = updates_read_data_q.peek_val\n#pragma HLS data_pack variable = updates_write_addr_q.fifo\n#pragma HLS data_pack variable = updates_write_data_q.fifo\n\n\n  // HLS crashes without this...\n  update_config_q.open();\n  update_phase_q.open();\n#ifdef __SYNTHESIS__\n  ap_wait();\n#endif  // __SYNTEHSIS__\n  update_in_q.open();\n#ifdef __SYNTHESIS__\n  ap_wait();\n#endif  // __SYNTEHSIS__\n  update_out_q.close();\n\n  // Memory offsets of each update partition.\n  Eid update_offsets[RoundUp<kNumPes>(kMaxNumPartitions) / kNumPes];\n#pragma HLS resource variable = update_offsets latency = 4\n  // Number of updates of each update partition in memory.\n  Eid num_updates[RoundUp<kNumPes>(kMaxNumPartitions) / kNumPes];\n\nnum_updates_init:\n  for (Pid i = 0; i < RoundUp<kNumPes>(num_partitions) / kNumPes; ++i) {\n#pragma HLS pipeline II = 1\n    num_updates[i] = 0;\n  }\n\n  // Initialization; needed only once per execution.\n  int update_offset_idx = 0;\nupdate_offset_init:\n  TLP_WHILE_NOT_EOS(update_config_q) {\n#pragma HLS pipeline II = 1\n    update_offsets[update_offset_idx] = update_config_q.read(nullptr);\n    ++update_offset_idx;\n  }\n  update_config_q.open();\n\nupdate_phases:\n  TLP_WHILE_NOT_EOS(update_phase_q) {\n    const auto phase = update_phase_q.read();\n    VLOG_F(5, recv) << \"Phase: \" << phase;\n    if (phase == TaskReq::kScatter) {\n      // kScatter lasts until update_phase_q is non-empty.\n      Pid last_last_pid = Pid(-1);\n      Pid last_pid = Pid(-1);\n      Eid last_update_idx = Eid(-1);\n    update_writes:\n      TLP_WHILE_NOT_EOS(update_in_q) {\n#pragma HLS pipeline II = 1\n#pragma HLS dependence variable = num_updates inter true distance = 2\n        const auto peek_pid = update_in_q.peek(nullptr).addr;\n        if (peek_pid != last_pid && peek_pid == last_last_pid) {\n          // insert bubble\n          last_last_pid = Pid(-1);\n        } else {\n          const auto update_with_pid = update_in_q.read(nullptr);\n          VLOG_F(5, recv) << \"UpdateWithPid: \" << update_with_pid;\n          const Pid pid = update_with_pid.addr;\n          const UpdateVec& update_v = update_with_pid.payload;\n\n          // number of updates already written to current partition, not\n          // including the current update\n          Eid update_idx;\n          if (last_pid != pid) {\n#pragma HLS latency min = 1 max = 1\n            update_idx = num_updates[pid / kNumPes];\n            if (last_pid != Pid(-1)) {\n              num_updates[last_pid / kNumPes] =\n                  RoundUp<kUpdateVecLen>(last_update_idx);\n            }\n          } else {\n            update_idx = last_update_idx;\n          }\n\n          // set for next iteration\n          last_last_pid = last_pid;\n          last_pid = pid;\n          last_update_idx = update_idx + kUpdateVecLen;\n\n          Eid update_offset = update_offsets[pid / kNumPes] + update_idx;\n          updates_write_addr_q.write(update_offset / kUpdateVecLen);\n          updates_write_data_q.write(update_v);\n        }\n      }\n      if (last_pid != Pid(-1)) {\n        num_updates[last_pid / kNumPes] =\n            RoundUp<kUpdateVecLen>(last_update_idx);\n      }\n      update_in_q.open();\n#ifdef __SYNTHESIS__\n      ap_wait_n(1);\n#endif  // __SYNTHESIS__\n    send_num_updates:\n      for (Pid i = 0; i < RoundUp<kNumPes>(num_partitions) / kNumPes; ++i) {\n#pragma HLS pipeline II = 1\n        // TODO: store relevant partitions only\n        VLOG_F(5, send) << \"num_updates[\" << i << \"]: \" << num_updates[i];\n        num_updates_out_q.write({i, num_updates[i]});\n        num_updates[i] = 0;  // Reset for the next scatter phase.\n      }\n    } else {\n      // Gather phase.\n    recv_update_reqs:\n      for (UpdateReq update_req; update_phase_q.empty();) {\n        if (update_req_q.try_read(update_req)) {\n          const auto pid = update_req.pid;\n          const auto num_updates_pid = update_req.num_updates;\n          VLOG_F(5, recv) << \"UpdateReq: \" << update_req;\n\n          bool valid = false;\n          UpdateVec update_v;\n        update_reads:\n          for (Eid i_rd = 0, i_wr = 0; i_rd < num_updates_pid;) {\n#pragma HLS pipeline II = 1\n            auto read_addr = update_offsets[pid / kNumPes] + i_wr;\n            if (i_wr < num_updates_pid &&\n                updates_read_addr_q.try_write(read_addr / kUpdateVecLen)) {\n              VLOG_F(5, req)\n                  << \"UpdateVec[\" << read_addr / kUpdateVecLen << \"]\";\n              i_wr += kUpdateVecLen;\n            }\n\n            if (valid || (valid = updates_read_data_q.try_read(update_v))) {\n              if (update_out_q.try_write(update_v)) {\n                VLOG_F(5, send) << \"Update: \" << update_v;\n                i_rd += kUpdateVecLen;\n                valid = false;\n              }\n            }\n          }\n          update_out_q.close();\n        }\n      }\n    }\n  }\n  VLOG_F(3, info) << \"done\";\n  update_phase_q.open();\n}\n\n\n\n\n",
+      "level": "lower"
+    },
+    "UpdateMem": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\nvoid UpdateMem(tlp::istream<uint64_t>& read_addr_q,\n               tlp::ostream<UpdateVec>& read_data_q,\n               tlp::istream<uint64_t>& write_addr_q,\n               tlp::istream<UpdateVec>& write_data_q,\n               tlp::async_mmap<UpdateVec> updates) {\n#pragma HLS data_pack variable = read_addr_q.fifo\n#pragma HLS data_pack variable = read_addr_q.peek_val\n#pragma HLS data_pack variable = read_data_q.fifo\n#pragma HLS data_pack variable = write_addr_q.fifo\n#pragma HLS data_pack variable = write_addr_q.peek_val\n#pragma HLS data_pack variable = write_data_q.fifo\n#pragma HLS data_pack variable = write_data_q.peek_val\n#pragma HLS data_pack variable = updates.write_data\n#pragma HLS data_pack variable = updates.read_data\n\n\n  bool valid = false;\n  UpdateVec update_v;\n  for (;;) {\n#pragma HLS pipeline II = 1\n#pragma HLS pipeline II = 1\n    // Handle read responses.\n    if (valid || (valid = updates.read_data_try_read(update_v))) {\n      if (read_data_q.try_write(update_v)) valid = false;\n    }\n\n    // Handle read requests.\n    if (!read_addr_q.empty() &&\n        updates.read_addr_try_write(read_addr_q.peek(nullptr))) {\n      read_addr_q.read(nullptr);\n    }\n\n    // Handle write requests.\n    if (!write_addr_q.empty() && !write_data_q.empty() &&\n        updates.write_addr_try_write(write_addr_q.peek(nullptr))) {\n      write_addr_q.read(nullptr);\n      updates.write_data_write(write_data_q.read(nullptr));\n    }\n  }\n}\n\n\n\n\n\n\n",
+      "level": "lower"
+    },
+    "VertexMem": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\nvoid VertexMem(tlp::istream<VertexReq>& scatter_req_q,\n               tlp::istreams<VertexReq, kNumPesR0 + 1>& vertex_req_q,\n               tlp::istreams<VertexAttrVec, kNumPesR0 + 1>& vertex_in_q,\n               tlp::ostreams<VertexAttrVec, kNumPesR0 + 1>& vertex_out_q,\n               tlp::async_mmap<FloatVec>& degrees,\n               tlp::async_mmap<FloatVec>& rankings,\n               tlp::async_mmap<FloatVec>& tmps) {\n#pragma HLS data_pack variable = vertex_req_q._[0].fifo\n#pragma HLS data_pack variable = vertex_req_q._[0].peek_val\n#pragma HLS array_partition variable = vertex_req_q._[0].peek_val complete\n#pragma HLS data_pack variable = vertex_in_q._[0].fifo\n#pragma HLS data_pack variable = vertex_in_q._[0].peek_val\n#pragma HLS array_partition variable = vertex_in_q._[0].peek_val complete\n#pragma HLS data_pack variable = vertex_out_q._[0].fifo\n#pragma HLS data_pack variable = scatter_req_q.fifo\n#pragma HLS data_pack variable = scatter_req_q.peek_val\n\n\n  constexpr int N = kNumPesR0 + 1;\n  for (;;) {\n    // Prioritize scatter phase broadcast.\n    VertexReq scatter_req;\n    if (scatter_req_q.try_read(scatter_req)) {\n      auto req = tlp::reg(scatter_req);\n      // Scatter phase\n      //   Send tmp to PEs.\n      FloatVec resp;\n      VertexAttrVec tmp_out;\n      bool valid = false;\n      bool ready[N] = {};\n    vertices_scatter:\n      for (Vid i_req = 0, i_resp = 0; i_resp < req.length;) {\n#pragma HLS pipeline II = 1\n        // Send requests.\n        if (i_req < req.length &&\n            i_req < i_resp + kEstimatedLatency * kVertexVecLen &&\n            tmps.read_addr_try_write((req.offset + i_req) / kVertexVecLen)) {\n          i_req += kVertexVecLen;\n        }\n\n        // Handle responses.\n        if (!valid) valid = tmps.read_data_try_read(resp);\n        for (int i = 0; i < kVertexVecLen; ++i) {\n#pragma HLS unroll\n          tmp_out.set(i, VertexAttrKernel{0.f, resp[i]});\n        }\n        if (valid) {\n          for (int pe = 0; pe < N; ++pe) {\n#pragma HLS pipeline II = 1\n#pragma HLS unroll\n            if (!ready[pe]) ready[pe] = vertex_out_q[pe].try_write(tmp_out);\n          }\n          if (All(ready)) {\n            i_resp += kVertexVecLen;\n            valid = false;\n            MemSet(ready, false);\n          }\n        }\n      }\n    } else {\n      VertexReq req;\n      bool done = false;\n      for (int pe = 0; pe < N; ++pe) {\n#pragma HLS unroll\n        if (!done && vertex_req_q[pe].try_read(req)) {\n          done |= true;\n          // Gather phase\n          //   Send degree and ranking to PEs.\n          //   Recv tmp and ranking from PEs.\n\n          FloatVec resp_degree;\n          FloatVec resp_ranking;\n\n          // valid_xx: resp_xx is valid\n          bool valid_degree = false;\n          bool valid_ranking = false;\n\n          // xx_ready_oo: write_xx has been written.\n          bool addr_ready_tmp = false;\n          bool data_ready_tmp = false;\n          bool addr_ready_ranking = false;\n          bool data_ready_ranking = false;\n\n        vertices_gather:\n          for (Vid i_rd_req_degree = 0, i_rd_req_ranking = 0, i_rd_resp = 0,\n                   i_wr = 0;\n               i_wr < req.length;) {\n#pragma HLS pipeline II = 1\n            // Send read requests.\n            if (i_rd_req_degree < req.length &&\n                i_rd_req_degree <\n                    i_rd_resp + kEstimatedLatency * kVertexVecLen &&\n                degrees.read_addr_try_write((req.offset + i_rd_req_degree) /\n                                            kVertexVecLen)) {\n              i_rd_req_degree += kVertexVecLen;\n            }\n            if (i_rd_req_ranking < req.length &&\n                i_rd_req_ranking <\n                    i_rd_resp + kEstimatedLatency * kVertexVecLen &&\n                rankings.read_addr_try_write((req.offset + i_rd_req_ranking) /\n                                             kVertexVecLen)) {\n              i_rd_req_ranking += kVertexVecLen;\n            }\n\n            // Handle read responses.\n            if (i_rd_resp < req.length) {\n              if (!valid_degree)\n                valid_degree = degrees.read_data_try_read(resp_degree);\n              if (!valid_ranking)\n                valid_ranking = rankings.read_data_try_read(resp_ranking);\n              VertexAttrVec vertex_attr_out;\n              for (int i = 0; i < kVertexVecLen; ++i) {\n#pragma HLS unroll\n                vertex_attr_out.set(\n                    i, VertexAttrKernel{resp_ranking[i], resp_degree[i]});\n              }\n              if (valid_degree && valid_ranking &&\n                  vertex_out_q[pe].try_write(vertex_attr_out)) {\n                i_rd_resp += kVertexVecLen;\n                valid_degree = false;\n                valid_ranking = false;\n              }\n            }\n\n            // Write to DRAM.\n            if (!vertex_in_q[pe].empty()) {\n              auto v = vertex_in_q[pe].peek(nullptr);\n              FloatVec ranking_out;\n              FloatVec tmp_out;\n              for (int i = 0; i < kVertexVecLen; ++i) {\n#pragma HLS unroll\n                ranking_out.set(i, v[i].ranking);\n                tmp_out.set(i, v[i].tmp);\n              }\n              uint64_t addr = (req.offset + i_wr) / kVertexVecLen;\n              if (!addr_ready_ranking)\n                addr_ready_ranking = rankings.write_addr_try_write(addr);\n              if (!data_ready_ranking)\n                data_ready_ranking = rankings.write_data_try_write(ranking_out);\n              if (!addr_ready_tmp)\n                addr_ready_tmp = tmps.write_addr_try_write(addr);\n              if (!data_ready_tmp)\n                data_ready_tmp = tmps.write_data_try_write(tmp_out);\n              if (addr_ready_ranking && data_ready_ranking && addr_ready_tmp &&\n                  data_ready_tmp) {\n                vertex_in_q[pe].read(nullptr);\n                addr_ready_ranking = false;\n                data_ready_ranking = false;\n                addr_ready_tmp = false;\n                data_ready_tmp = false;\n                i_wr += kVertexVecLen;\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\n\n\n// Handles edge read requests.\n\n\n\n\n\n\n\n\n\n",
+      "level": "lower"
+    },
+    "VertexRouterR1": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\nvoid VertexRouterR1(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, kNumPesR1 + 1>& pe_req_q,\n    tlp::istreams<VertexAttrVec, kNumPesR1 + 1>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, kNumPesR1 + 1>& pe_out_q) {\n#pragma HLS data_pack variable = pe_req_q._[0].fifo\n#pragma HLS data_pack variable = pe_req_q._[0].peek_val\n#pragma HLS array_partition variable = pe_req_q._[0].peek_val complete\n#pragma HLS data_pack variable = pe_in_q._[0].fifo\n#pragma HLS data_pack variable = pe_in_q._[0].peek_val\n#pragma HLS array_partition variable = pe_in_q._[0].peek_val complete\n#pragma HLS data_pack variable = pe_out_q._[0].fifo\n#pragma HLS data_pack variable = mm_req_q.fifo\n#pragma HLS data_pack variable = mm_in_q.fifo\n#pragma HLS data_pack variable = mm_out_q.fifo\n\n\n#pragma HLS inline region\n  VertexRouterTemplated(mm_req_q, mm_in_q, mm_out_q, pe_req_q, pe_in_q,\n                        pe_out_q);\n}\n\n\n\n// Handles edge read requests.\n\n\n\n\n\n\n\n\n\n",
+      "level": "lower"
+    },
+    "VertexRouterR2": {
+      "code": "#include <cassert>\n#include <cstring>\n\n#include <algorithm>\n\n#include <tlp.h>\n\n#include \"page-rank-kernel.h\"\n\nconstexpr int kMaxNumPartitions = 2048;\nconstexpr int kMaxPartitionSize = 1024 * 256;\nconstexpr int kEstimatedLatency = 50;\n\nconstexpr int kNumPesR0 = 1;\nconstexpr int kNumPesR1 = (kNumPes - kNumPesR0) / 2;\nconstexpr int kNumPesR2 = kNumPes - kNumPesR0 - kNumPesR1;\n\n\n\n\n\ntemplate <uint64_t N>\nvoid VertexRouterTemplated(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, N>& pe_req_q,\n    tlp::istreams<VertexAttrVec, N>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, N>& pe_out_q) {\n  TLP_ELEM_TYPE(pe_req_q) pe_req;\n  bool pe_req_valid = false;\n  bool mm_req_ready = false;\n\n  TLP_ELEM_TYPE(mm_in_q) mm_in;\n  bool mm_in_valid = false;\n  bool pe_out_ready[N] = {};\n\n  TLP_ELEM_TYPE(pe_in_q) pe_in;\n  bool pe_in_valid = false;\n  bool mm_out_ready = false;\n\n  uint8_t pe = 0;\n  decltype(pe_req.length) mm2pe_count = 0;\n  decltype(pe_req.length) pe2mm_count = 0;\n\nvertex_router:\n  for (;;) {\n#pragma HLS pipeline II = 1\n    if (pe2mm_count == 0) {\n      // Not processing a gather phase request.\n\n      // Broadcast scatter phase data if any.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid) {\n#pragma HLS latency max = 1\n        for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n          if (!pe_out_ready[i]) pe_out_ready[i] = pe_out_q[i].try_write(mm_in);\n        }\n        if (All(pe_out_ready)) {\n#pragma HLS latency max = 1\n          VLOG_F(20, fwd) << \"scatter phase data\";\n          mm_in_valid = false;\n          MemSet(pe_out_ready, false);\n        }\n      }\n\n      // Accept gather phase requests.\n      for (uint64_t i = 0; i < N; ++i) {\n#pragma HLS unroll\n        if (!pe_req_valid && pe_req_q[i].try_read(pe_req)) {\n          pe_req_valid |= true;\n          pe = i;\n          mm2pe_count = pe2mm_count = pe_req.length / kVertexVecLen;\n        }\n      }\n    } else {\n      // Processing a gather phase request.\n\n      // Forward vertex attribtues from ProcElem to VertexMem.\n      if (!pe_in_valid) pe_in_valid = pe_in_q[pe].try_read(pe_in);\n      if (pe_in_valid) {\n        if (!mm_out_ready) mm_out_ready = mm_out_q.try_write(pe_in);\n        if (mm_out_ready) {\n          VLOG_F(10, fwd) << \"gather phase: memory <- port \" << int(pe)\n                          << \"; remaining: \" << pe2mm_count - 1;\n          pe_in_valid = false;\n          mm_out_ready = false;\n          --pe2mm_count;\n        }\n      }\n\n      // Forward vertex attribtues from VertexMem to ProcElem.\n      if (!mm_in_valid) mm_in_valid = mm_in_q.try_read(mm_in);\n      if (mm_in_valid && mm2pe_count > 0) {\n        if (!pe_out_ready[pe]) pe_out_ready[pe] = pe_out_q[pe].try_write(mm_in);\n        if (pe_out_ready[pe]) {\n          VLOG_F(10, fwd) << \"gather phase: memory -> port \" << int(pe)\n                          << \"; remaining: \" << mm2pe_count - 1;\n          mm_in_valid = false;\n          pe_out_ready[pe] = false;\n          --mm2pe_count;\n        }\n      }\n\n      // Forward request from ProcElem to VertexMem.\n      if (pe_req_valid) {\n        if (!mm_req_ready) mm_req_ready = mm_req_q.try_write(pe_req);\n        if (mm_req_ready) {\n          VLOG_F(9, recv) << \"fulfilling request from port \" << int(pe);\n          pe_req_valid = false;\n          mm_req_ready = false;\n        }\n      }\n    }\n  }\n}\n\n\n\nvoid VertexRouterR2(\n    // upstream to VertexMem\n    tlp::ostream<VertexReq>& mm_req_q, tlp::istream<VertexAttrVec>& mm_in_q,\n    tlp::ostream<VertexAttrVec>& mm_out_q,\n    // downstream to ProcElem\n    tlp::istreams<VertexReq, kNumPesR2>& pe_req_q,\n    tlp::istreams<VertexAttrVec, kNumPesR2>& pe_in_q,\n    tlp::ostreams<VertexAttrVec, kNumPesR2>& pe_out_q) {\n#pragma HLS data_pack variable = pe_req_q._[0].fifo\n#pragma HLS data_pack variable = pe_req_q._[0].peek_val\n#pragma HLS array_partition variable = pe_req_q._[0].peek_val complete\n#pragma HLS data_pack variable = pe_in_q._[0].fifo\n#pragma HLS data_pack variable = pe_in_q._[0].peek_val\n#pragma HLS array_partition variable = pe_in_q._[0].peek_val complete\n#pragma HLS data_pack variable = pe_out_q._[0].fifo\n#pragma HLS data_pack variable = mm_req_q.fifo\n#pragma HLS data_pack variable = mm_in_q.fifo\n#pragma HLS data_pack variable = mm_out_q.fifo\n\n\n#pragma HLS inline region\n  VertexRouterTemplated(mm_req_q, mm_in_q, mm_out_q, pe_req_q, pe_in_q,\n                        pe_out_q);\n}\n\n// Handles edge read requests.\n\n\n\n\n\n\n\n\n\n",
+      "level": "lower"
+    }
+  },
+  "top": "PageRank",
+  "headers": {
+    "page-rank-kernel.h": "#ifndef TLP_APPS_PAGE_RANK_KERNEL_H_\n#define TLP_APPS_PAGE_RANK_KERNEL_H_\n\n#include <algorithm>\n\n#include \"page-rank.h\"\n\n#define VLOG_F(level, tag) VLOG(level) << #tag << \"@\" << __FUNCTION__ << \": \"\n#define LOG_F(level, tag) LOG(level) << #tag << \"@\" << __FUNCTION__ << \": \"\n\nstruct VertexAttrKernel {\n  float ranking;\n  float tmp;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const VertexAttrKernel& obj) {\n  return os << \"{ranking: \" << obj.ranking << \", out_degree|tmp: \" << obj.tmp\n            << \"}\";\n}\n\nusing VertexAttrVec = tlp::vec_t<VertexAttrKernel, kVertexVecLen>;\n\nstruct TaskReq {\n  enum Phase { kScatter = 0, kGather = 1 };\n  Phase phase;\n  Pid pid;\n  Vid overall_base_vid;\n  Vid partition_size;\n  Eid num_edges;\n  Vid vid_offset;\n  Eid eid_offset;\n  float init;\n  bool scatter_done;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const TaskReq::Phase& obj) {\n  return os << (obj == TaskReq::kScatter ? \"SCATTER\" : \"GATHER\");\n}\n\ninline std::ostream& operator<<(std::ostream& os, const TaskReq& obj) {\n  return os << \"{phase: \" << obj.phase << \", pid: \" << obj.pid\n            << \", partition_size: \" << obj.partition_size\n            << \", num_edges: \" << obj.num_edges\n            << \", vid_offset: \" << obj.vid_offset\n            << \", eid_offset: \" << obj.eid_offset << \", init: \" << obj.init\n            << \", scatter_done: \" << obj.scatter_done << \"}\";\n}\n\nstruct TaskResp {\n  bool active;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const TaskResp& obj) {\n  return os << \"{active: \" << obj.active << \"}\";\n}\n\nstruct UpdateReq {\n  TaskReq::Phase phase;\n  Pid pid;\n  Eid num_updates;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const UpdateReq& obj) {\n  return os << \"{phase: \" << obj.phase << \", pid: \" << obj.pid << \"}\";\n}\n\nstruct VertexReq {\n  Vid offset;\n  Vid length;\n};\n\nusing NumUpdates = tlp::packet<Pid, Eid>;\nusing UpdateVecPacket = tlp::packet<Pid, UpdateVec>;\n\ntemplate <typename T>\ninline T Max(const T (&array)[1]) {\n#pragma HLS inline\n  return array[0];\n}\n\ntemplate <typename T, int N>\ninline T Max(const T (&array)[N]) {\n#pragma HLS inline\n  return std::max(Max((const T(&)[N / 2])(array)),\n                  Max((const T(&)[N - N / 2])(array[N / 2])));\n}\n\ninline bool All(const bool (&array)[1]) {\n#pragma HLS inline\n  return array[0];\n}\n\ntemplate <int N>\ninline bool All(const bool (&array)[N]) {\n#pragma HLS inline\n  return All((const bool(&)[N / 2])(array)) &&\n         All((const bool(&)[N - N / 2])(array[N / 2]));\n}\n\ntemplate <typename T>\ninline void MemSet(T (&array)[1], T value) {\n#pragma HLS inline\n  array[0] = value;\n}\n\ntemplate <typename T, int N>\ninline void MemSet(T (&array)[N], T value) {\n#pragma HLS inline\n  MemSet((T(&)[N / 2])(array), value);\n  MemSet((T(&)[N - N / 2])(array[N / 2]), value);\n}\n\n#endif  // TLP_APPS_PAGE_RANK_KERNEL_H_",
+    "page-rank.h": "#ifndef TLP_APPS_PAGE_RANK_H_\n#define TLP_APPS_PAGE_RANK_H_\n\n#include <iostream>\n\n#include <tlp.h>\n\n// Some utility functions.\n\n// Round n up to a multiple of N.\ntemplate <uint64_t N, typename T>\ninline T RoundUp(T n) {\n  return ((n - 1) / N + 1) * N;\n}\n\n// Test for a power of 2.\ntemplate <uint64_t N>\ninline constexpr bool IsPowerOf2() {\n  return N > 0 ? N % 2 == 0 && IsPowerOf2<N / 2>() : false;\n}\n\ntemplate <>\ninline constexpr bool IsPowerOf2<1>() {\n  return true;\n}\n\nconstexpr uint64_t kVecLenBytes = 64;  // 512 bits\n\n// Page Rank.\n\nusing Vid = uint32_t;     // can hold all vertices\nusing Degree = uint32_t;  // can hold the maximum degree\nusing Eid = uint32_t;     // can hold all edges\nusing Pid = uint16_t;     // can hold all partitions\n\nconstexpr float kDampingFactor = .85f;\nconstexpr float kConvergenceThreshold = 0.0001f;\n\nconstexpr int kNumPes = 8;\n\nstruct VertexAttr {\n  Degree out_degree;\n  float ranking;\n  float tmp;\n};\n\nconstexpr uint64_t kVertexVecLen = kVecLenBytes / sizeof(float);\n\ninline std::ostream& operator<<(std::ostream& os, const VertexAttr& obj) {\n  return os << \"{out_degree: \" << obj.out_degree << \", ranking: \" << obj.ranking\n            << \", tmp: \" << obj.tmp << \"}\";\n}\n\nstruct Edge {\n  Vid src;\n  Vid dst;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const Edge& obj) {\n  return os << \"{\" << obj.src << \" -> \" << obj.dst << \"}\";\n}\n\nconstexpr uint64_t kEdgeVecLen = kVecLenBytes / sizeof(Edge);\nstatic_assert(IsPowerOf2<sizeof(Edge)>(),\n              \"Edge is not aligned to a power of 2\");\n\nstruct Update {\n  Vid dst;\n  float delta;\n};\n\ninline std::ostream& operator<<(std::ostream& os, const Update& obj) {\n  return os << \"{dst: \" << obj.dst << \", value: \" << obj.delta << \"}\";\n}\n\nconstexpr uint64_t kUpdateVecLen = kVecLenBytes / sizeof(Update);\nstatic_assert(IsPowerOf2<sizeof(Update)>(),\n              \"Update is not aligned to a power of 2\");\n\nconstexpr uint64_t kVertexPartitionFactor =\n    kEdgeVecLen > kVertexVecLen\n        ? kEdgeVecLen > kUpdateVecLen ? kEdgeVecLen : kUpdateVecLen\n        : kVertexVecLen > kUpdateVecLen ? kVertexVecLen : kUpdateVecLen;\n\nconstexpr int kVertexUpdateLatency = 4;\nconstexpr int kVertexUpdateDepDist = kVertexUpdateLatency + 1;\n\n// Alias for vec types.\nusing FloatVec = tlp::vec_t<float, kVertexVecLen>;\nusing EdgeVec = tlp::vec_t<Edge, kEdgeVecLen>;\nusing UpdateVec = tlp::vec_t<Update, kUpdateVecLen>;\n\ninline std::ostream& operator<<(std::ostream& os, const UpdateVec& obj) {\n  os << \"{\";\n  bool first = true;\n  for (int i = 0; i < UpdateVec::length; ++i) {\n    if (obj[i].dst != 0) {\n      if (!first) {\n        os << \", \";\n      } else {\n        first = false;\n      }\n      os << \"[\" << i << \"]: \" << obj[i];\n    }\n  }\n  return os << \"}\";\n}\n\n#endif  // TLP_APPS_PAGE_RANK_H_"
+  }
+}

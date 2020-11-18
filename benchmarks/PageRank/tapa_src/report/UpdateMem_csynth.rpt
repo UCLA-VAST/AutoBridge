@@ -1,0 +1,194 @@
+
+
+================================================================
+== Vivado HLS Report for 'UpdateMem'
+================================================================
+* Date:           Fri May 15 20:11:36 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       UpdateMem
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 4.00 ns | 2.786 ns |   0.50 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |          |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        | Loop Name|   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+        |- Loop 1  |        ?|        ?|         2|          1|          1|  inf |    yes   |
+        +----------+---------+---------+----------+-----------+-----------+------+----------+
+
+
+
+================================================================
+== Utilization Estimates
+================================================================
+* Summary: 
++---------------------+---------+-------+---------+---------+-----+
+|         Name        | BRAM_18K| DSP48E|    FF   |   LUT   | URAM|
++---------------------+---------+-------+---------+---------+-----+
+|DSP                  |        -|      -|        -|        -|    -|
+|Expression           |        -|      -|        0|       22|    -|
+|FIFO                 |        -|      -|        -|        -|    -|
+|Instance             |        -|      -|        -|        -|    -|
+|Memory               |        -|      -|        -|        -|    -|
+|Multiplexer          |        -|      -|        -|      123|    -|
+|Register             |        -|      -|     2059|        -|    -|
++---------------------+---------+-------+---------+---------+-----+
+|Total                |        0|      0|     2059|      145|    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available SLR        |     1344|   3008|   869120|   434560|  320|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization SLR (%)  |        0|      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available            |     4032|   9024|  2607360|  1303680|  960|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization (%)      |        0|      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+
++ Detail: 
+    * Instance: 
+    N/A
+
+    * DSP48E: 
+    N/A
+
+    * Memory: 
+    N/A
+
+    * FIFO: 
+    N/A
+
+    * Expression: 
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |           Variable Name          | Operation| DSP48E| FF| LUT| Bitwidth P0| Bitwidth P1|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |and_ln150_fu_297_p2               |    and   |      0|  0|   2|           1|           1|
+    |ap_block_pp0_stage0_01001         |    and   |      0|  0|   2|           1|           1|
+    |ap_block_state3_pp0_stage0_iter1  |    and   |      0|  0|   2|           1|           1|
+    |ap_condition_151                  |    and   |      0|  0|   2|           1|           1|
+    |ap_predicate_op103_write_state3   |    and   |      0|  0|   2|           1|           1|
+    |tmp_1_nbreadreq_fu_108_p3         |    and   |      0|  0|   2|           1|           0|
+    |tmp_3_nbreadreq_fu_135_p3         |    and   |      0|  0|   2|           1|           0|
+    |tmp_4_nbreadreq_fu_143_p3         |    and   |      0|  0|   2|           1|           0|
+    |updates_read_nbread_fu_102_p2_0   |    and   |      0|  0|   2|           1|           0|
+    |ap_enable_pp0                     |    xor   |      0|  0|   2|           1|           2|
+    |xor_ln150_fu_291_p2               |    xor   |      0|  0|   2|           1|           2|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |Total                             |          |      0|  0|  22|          11|           9|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+
+    * Multiplexer: 
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |                     Name                    | LUT| Input Size| Bits| Total Bits|
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |ap_NS_fsm                                    |  15|          3|    1|          3|
+    |ap_enable_reg_pp0_iter1                      |   9|          2|    1|          2|
+    |ap_phi_mux_tmp_val_data_V_phi_fu_216_p4      |   9|          2|  512|       1024|
+    |ap_phi_mux_update_v_2_phi_fu_237_p4          |   9|          2|  512|       1024|
+    |ap_phi_mux_valid_0_phi_fu_194_p4             |   9|          2|    1|          2|
+    |ap_phi_mux_valid_1_phi_fu_226_p4             |   9|          2|    1|          2|
+    |ap_phi_mux_valid_3_phi_fu_249_p4             |   9|          2|    1|          2|
+    |ap_phi_reg_pp0_iter1_tmp_val_data_V_reg_213  |   9|          2|  512|       1024|
+    |ap_phi_reg_pp0_iter1_update_v_2_reg_233      |   9|          2|  512|       1024|
+    |ap_phi_reg_pp0_iter1_valid_1_reg_223         |   9|          2|    1|          2|
+    |ap_phi_reg_pp0_iter1_valid_3_reg_245         |   9|          2|    1|          2|
+    |updates_write_data_V_data_V_blk_n            |   9|          2|    1|          2|
+    |valid_0_reg_190                              |   9|          2|    1|          2|
+    +---------------------------------------------+----+-----------+-----+-----------+
+    |Total                                        | 123|         27| 2057|       4115|
+    +---------------------------------------------+----+-----------+-----+-----------+
+
+    * Register: 
+    +---------------------------------------------+-----+----+-----+-----------+
+    |                     Name                    |  FF | LUT| Bits| Const Bits|
+    +---------------------------------------------+-----+----+-----+-----------+
+    |ap_CS_fsm                                    |    2|   0|    2|          0|
+    |ap_enable_reg_pp0_iter0                      |    1|   0|    1|          0|
+    |ap_enable_reg_pp0_iter1                      |    1|   0|    1|          0|
+    |ap_phi_reg_pp0_iter1_tmp_val_data_V_reg_213  |  512|   0|  512|          0|
+    |ap_phi_reg_pp0_iter1_update_v_2_reg_233      |  512|   0|  512|          0|
+    |ap_phi_reg_pp0_iter1_valid_1_reg_223         |    1|   0|    1|          0|
+    |ap_phi_reg_pp0_iter1_valid_3_reg_245         |    1|   0|    1|          0|
+    |empty_n_reg_304                              |    1|   0|    1|          0|
+    |full_n_2_reg_332                             |    1|   0|    1|          0|
+    |tmp_3_reg_324                                |    1|   0|    1|          0|
+    |tmp_4_reg_328                                |    1|   0|    1|          0|
+    |tmp_data_V_reg_336                           |  512|   0|  512|          0|
+    |update_v_01_reg_202                          |  512|   0|  512|          0|
+    |valid_0_reg_190                              |    1|   0|    1|          0|
+    +---------------------------------------------+-----+----+-----+-----------+
+    |Total                                        | 2059|   0| 2059|          0|
+    +---------------------------------------------+-----+----+-----+-----------+
+
+
+
+================================================================
+== Interface
+================================================================
+* Summary: 
++------------------------------------+-----+-----+------------+-----------------------------+--------------+
+|              RTL Ports             | Dir | Bits|  Protocol  |        Source Object        |    C Type    |
++------------------------------------+-----+-----+------------+-----------------------------+--------------+
+|ap_clk                              |  in |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|ap_rst_n                            |  in |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|ap_start                            |  in |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|ap_done                             | out |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|ap_idle                             | out |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|ap_ready                            | out |    1| ap_ctrl_hs |          UpdateMem          | return value |
+|read_addr_q_fifo_V_dout             |  in |   65|   ap_fifo  |      read_addr_q_fifo_V     |    pointer   |
+|read_addr_q_fifo_V_empty_n          |  in |    1|   ap_fifo  |      read_addr_q_fifo_V     |    pointer   |
+|read_addr_q_fifo_V_read             | out |    1|   ap_fifo  |      read_addr_q_fifo_V     |    pointer   |
+|read_addr_q_peek_val                |  in |   65|   ap_none  |     read_addr_q_peek_val    |    pointer   |
+|read_data_q_fifo_V_din              | out |  513|   ap_fifo  |      read_data_q_fifo_V     |    pointer   |
+|read_data_q_fifo_V_full_n           |  in |    1|   ap_fifo  |      read_data_q_fifo_V     |    pointer   |
+|read_data_q_fifo_V_write            | out |    1|   ap_fifo  |      read_data_q_fifo_V     |    pointer   |
+|write_addr_q_fifo_V_dout            |  in |   65|   ap_fifo  |     write_addr_q_fifo_V     |    pointer   |
+|write_addr_q_fifo_V_empty_n         |  in |    1|   ap_fifo  |     write_addr_q_fifo_V     |    pointer   |
+|write_addr_q_fifo_V_read            | out |    1|   ap_fifo  |     write_addr_q_fifo_V     |    pointer   |
+|write_addr_q_peek_val               |  in |   65|   ap_none  |    write_addr_q_peek_val    |    pointer   |
+|write_data_q_fifo_V_dout            |  in |  513|   ap_fifo  |     write_data_q_fifo_V     |    pointer   |
+|write_data_q_fifo_V_empty_n         |  in |    1|   ap_fifo  |     write_data_q_fifo_V     |    pointer   |
+|write_data_q_fifo_V_read            | out |    1|   ap_fifo  |     write_data_q_fifo_V     |    pointer   |
+|write_data_q_peek_val               |  in |  513|   ap_none  |    write_data_q_peek_val    |    pointer   |
+|updates_read_addr_V_din             | out |   64|   ap_fifo  |     updates_read_addr_V     |    pointer   |
+|updates_read_addr_V_full_n          |  in |    1|   ap_fifo  |     updates_read_addr_V     |    pointer   |
+|updates_read_addr_V_write           | out |    1|   ap_fifo  |     updates_read_addr_V     |    pointer   |
+|updates_read_data_V_data_V_dout     |  in |  512|   ap_fifo  |  updates_read_data_V_data_V |    pointer   |
+|updates_read_data_V_data_V_empty_n  |  in |    1|   ap_fifo  |  updates_read_data_V_data_V |    pointer   |
+|updates_read_data_V_data_V_read     | out |    1|   ap_fifo  |  updates_read_data_V_data_V |    pointer   |
+|updates_read_peek_data_V            |  in |  512|   ap_none  |   updates_read_peek_data_V  |    pointer   |
+|updates_write_addr_V_din            | out |   64|   ap_fifo  |     updates_write_addr_V    |    pointer   |
+|updates_write_addr_V_full_n         |  in |    1|   ap_fifo  |     updates_write_addr_V    |    pointer   |
+|updates_write_addr_V_write          | out |    1|   ap_fifo  |     updates_write_addr_V    |    pointer   |
+|updates_write_data_V_data_V_din     | out |  512|   ap_fifo  | updates_write_data_V_data_V |    pointer   |
+|updates_write_data_V_data_V_full_n  |  in |    1|   ap_fifo  | updates_write_data_V_data_V |    pointer   |
+|updates_write_data_V_data_V_write   | out |    1|   ap_fifo  | updates_write_data_V_data_V |    pointer   |
++------------------------------------+-----+-----+------------+-----------------------------+--------------+
+
