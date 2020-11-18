@@ -1,0 +1,389 @@
+
+****** Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2019.2 (64-bit)
+  **** SW Build 2700185 on Thu Oct 24 18:45:48 MDT 2019
+  **** IP Build 2699827 on Thu Oct 24 21:16:38 MDT 2019
+    ** Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+
+source /opt/tools/xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/opt/tools/xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Tue May 19 12:02:20 PDT 2020
+INFO: [HLS 200-10] On os Ubuntu 16.04.6 LTS
+INFO: [HLS 200-10] In directory '/tmp/vivado-hls-lh9dd7xq'
+Sourcing Tcl script '/tmp/vivado-hls-lh9dd7xq/commands.tcl'
+INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-i4ytj7ut/project'.
+INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp' to the project
+INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-i4ytj7ut/project/compute'.
+INFO: [HLS 200-10] Setting target device to 'xcu280-fsvh2892-2L-e'
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 3.33ns.
+INFO: [XFORM 203-1161] The maximum of name length is set into 253.
+INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
+INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124290 ; free virtual = 128259
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124290 ; free virtual = 128259
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:108).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:107).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:106).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:105).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1308).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1307).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1306).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'compute' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1305).
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:28 ; elapsed = 00:00:32 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124245 ; free virtual = 128219
+INFO: [HLS 200-10] Checking synthesizability ...
+WARNING: [SYNCHK 200-23] /home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:113: variable-indexed range selection may cause suboptimal QoR.
+INFO: [SYNCHK 200-10] 0 error(s), 1 warning(s).
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:29 ; elapsed = 00:00:33 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124364 ; free virtual = 128340
+INFO: [XFORM 203-1101] Packing variable 'to_chan_0_bank_0.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:33) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'to_chan_0_bank_1.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:34) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'to_chan_0_bank_2.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:35) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'to_chan_0_bank_3.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:36) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_0.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:37) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_0.peek_val' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:37) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_1.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:38) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_1.peek_val' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:38) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_2.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:39) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_2.peek_val' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:39) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_3.fifo.V' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:40) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'from_chan_0_bank_3.peek_val' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:40) into a 513-bit variable.
+INFO: [XFORM 203-502] Unrolling all sub-loops inside loop 'compute_epoch' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:98) in function 'compute' for pipelining.
+INFO: [HLS 200-489] Unrolling loop 'load_coalesced' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:111) in function 'compute' completely with a factor of 16.
+INFO: [HLS 200-489] Unrolling loop 'compute_t0_unrolled' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:576) in function 'compute' completely with a factor of 64.
+INFO: [HLS 200-489] Unrolling loop 'store_coalesced' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1294) in function 'compute' completely with a factor of 16.
+WARNING: [XFORM 203-105] Ignore complete array partition directive on 'FF_t1_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:64) in dimension 1: conflict with memory core assignment directive.
+.
+INFO: [XFORM 203-101] Partitioning array 'FIFO_125_t1_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'FIFO_124_t1_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:66) in dimension 1 completely.
+INFO: [XFORM 203-101] Partitioning array 'points_from_t1_to_t0_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:76) in dimension 1 completely.
+WARNING: [XFORM 203-105] Ignore complete array partition directive on 'buffer_t1_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:85) in dimension 1: conflict with memory core assignment directive.
+.
+WARNING: [XFORM 203-105] Ignore complete array partition directive on 'buffer_t0_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:91) in dimension 1: conflict with memory core assignment directive.
+.
+INFO: [XFORM 203-101] Partitioning array 'points_from_t1_to_t0_chan_0' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:76) in dimension 2 completely.
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:49 ; elapsed = 00:00:52 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124623 ; free virtual = 128603
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[32]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[116]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[121]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[119]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[118]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[35]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[120]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[117]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[107]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[109]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[106]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[108]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[111]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[110]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[98]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[94]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[36]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[31]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[46]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[45]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[43]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[38]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[37]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[39]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[40]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[42]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[41]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[47]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[49]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[51]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[50]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[57]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[56]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[55]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[52]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[53]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[123]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[0]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[1]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[2]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[3]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[4]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[5]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[6]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[7]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[8]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[9]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[10]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[11]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[12]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[13]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[14]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[15]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[16]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[17]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[18]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[19]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[20]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[21]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[22]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[23]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[24]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[25]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[26]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[27]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[28]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[29]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[30]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[54]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[70]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[48]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[65]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[97]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[64]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[59]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[58]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[61]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[115]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[60]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[63]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[62]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[77]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[74]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[76]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[75]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[105]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[66]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[68]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[67]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[69]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[71]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[90]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[73]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[72]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[87]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[86]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[85]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[78]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[79]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[81]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[80]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[82]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[101]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[100]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[99]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[88]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[44]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[89]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[92]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[91]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[95]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[93]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[96]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[34]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[114]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[113]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[112]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[103]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[84]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[122]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[124]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[125]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[104]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[102]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[83]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_125_t1_chan_0[33]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:65).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_124_t1_chan_0[0]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:66).
+WARNING: [ANALYSIS 214-52] Found false inter dependency for variable 'FIFO_124_t1_chan_0[1]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:66).
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[125]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:636:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_124_t1_chan_0[0]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:644:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[124]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:650:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[62]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:654:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[123]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:660:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[61]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:664:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[122]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:670:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[60]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:674:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[121]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:680:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[59]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:684:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[120]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:690:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[58]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:694:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[119]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:700:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[57]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:704:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[118]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:710:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[56]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:714:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[117]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:720:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[55]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:724:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[116]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:730:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[54]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:734:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[115]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:740:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[53]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:744:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[114]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:750:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[52]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:754:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[113]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:760:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[51]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:764:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[112]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:770:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[50]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:774:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[111]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:780:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[49]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:784:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[110]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:790:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[48]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:794:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[109]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:800:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[47]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:804:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[108]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:810:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[46]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:814:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[107]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:820:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[45]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:824:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[106]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:830:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[44]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:834:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[105]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:840:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[43]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:844:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[104]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:850:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[42]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:854:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[103]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:860:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[41]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:864:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[102]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:870:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[40]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:874:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[101]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:880:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[39]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:884:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[100]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:890:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[38]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:894:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[99]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:900:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[37]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:904:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[98]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:910:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[36]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:914:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[97]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:920:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[35]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:924:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[96]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:930:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[34]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:934:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[95]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:940:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[33]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:944:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[94]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:950:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[32]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:954:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[93]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:960:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[31]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:964:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[92]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:970:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[30]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:974:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[91]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:980:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[29]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:984:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[90]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:990:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[28]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:994:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[89]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1000:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[27]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1004:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[88]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1010:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[26]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1014:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[87]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1020:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[25]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1024:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[86]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1030:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[24]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1034:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[85]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1040:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[23]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1044:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[84]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1050:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[22]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1054:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[83]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1060:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[21]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1064:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[82]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1070:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[20]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1074:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[81]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1080:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[19]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1084:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[80]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1090:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[18]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1094:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[79]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1100:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[17]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1104:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[78]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1110:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[16]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1114:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[77]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1120:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[15]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1124:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[76]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1130:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[14]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1134:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[75]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1140:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[13]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1144:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[74]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1150:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[12]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1154:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[73]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1160:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[11]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1164:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[72]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1170:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[10]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1174:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[71]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1180:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[9]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1184:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[70]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1190:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[8]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1194:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[69]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1200:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[7]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1204:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[68]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1210:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[6]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1214:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[67]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1220:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[5]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1224:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[66]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1230:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[4]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1234:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[65]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1240:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[3]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1244:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[64]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1250:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[2]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1254:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[63]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1260:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[1]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1264:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_124_t1_chan_0[1]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1270:2)
+INFO: [HLS 200-472] Inferring partial write operation for 'FIFO_125_t1_chan_0[0]' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/compute.cpp:1278:2)
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124622 ; free virtual = 128603
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'compute' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'compute' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'compute_epoch'.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 35.
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111]  Elapsed time: 63.79 seconds; current allocated memory: 163.749 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111]  Elapsed time: 4.41 seconds; current allocated memory: 175.510 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'compute' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/to_chan_0_bank_0_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/to_chan_0_bank_1_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/to_chan_0_bank_2_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/to_chan_0_bank_3_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_0_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_0_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_1_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_1_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_2_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_2_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_3_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/from_chan_0_bank_3_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/coalesced_data_num' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/tile_data_num' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/tile_num_dim_0' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/input_size_dim_0' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'compute/input_size_dim_1' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'compute' to 'ap_ctrl_hs'.
+WARNING: [RTGEN 206-101] Port 'compute/from_chan_0_bank_0_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/from_chan_0_bank_1_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/from_chan_0_bank_2_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/from_chan_0_bank_3_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/tile_data_num' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/tile_num_dim_0' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/input_size_dim_0' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'compute/input_size_dim_1' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+INFO: [RTGEN 206-104] Estimated max fanout for 'compute' is 71936 from HDL expression: (1'b0 == ap_block_pp0_stage0_11001)
+INFO: [RTGEN 206-100] Generating core module 'compute_fadd_32ns_32ns_32_7_full_dsp_1': 256 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'compute_fmul_32ns_32ns_32_4_max_dsp_1': 64 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'compute'.
+INFO: [HLS 200-111]  Elapsed time: 6.01 seconds; current allocated memory: 198.263 MB.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 382.43 MHz
+INFO: [RTMG 210-278] Implementing memory 'compute_compute_FIFO_125_t1_chan_0_0_ram (RAM)' using block RAMs.
+INFO: [RTMG 210-278] Implementing memory 'compute_compute_FIFO_125_t1_chan_0_125_ram (RAM)' using block RAMs.
+INFO: [RTMG 210-278] Implementing memory 'compute_compute_FIFO_124_t1_chan_0_0_ram (RAM)' using block RAMs.
+INFO: [RTMG 210-278] Implementing memory 'compute_compute_FIFO_124_t1_chan_0_1_ram (RAM)' using block RAMs.
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:01:19 ; elapsed = 00:01:28 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124508 ; free virtual = 128523
+INFO: [VHDL 208-304] Generating VHDL RTL for compute with prefix compute_.
+INFO: [VLOG 209-307] Generating Verilog RTL for compute with prefix compute_.
+INFO: [HLS 200-112] Total elapsed time: 88.24 seconds; peak allocated memory: 198.263 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Tue May 19 12:03:47 2020...

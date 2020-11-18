@@ -1,0 +1,216 @@
+
+
+================================================================
+== Vivado HLS Report for 'store'
+================================================================
+* Date:           Tue May 19 13:56:27 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       store
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 3.33 ns | 2.914 ns |   0.42 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+        |               |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        |   Loop Name   |   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+        |- store_epoch  |        ?|        ?|         3|          1|          1|     ?|    yes   |
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+
+============================================================
++ Verbose Summary: Synthesis Manager
+============================================================
+InlineROM: 1
+ExposeGlobal: 0
+============================================================
++ Verbose Summary: CDFG Model
+============================================================
+IsTopModel: 1
+ResetActiveHigh: 1
+IsCombinational: 0
+IsDatapathOnly: 0
+HasWiredReturn: 1
+HasMFsm: 0
+HasVarLatency: 1
+IsPipeline: 0
+IsRtlPipelined: 0
+IsInstanceOverlapped: 0
+IsDontTouch: 0
+HasImplIP: 0
+IsGatedGlobalClock: 0
+
++ Individual pipeline summary: 
+  * Pipeline-0: initiation interval (II) = 1, depth = 3
+
+
+============================================================
++ Verbose Summary: Schedule
+============================================================
+* Number of FSM states : 9
+* Pipeline : 1
+  Pipeline-0 : II = 1, D = 3, States = { 2 3 4 }
+* Dataflow Pipeline: 0
+
+* FSM state transitions: 
+1 --> 2 
+2 --> 5 3 
+3 --> 4 
+4 --> 2 
+5 --> 6 
+6 --> 7 
+7 --> 8 
+8 --> 9 
+9 --> 
+
+* FSM state operations: 
+
+State 1 <SV = 0> <Delay = 2.91>
+ST_1 : Operation 10 [1/1] (0.00ns)   --->   "%data_num_read = call i32 @_ssdm_op_Read.ap_auto.i32(i32 %data_num)"   --->   Operation 10 'read' 'data_num_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 11 [1/1] (0.00ns)   --->   "%to_V_read = call i64 @_ssdm_op_Read.ap_auto.i64(i64 %to_V)"   --->   Operation 11 'read' 'to_V_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 12 [1/1] (0.00ns)   --->   "%to_V1 = call i58 @_ssdm_op_PartSelect.i58.i64.i32.i32(i64 %to_V_read, i32 6, i32 63)"   --->   Operation 12 'partselect' 'to_V1' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 13 [1/1] (0.00ns)   --->   "%empty = zext i58 %to_V1 to i64"   --->   Operation 13 'zext' 'empty' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 14 [1/1] (0.00ns)   --->   "%to_addr = getelementptr i512* %to_r, i64 %empty"   --->   Operation 14 'getelementptr' 'to_addr' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 15 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %to_r), !map !27"   --->   Operation 15 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 16 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %from_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str13, i32 0, i32 0, [1 x i8]* @p_str14, [1 x i8]* @p_str15, [1 x i8]* @p_str16, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str17, [1 x i8]* @p_str18)"   --->   Operation 16 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 17 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %from_peek_val), !map !31"   --->   Operation 17 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 18 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %from_fifo_V), !map !38"   --->   Operation 18 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 19 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i32 %data_num), !map !45"   --->   Operation 19 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 20 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([6 x i8]* @store_str) nounwind"   --->   Operation 20 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 21 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i512* %to_r, [6 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [3 x i8]* @p_str2, [7 x i8]* @p_str3, [1 x i8]* @p_str1, i32 16, i32 16, i32 16, i32 16, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:32]   --->   Operation 21 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 22 [1/1] (2.91ns)   --->   "%to_addr_wr_req = call i1 @_ssdm_op_WriteReq.m_axi.i512P(i512* %to_addr, i32 %data_num_read)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 22 'writereq' 'to_addr_wr_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_1 : Operation 23 [1/1] (0.60ns)   --->   "br label %1" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 23 'br' <Predicate = true> <Delay = 0.60>
+
+State 2 <SV = 1> <Delay = 0.85>
+ST_2 : Operation 24 [1/1] (0.00ns)   --->   "%i_0 = phi i31 [ 0, %0 ], [ %i, %store_epoch_begin ]"   --->   Operation 24 'phi' 'i_0' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 25 [1/1] (0.00ns)   --->   "%zext_ln39 = zext i31 %i_0 to i32" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 25 'zext' 'zext_ln39' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 26 [1/1] (0.85ns)   --->   "%icmp_ln39 = icmp slt i32 %zext_ln39, %data_num_read" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 26 'icmp' 'icmp_ln39' <Predicate = true> <Delay = 0.85> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 0.85> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 27 [1/1] (0.66ns)   --->   "%i = add i31 %i_0, 1" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 27 'add' 'i' <Predicate = true> <Delay = 0.66> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 0.66> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 28 [1/1] (0.00ns)   --->   "br i1 %icmp_ln39, label %store_epoch_begin, label %2" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 28 'br' <Predicate = true> <Delay = 0.00>
+
+State 3 <SV = 2> <Delay = 1.45>
+ST_3 : Operation 29 [1/1] (0.00ns)   --->   "%rbegin2 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 x i8]* @tlp_KD_KD_istream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_read_OC_region_str) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 29 'specregionbegin' 'rbegin2' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_3 : Operation 30 [1/1] (1.45ns)   --->   "%tmp = call i513 @_ssdm_op_Read.ap_fifo.volatile.i513P(i513* %from_fifo_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:81->/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 30 'read' 'tmp' <Predicate = (icmp_ln39)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
+ST_3 : Operation 31 [1/1] (0.00ns)   --->   "%trunc_ln81 = trunc i513 %tmp to i512" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:81->/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 31 'trunc' 'trunc_ln81' <Predicate = (icmp_ln39)> <Delay = 0.00>
+
+State 4 <SV = 3> <Delay = 2.91>
+ST_4 : Operation 32 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLoopName([12 x i8]* @p_str4) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:40]   --->   Operation 32 'specloopname' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 33 [1/1] (0.00ns)   --->   "%tmp_1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([12 x i8]* @p_str4)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:40]   --->   Operation 33 'specregionbegin' 'tmp_1' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 34 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:41]   --->   Operation 34 'specpipeline' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 35 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:42]   --->   Operation 35 'specpipeline' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 36 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:80->/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 36 'speclatency' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 37 [1/1] (0.00ns)   --->   "%rend3 = call i32 (...)* @_ssdm_op_SpecRegionEnd([41 x i8]* @tlp_KD_KD_istream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_read_OC_region_str, i32 %rbegin2) nounwind" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 37 'specregionend' 'rend3' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 38 [1/1] (2.91ns)   --->   "call void @_ssdm_op_Write.m_axi.i512P(i512* %to_addr, i512 %trunc_ln81, i64 -1)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 38 'write' <Predicate = (icmp_ln39)> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_4 : Operation 39 [1/1] (0.00ns)   --->   "%empty_4 = call i32 (...)* @_ssdm_op_SpecRegionEnd([12 x i8]* @p_str4, i32 %tmp_1)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:44]   --->   Operation 39 'specregionend' 'empty_4' <Predicate = (icmp_ln39)> <Delay = 0.00>
+ST_4 : Operation 40 [1/1] (0.00ns)   --->   "br label %1" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39]   --->   Operation 40 'br' <Predicate = (icmp_ln39)> <Delay = 0.00>
+
+State 5 <SV = 2> <Delay = 2.91>
+ST_5 : Operation 41 [5/5] (2.91ns)   --->   "%to_addr_wr_resp = call i1 @_ssdm_op_WriteResp.m_axi.i512P(i512* %to_addr)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 41 'writeresp' 'to_addr_wr_resp' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+
+State 6 <SV = 3> <Delay = 2.91>
+ST_6 : Operation 42 [4/5] (2.91ns)   --->   "%to_addr_wr_resp = call i1 @_ssdm_op_WriteResp.m_axi.i512P(i512* %to_addr)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 42 'writeresp' 'to_addr_wr_resp' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+
+State 7 <SV = 4> <Delay = 2.91>
+ST_7 : Operation 43 [3/5] (2.91ns)   --->   "%to_addr_wr_resp = call i1 @_ssdm_op_WriteResp.m_axi.i512P(i512* %to_addr)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 43 'writeresp' 'to_addr_wr_resp' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+
+State 8 <SV = 5> <Delay = 2.91>
+ST_8 : Operation 44 [2/5] (2.91ns)   --->   "%to_addr_wr_resp = call i1 @_ssdm_op_WriteResp.m_axi.i512P(i512* %to_addr)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 44 'writeresp' 'to_addr_wr_resp' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+
+State 9 <SV = 6> <Delay = 2.91>
+ST_9 : Operation 45 [1/5] (2.91ns)   --->   "%to_addr_wr_resp = call i1 @_ssdm_op_WriteResp.m_axi.i512P(i512* %to_addr)" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43]   --->   Operation 45 'writeresp' 'to_addr_wr_resp' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_9 : Operation 46 [1/1] (0.00ns)   --->   "ret void" [/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:45]   --->   Operation 46 'ret' <Predicate = true> <Delay = 0.00>
+
+
+============================================================
++ Verbose Summary: Timing violations
+============================================================
+Target clock period: 3.33ns, clock uncertainty: 0.416ns.
+
+ <State 1>: 2.91ns
+The critical path consists of the following:
+	wire read on port 'data_num' [6]  (0 ns)
+	bus request on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [18]  (2.91 ns)
+
+ <State 2>: 0.859ns
+The critical path consists of the following:
+	'phi' operation ('i') with incoming values : ('i', /home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39) [21]  (0 ns)
+	'icmp' operation ('icmp_ln39', /home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:39) [23]  (0.859 ns)
+
+ <State 3>: 1.46ns
+The critical path consists of the following:
+	fifo read on port 'from_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:81->/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [33]  (1.46 ns)
+
+ <State 4>: 2.91ns
+The critical path consists of the following:
+	bus write on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [36]  (2.91 ns)
+
+ <State 5>: 2.91ns
+The critical path consists of the following:
+	bus access on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [40]  (2.91 ns)
+
+ <State 6>: 2.91ns
+The critical path consists of the following:
+	bus access on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [40]  (2.91 ns)
+
+ <State 7>: 2.91ns
+The critical path consists of the following:
+	bus access on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [40]  (2.91 ns)
+
+ <State 8>: 2.91ns
+The critical path consists of the following:
+	bus access on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [40]  (2.91 ns)
+
+ <State 9>: 2.91ns
+The critical path consists of the following:
+	bus access on port 'to_r' (/home/einsx7/pr/application/soda/dac_iter1/tlpc_result/cpp/store.cpp:43) [40]  (2.91 ns)
+
+
+============================================================
++ Verbose Summary: Binding
+============================================================
+N/A
+* FSMD analyzer results:
+  - Output states:
+ - Input state : 
+  - Chain level:
+	State 1
+	State 2
+	State 3
+	State 4
+	State 5
+	State 6
+	State 7
+	State 8
+	State 9
+
+
+============================================================
++ Verbose Summary: Datapath Resource usage 
+============================================================
+N/A

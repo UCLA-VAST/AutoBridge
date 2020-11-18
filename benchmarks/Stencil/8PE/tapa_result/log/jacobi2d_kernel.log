@@ -1,0 +1,70 @@
+
+****** Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2019.2 (64-bit)
+  **** SW Build 2700185 on Thu Oct 24 18:45:48 MDT 2019
+  **** IP Build 2699827 on Thu Oct 24 21:16:38 MDT 2019
+    ** Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+
+source /opt/tools/xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/opt/tools/xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Tue May 19 12:02:25 PDT 2020
+INFO: [HLS 200-10] On os Ubuntu 16.04.6 LTS
+INFO: [HLS 200-10] In directory '/tmp/vivado-hls-ho07l_ws'
+Sourcing Tcl script '/tmp/vivado-hls-ho07l_ws/commands.tcl'
+INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-d99wqi_b/project'.
+INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/jacobi2d_kernel.cpp' to the project
+INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-d99wqi_b/project/jacobi2d_kernel'.
+INFO: [HLS 200-10] Setting target device to 'xcu280-fsvh2892-2L-e'
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 3.33ns.
+INFO: [XFORM 203-1161] The maximum of name length is set into 253.
+INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
+INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/jacobi2d_kernel.cpp' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:25 ; elapsed = 00:00:28 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124375 ; free virtual = 128352
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:25 ; elapsed = 00:00:28 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124375 ; free virtual = 128352
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124525 ; free virtual = 128503
+INFO: [HLS 200-10] Checking synthesizability ...
+WARNING: [SYNCHK 200-77] The top function 'jacobi2d_kernel' (/home/einsx7/pr/application/soda/dac_iter8/tlpc_result/cpp/jacobi2d_kernel.cpp:37) has no outputs. Possible cause(s) are: (1) Output parameters are passed by value; (2) intended outputs (parameters or global variables) are never written; (3) there are infinite loops.
+INFO: [SYNCHK 200-10] 0 error(s), 1 warning(s).
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124522 ; free virtual = 128500
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 968.840 ; gain = 539.035 ; free physical = 124502 ; free virtual = 128481
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:28 ; elapsed = 00:00:30 . Memory (MB): peak = 968.840 ; gain = 539.035 ; free physical = 124500 ; free virtual = 128479
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'jacobi2d_kernel' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'jacobi2d_kernel' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111]  Elapsed time: 30.3 seconds; current allocated memory: 131.623 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111]  Elapsed time: 0.01 seconds; current allocated memory: 131.922 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'jacobi2d_kernel' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_output_0_0' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_output_0_1' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_output_0_2' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_output_0_3' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_input_0_0' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_input_0_1' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_input_0_2' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/var_input_0_3' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/coalesced_data_num' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/tile_data_num' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/tile_num_dim_0' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/input_size_dim_0' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'jacobi2d_kernel/input_size_dim_1' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'jacobi2d_kernel' to 's_axilite & ap_ctrl_hs'.
+INFO: [RTGEN 206-100] Bundling port 'return', 'var_output_0_1', 'var_output_0_2', 'var_output_0_3', 'var_input_0_0', 'var_input_0_1', 'var_input_0_2', 'var_input_0_3', 'coalesced_data_num', 'tile_data_num', 'tile_num_dim_0', 'input_size_dim_0' and 'input_size_dim_1' to AXI-Lite port control.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'jacobi2d_kernel'.
+INFO: [HLS 200-111]  Elapsed time: 0.04 seconds; current allocated memory: 132.274 MB.
+INFO: [HLS 200-789] **** Estimated Fmax: 1000.00 MHz
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 984.590 ; gain = 554.785 ; free physical = 124480 ; free virtual = 128460
+INFO: [VHDL 208-304] Generating VHDL RTL for jacobi2d_kernel with prefix jacobi2d_kernel_.
+INFO: [VLOG 209-307] Generating Verilog RTL for jacobi2d_kernel with prefix jacobi2d_kernel_.
+INFO: [HLS 200-112] Total elapsed time: 31.74 seconds; peak allocated memory: 132.274 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Tue May 19 12:02:56 2020...

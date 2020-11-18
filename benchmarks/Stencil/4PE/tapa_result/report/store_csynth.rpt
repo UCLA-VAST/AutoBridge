@@ -1,0 +1,209 @@
+
+
+================================================================
+== Vivado HLS Report for 'store'
+================================================================
+* Date:           Tue May 19 12:13:36 2020
+
+* Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
+* Project:        project
+* Solution:       store
+* Product family: virtexuplus
+* Target device:  xcu280-fsvh2892-2L-e
+
+
+================================================================
+== Performance Estimates
+================================================================
++ Timing: 
+    * Summary: 
+    +--------+---------+----------+------------+
+    |  Clock |  Target | Estimated| Uncertainty|
+    +--------+---------+----------+------------+
+    |ap_clk  | 3.33 ns | 2.914 ns |   0.42 ns  |
+    +--------+---------+----------+------------+
+
++ Latency: 
+    * Summary: 
+    +---------+---------+----------+----------+-----+-----+---------+
+    |  Latency (cycles) |  Latency (absolute) |  Interval | Pipeline|
+    |   min   |   max   |    min   |    max   | min | max |   Type  |
+    +---------+---------+----------+----------+-----+-----+---------+
+    |        ?|        ?|         ?|         ?|    ?|    ?|   none  |
+    +---------+---------+----------+----------+-----+-----+---------+
+
+    + Detail: 
+        * Instance: 
+        N/A
+
+        * Loop: 
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+        |               |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
+        |   Loop Name   |   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+        |- store_epoch  |        ?|        ?|         3|          1|          1|     ?|    yes   |
+        +---------------+---------+---------+----------+-----------+-----------+------+----------+
+
+
+
+================================================================
+== Utilization Estimates
+================================================================
+* Summary: 
++---------------------+---------+-------+---------+---------+-----+
+|         Name        | BRAM_18K| DSP48E|    FF   |   LUT   | URAM|
++---------------------+---------+-------+---------+---------+-----+
+|DSP                  |        -|      -|        -|        -|    -|
+|Expression           |        -|      -|        0|       63|    -|
+|FIFO                 |        -|      -|        -|        -|    -|
+|Instance             |       30|      -|     1415|     1585|    -|
+|Memory               |        -|      -|        -|        -|    -|
+|Multiplexer          |        -|      -|        -|      104|    -|
+|Register             |        -|      -|      555|        -|    -|
++---------------------+---------+-------+---------+---------+-----+
+|Total                |       30|      0|     1970|     1752|    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available SLR        |     1344|   3008|   869120|   434560|  320|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization SLR (%)  |        2|      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+|Available            |     4032|   9024|  2607360|  1303680|  960|
++---------------------+---------+-------+---------+---------+-----+
+|Utilization (%)      |    ~0   |      0|    ~0   |    ~0   |    0|
++---------------------+---------+-------+---------+---------+-----+
+
++ Detail: 
+    * Instance: 
+    +--------------------+------------------+---------+-------+------+------+-----+
+    |      Instance      |      Module      | BRAM_18K| DSP48E|  FF  |  LUT | URAM|
+    +--------------------+------------------+---------+-------+------+------+-----+
+    |store_to_r_m_axi_U  |store_to_r_m_axi  |       30|      0|  1415|  1585|    0|
+    +--------------------+------------------+---------+-------+------+------+-----+
+    |Total               |                  |       30|      0|  1415|  1585|    0|
+    +--------------------+------------------+---------+-------+------+------+-----+
+
+    * DSP48E: 
+    N/A
+
+    * Memory: 
+    N/A
+
+    * FIFO: 
+    N/A
+
+    * Expression: 
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |           Variable Name          | Operation| DSP48E| FF| LUT| Bitwidth P0| Bitwidth P1|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |i_fu_161_p2                       |     +    |      0|  0|  31|          31|           1|
+    |ap_block_pp0_stage0_01001         |    and   |      0|  0|   2|           1|           1|
+    |ap_block_state3_pp0_stage0_iter1  |    and   |      0|  0|   2|           1|           1|
+    |ap_block_state4_io                |    and   |      0|  0|   2|           1|           1|
+    |icmp_ln39_fu_156_p2               |   icmp   |      0|  0|  20|          32|          32|
+    |ap_block_pp0_stage0_11001         |    or    |      0|  0|   2|           1|           1|
+    |ap_enable_pp0                     |    xor   |      0|  0|   2|           1|           2|
+    |ap_enable_reg_pp0_iter1           |    xor   |      0|  0|   2|           2|           1|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+    |Total                             |          |      0|  0|  63|          70|          40|
+    +----------------------------------+----------+-------+---+----+------------+------------+
+
+    * Multiplexer: 
+    +-------------------------+----+-----------+-----+-----------+
+    |           Name          | LUT| Input Size| Bits| Total Bits|
+    +-------------------------+----+-----------+-----+-----------+
+    |ap_NS_fsm                |  41|          8|    1|          8|
+    |ap_enable_reg_pp0_iter1  |   9|          2|    1|          2|
+    |ap_enable_reg_pp0_iter2  |   9|          2|    1|          2|
+    |from_fifo_V_blk_n        |   9|          2|    1|          2|
+    |i_0_reg_120              |   9|          2|   31|         62|
+    |to_r_blk_n_AW            |   9|          2|    1|          2|
+    |to_r_blk_n_B             |   9|          2|    1|          2|
+    |to_r_blk_n_W             |   9|          2|    1|          2|
+    +-------------------------+----+-----------+-----+-----------+
+    |Total                    | 104|         22|   38|         82|
+    +-------------------------+----+-----------+-----+-----------+
+
+    * Register: 
+    +---------------------------------+-----+----+-----+-----------+
+    |               Name              |  FF | LUT| Bits| Const Bits|
+    +---------------------------------+-----+----+-----+-----------+
+    |ap_CS_fsm                        |    7|   0|    7|          0|
+    |ap_enable_reg_pp0_iter0          |    1|   0|    1|          0|
+    |ap_enable_reg_pp0_iter1          |    1|   0|    1|          0|
+    |ap_enable_reg_pp0_iter2          |    1|   0|    1|          0|
+    |i_0_reg_120                      |   31|   0|   31|          0|
+    |icmp_ln39_reg_182                |    1|   0|    1|          0|
+    |icmp_ln39_reg_182_pp0_iter1_reg  |    1|   0|    1|          0|
+    |trunc_ln81_reg_191               |  512|   0|  512|          0|
+    +---------------------------------+-----+----+-----+-----------+
+    |Total                            |  555|   0|  555|          0|
+    +---------------------------------+-----+----+-----+-----------+
+
+
+
+================================================================
+== Interface
+================================================================
+* Summary: 
++---------------------+-----+-----+------------+---------------+--------------+
+|      RTL Ports      | Dir | Bits|  Protocol  | Source Object |    C Type    |
++---------------------+-----+-----+------------+---------------+--------------+
+|ap_clk               |  in |    1| ap_ctrl_hs |     store     | return value |
+|ap_rst_n             |  in |    1| ap_ctrl_hs |     store     | return value |
+|ap_start             |  in |    1| ap_ctrl_hs |     store     | return value |
+|ap_done              | out |    1| ap_ctrl_hs |     store     | return value |
+|ap_idle              | out |    1| ap_ctrl_hs |     store     | return value |
+|ap_ready             | out |    1| ap_ctrl_hs |     store     | return value |
+|m_axi_to_r_AWVALID   | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWREADY   |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWADDR    | out |   64|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWID      | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWLEN     | out |    8|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWSIZE    | out |    3|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWBURST   | out |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWLOCK    | out |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWCACHE   | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWPROT    | out |    3|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWQOS     | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWREGION  | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_AWUSER    | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WVALID    | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WREADY    |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WDATA     | out |  512|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WSTRB     | out |   64|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WLAST     | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WID       | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_WUSER     | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARVALID   | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARREADY   |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARADDR    | out |   64|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARID      | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARLEN     | out |    8|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARSIZE    | out |    3|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARBURST   | out |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARLOCK    | out |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARCACHE   | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARPROT    | out |    3|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARQOS     | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARREGION  | out |    4|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_ARUSER    | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RVALID    |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RREADY    | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RDATA     |  in |  512|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RLAST     |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RID       |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RUSER     |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_RRESP     |  in |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_BVALID    |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_BREADY    | out |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_BRESP     |  in |    2|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_BID       |  in |    1|    m_axi   |      to_r     |    pointer   |
+|m_axi_to_r_BUSER     |  in |    1|    m_axi   |      to_r     |    pointer   |
+|to_V                 |  in |   64|   ap_none  |      to_V     |    scalar    |
+|from_fifo_V_dout     |  in |  513|   ap_fifo  |  from_fifo_V  |    pointer   |
+|from_fifo_V_empty_n  |  in |    1|   ap_fifo  |  from_fifo_V  |    pointer   |
+|from_fifo_V_read     | out |    1|   ap_fifo  |  from_fifo_V  |    pointer   |
+|from_peek_val        |  in |  513|   ap_none  | from_peek_val |    pointer   |
+|data_num             |  in |   32|   ap_none  |    data_num   |    scalar    |
++---------------------+-----+-----+------------+---------------+--------------+
+
