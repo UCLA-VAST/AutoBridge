@@ -5,7 +5,7 @@ The experiment results for all benchmarks in our submission to FPGA'21 are avail
 
 Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
 
-# Requirement
+# Requirements
 
 - Python 3.6+
 - Pyverilog
@@ -32,48 +32,13 @@ To tackle this challenge, we propose `AutoBridge`, an automated framework that c
 - Second, by exploiting the flexibility of HLS pipelining, the  floorplanner is able to distribute the design logic across multiple dies on the FPGA device without degrading clock frequency; this avoids the aggressive logic packing on a single die, which often results in local routing contention that eventually degrades timing. 
 - Since pipelining may introduce additional latency, we further present analysis and algorithms to ensure the added latency will not hurt the overall throughput. 
 
-Currently, AutoBridge can be seamlessly integrated into the existing CAD toolflow for Xilinx FPGAs to achieve significant frequency improvement.
-
-# Usage
-
 Currently AutoBridge supports two FPGA devices: the Alveo U250 and the Alveo U280. The users could customize the tool to support other FPGA boards as well.
 
 ## Inputs
 
 To use the tool, the user needs prepare for their  Vivado HLS project that has already been c-synthesized. 
 
-  * Note that the current automated flow has some restriction on the HLS design.
-  * The HLS design should be a `dataflow` design.
-  * The top function of the HLS design should only contain `function instantiations` and `FIFO instantiations`. The tool will not work on designs that have computations in their top functions. 
   
-    One such example that will not work well with AutoBridge can be found at the Rosetta benchmark: 
-
-      `https://github.com/cornell-zhang/rosetta/blob/master/optical-flow/src/sdsoc/optical_flow.cpp`
-    
-    In the top function "optical_flow()", the shown part should be wrapped into another function and be instantiated in the top function. Other than this issue, the coding style of this design is compatible with AutoBridge.
-
-  ```c++
-      446  static frames_t buf;
-      447  FRAMES_CP_OUTER: for (int r=0; r<MAX_HEIGHT; r++) 
-      448  {
-      449    FRAMES_CP_INNER: for (int c=0; c<MAX_WIDTH; c++) 
-      450    {
-      451      #pragma HLS pipeline II=1
-      452              
-      453      // one wide read
-      454      buf = frames[r][c];
-      455      // assign values to the FIFOs
-      456      frame1_a[r][c] = ((input_t)(buf(7 ,  0)) >> 8);
-      457      frame2_a[r][c] = ((input_t)(buf(15,  8)) >> 8);
-      458      frame3_a[r][c] = ((input_t)(buf(23, 16)) >> 8);
-      459      frame3_b[r][c] = ((input_t)(buf(23, 16)) >> 8);
-      460      frame4_a[r][c] = ((input_t)(buf(31, 24)) >> 8);
-      461      frame5_a[r][c] = ((input_t)(buf(39, 32)) >> 8);
-      462    }
-      463  }
-  ```
-
-  * The `dataflow` pragma should come with the `disable_start_propagation` property, i.e. `#pragma HLS dataflow disable_start_propagation`.
 
 To invoke AutoBridge, the following parameters should be provided by the user:
 
@@ -116,57 +81,17 @@ The tool will produce:
 
 - A `tcl` script containing the floorplanning information.
 
-To use the results, we first use Vivado HLS to pack the new RTL files into an `xo` object using the following script:
-```bash
-    open_project XXXX
-    open_solution solution
-    export_design -rtl verilog -format ip_catalog -xo polysa.xo
-    
-    close_project
-    puts "Pack XO successfully"
-    exit
-```
+## Usage
 
-Then invoke the `v++` tool from Xilinx Vitis (`https://www.xilinx.com/html_docs/xilinx2020_1/vitis_doc/vitiscommandcompiler.html`). 
+- Step 1: compile your HLS design using Vivado HLS.
 
-An example script is:
+- Step 2: invoke AutoBridge to generate the floorplan file and transform the top RTL file.
 
-```bash
-    OUTPUT_DIR=./output
-    
-    # name of the top function
-    TOP=kernel_top 
-    
-    # or xilinx_u280_xdma_201920_3 for U280
-    PLATFORM=xilinx_u250_xdma_201830_2 
-    
-    XO="polysa.xo"
-    
-    # For different approaches see UG904-vivado-implementation
-    STRATEGY="Default" 
-    
-    output_dir="$(pwd)/vitis_run"
-    
-    v++ \
-      --link \
-      --output "${output_dir}/${TOP}_${PLATFORM}.xclbin" \
-      --kernel ${TOP} \
-      --platform ${PLATFORM} \
-      --target hw \
-      --report_level 2 \
-      --temp_dir "${output_dir}/${TOP}_${PLATFORM}.temp" \
-      --optimize 3 \
-      --connectivity.nk ${TOP}:1:${TOP}_1 \
-      --max_memory_ports ${TOP} \
-      --save-temps \
-      ${XO} \
-      --connectivity.sp ${TOP}_1.A:DDR[0] \
-      --connectivity.sp ${TOP}_1.B:DDR[1] \
-      --connectivity.sp ${TOP}_1.C:DDR[3] \
-      --kernel_frequency 330 \
-      --vivado.prop run.impl_1.STEPS.PLACE_DESIGN.ARGS.DIRECTIVE=$STRATEGY \
-      --vivado.prop run.impl_1.STEPS.OPT_DESIGN.TCL.PRE=$CONSTRAINT
-```
+- Step 3: pack the output from Vivado HLS and AutoBridge together into an `xo` file.
+
+- Step 4: invoke Vitis for implementation.
+
+Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folder. For step 2, we attach the AutoBridge script along with each benchmark design.
 
 # Issues
 
@@ -174,6 +99,6 @@ An example script is:
 
 - Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out
 
-- in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function is atomic and cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little
+- in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
 
 - Function names in the HLS program should not contain "fifo" or "FIFO"
