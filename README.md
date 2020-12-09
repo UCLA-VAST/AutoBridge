@@ -14,8 +14,11 @@ pip install pyverilog
 ```
 
 - Python mip version 1.8.1
-- It is highly recommended that the user install the Gurobi solver, which is free to academia. For designs with a large number of functions and connections, Gurobi is significantly faster than the open-sourced solvers. `https://www.gurobi.com/academia/academic-program-and-licenses/`
 
+- It is highly recommended that the user install the Gurobi solver, which is free to academia. 
+
+  - `https://www.gurobi.com/academia/academic-program-and-licenses/`
+  - the environment variable `GUROBI_HOME` needs to be set to the installation direction, so that Gurobi can be detected by AutoBridge.
 
 - Xilinx Vivado HLS 2019.2
 - Xilinx Vitis 2019.2
