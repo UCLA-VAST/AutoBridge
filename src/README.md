@@ -1,4 +1,4 @@
-
+# Description
 
 `graph.py` is the center of the tool. It analyze the top RTL file of the design and construct a graph representation of the design. It then invokes the floorplanner to assign each module to one unique slot. Based on the floorplanning, the FIFOs will be replaced by the `relay_station` template to allow easy adjustment of pipeline level. Finally, the modified top RTL file and the corresponding floorplan script will be generated.
 
@@ -18,10 +18,16 @@
 - The RTL generator will replace the FIFO units by our own almost-full FIFO templates that can be easily pipelined. It will also mark various RTL components to prevent Vivado from unwanted optimization. 
 
 
-`optimize_control_signals.py` will create a uniq copy of the control signals (ap_start, ap_done, etc) and adequately pipeline them to avoid high fanout or timing violation on these signals. Such modification is highly dependent on the coding style of HLS-generated RTL. The current implementation is based on the coding style with 
+`optimize_control_signals.py` will create a unique copy of the control signals (ap_start, ap_done, etc) and adequately pipeline them to avoid high fanout or timing violation on these signals. Such modification is highly dependent on the coding style of HLS-generated RTL. The current implementation is based on the coding style with 
 ```c++
   #pragma HLS dataflow disable_start_propagation
 ```
 
 
 
+# Issues
+
+- The current implementation is relatively messy as it results from countless trial-and-error and a pressing submission deadline. We are in progress to refactor the code. Currently our goals include: 
+  * Enabling easy adaptation to different FPGA devices.
+  * Enabling more fine-grained floorplanning.
+ 

@@ -1,9 +1,17 @@
-# FPGA'21 Artifact Review
 
-The experiment results for all benchmarks in our submission to FPGA'21 are available at:
-`https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu`
+# About AutoBridge
 
-Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
+- `What`: AutoBridge is a floorplanning tool for Vivado HLS dataflow designs.
+
+- `Why`: Current EDA tool stack for HLS designs have unsatisfactory achievable frequency.
+
+- `How`: Pre-determine the rough location of each module during HLS compilation, so that:
+    * the long interconnect could be adequately pipelined by the HLS scheduler.
+
+    * we prevent the Vivado placer to place the logic too densely.
+
+- The pre-print manuscript of our paper could be found at 
+`https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pdf`
 
 # Requirements
 
@@ -18,7 +26,7 @@ pip install pyverilog
 - It is highly recommended that the user install the Gurobi solver, which is free to academia. 
 
   - `https://www.gurobi.com/academia/academic-program-and-licenses/`
-  - the environment variable `GUROBI_HOME` needs to point to the installation directory, so that Gurobi can be detected by AutoBridge.
+  - The environment variable `GUROBI_HOME` needs to point to the installation directory, so that Gurobi can be detected by AutoBridge.
 
 - Xilinx Vivado HLS 2019.2
 - Xilinx Vitis 2019.2
@@ -105,3 +113,11 @@ Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folde
 - in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
 
 - Function names in the HLS program should not contain "fifo" or "FIFO"
+
+
+# FPGA'21 Artifact Review
+
+The experiment results for all benchmarks in our submission to FPGA'21 are available at:
+`https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu`
+
+Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
