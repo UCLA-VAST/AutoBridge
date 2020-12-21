@@ -73,7 +73,7 @@ board_name = 'u250'
 NaiveBalance = True
 #-----------------------------
 
-target_dir = './cnn_u250_autobridge_impl'
+target_dir = './kernel3_u250_autobridge_impl'
 
 
 formator = FormatHLS(

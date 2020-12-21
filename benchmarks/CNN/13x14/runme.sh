@@ -13,8 +13,10 @@ source /opt/tools/xilinx/Vitis/2019.2/settings64.sh
 vivado_hls -f generate_rtl.tcl
 
 # step 2: run vitis
-./ab_cnn_13x16.py | tee autobridge.log
-./ab_cnn_13x16.py | tee autobridge.log
+./ab_cnn_13x14.py | tee autobridge.log
+
+# in case of pyverilog bug, run again
+./ab_cnn_13x14.py | tee autobridge.log
 
 # step 3: pack xo
 cp -r src ${AUTOBRIDGE_DIR}

@@ -1,8 +1,7 @@
 #! /usr/bin/python3.6
 
 import sys
-sys.path.append('/home/einsx7/pr/solver/tlp_solver')
-
+sys.path.append('../../../src')
 import graph
 from formator import FormatHLS
 import collections
@@ -103,6 +102,7 @@ formator = FormatHLS(
 g = graph.Graph(formator)
 
 ################
+print('... Copying the Vivado HLS project ...')
 
 if (os.path.isdir(target_dir)):
   subprocess.run(['rm', '-rf', f'{target_dir}'])
@@ -111,6 +111,6 @@ subprocess.run(['mkdir', f'{target_dir}/'])
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{project_name}'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
-subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', 'pack_xo.tcl', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
+subprocess.run(['cp', 'constraint.tcl', target_dir])
+subprocess.run(['cp', 'pack_xo.tcl', target_dir])
+subprocess.run(['cp', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
