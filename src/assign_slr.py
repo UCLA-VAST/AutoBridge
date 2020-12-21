@@ -98,7 +98,7 @@ def assignSLR(vertices : List, edges : List, formator):
         cmd = 'm += 0'
         for v in vertices:
           cmd += f' + mods_x["{v.name}"][{y}][{x}] * {getattr(v.area, item)}'
-        cmd += f'<= {int(formator.SLR_AREA[item][x] * formator.max_usage_ratio_2d[y][x])}, "{item}_SLR_{y}_sub_{x}_of_{column[y]}"'
+        cmd += f'<= {int(formator.SLR_AREA[item][y][x] * formator.max_usage_ratio_2d[y][x])}, "{item}_SLR_{y}_sub_{x}_of_{column[y]}"'
         exec(cmd)
 
   addUserConstraint(m, mods_p, formator)

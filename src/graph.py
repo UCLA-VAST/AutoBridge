@@ -74,8 +74,10 @@ class Graph:
 
     self.dfs(top_mod_ast, set(), self.initEdges)
 
-    #assignSLR(self.vertices.values(), self.edges.values(), self.formator)
-    assignSLRDivideConquer(self.vertices.values(), self.edges.values(), self.formator)
+    if (self.formator.eight_way_partition):
+      assignSLR(self.vertices.values(), self.edges.values(), self.formator)
+    else:
+      assignSLRDivideConquer(self.vertices.values(), self.edges.values(), self.formator)
 
     if (formator.NaiveBalance):
       reBalanceNaive(self.vertices.values(), self.edges, self.formator)

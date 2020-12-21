@@ -101,7 +101,8 @@ class FormatHLS:
       max_search_time = 600,
       NaiveBalance = False,
       AssignAxiSubSLR = False,
-      max_usage_ratio_delta = 0.03):
+      max_usage_ratio_delta = 0.03,
+      eight_way_partition = False):
     self.rpt_path = rpt_path
     self.hls_sche_path = hls_sche_path
     self.top_hdl_path = top_hdl_path
@@ -112,7 +113,8 @@ class FormatHLS:
     self.max_usage_ratio_2d = max_usage_ratio_2d
     self.column = column
     self.board_name = board_name
-
+    self.eight_way_partition = eight_way_partition
+    
     # [obsolete]
     self.coorinate_expansion_ratio = coorinate_expansion_ratio
     
