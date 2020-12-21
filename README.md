@@ -20,9 +20,18 @@
 ```
 pip install pyverilog
 ```
-
+- Iverilog
+```
+sudo apt install iverilog
+```
+- Multiprocess
+```
+pip install multiprocess
+```
 - Python mip version 1.8.1
-
+```
+pip install mip==1.8.1
+```
 - It is highly recommended that the user install the Gurobi solver, which is free to academia. 
 
   - `https://www.gurobi.com/academia/academic-program-and-licenses/`
@@ -110,11 +119,11 @@ Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folde
 
 # Issues
 
-- should use mip version 1.8.1
+- Should use mip version 1.8.1.
 
-- Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out
+- Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out.
 
-- in the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
+- In the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
 
 - Function names in the HLS program should not contain "fifo" or "FIFO"
 
