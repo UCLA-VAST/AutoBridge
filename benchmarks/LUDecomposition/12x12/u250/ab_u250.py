@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 
 import sys
-sys.path.append('/home/einsx7/pr/solver/tlp_solver/src')
+sys.path.append('../../../../src')
 
 import graph
 from formator import FormatHLS
@@ -24,16 +24,16 @@ DDR_loc_2d_y = collections.defaultdict(dict)
 
 # use DDR 0, 1, 3
 DDR_loc_2d_y['A_IO_L3_in6_U0'] = 0
-DDR_loc_2d_y['L_drain_IO_L3_out_U0'] = 0
-DDR_loc_2d_y['U_drain_IO_L3_out_U0'] = 0
+DDR_loc_2d_y['L_drain_IO_L3_out_U0'] = 1
+DDR_loc_2d_y['U_drain_IO_L3_out_U0'] = 2
 
 DDR_loc_2d_x['A_IO_L3_in6_U0'] = 0
 DDR_loc_2d_x['L_drain_IO_L3_out_U0'] = 0
 DDR_loc_2d_x['U_drain_IO_L3_out_U0'] = 0
 
 DDR_loc_2d_y['kernel0_gmem_A_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_L_m_axi_U'] = 0
-DDR_loc_2d_y['kernel0_gmem_U_m_axi_U'] = 0
+DDR_loc_2d_y['kernel0_gmem_L_m_axi_U'] = 1 
+DDR_loc_2d_y['kernel0_gmem_U_m_axi_U'] = 2
 
 DDR_loc_2d_x['kernel0_gmem_A_m_axi_U'] = 0
 DDR_loc_2d_x['kernel0_gmem_L_m_axi_U'] = 0
@@ -42,13 +42,13 @@ DDR_loc_2d_x['kernel0_gmem_U_m_axi_U'] = 0
 DDR_loc_2d_y['kernel0_control_s_axi_U'] = 0
 
 # only the DDRs in SLR0 and SLR1 are enabled
-DDR_enable = [0, 0, 0]
+DDR_enable = [1, 1, 1, 0]
 
 # the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
-column = [2, 2, 2]
+column = [2, 2, 2, 2]
 
 # the right half of SLR0 and SLR1 contains the DDR controller and the static region, which takes away half the resources
-max_usage_ratio_2d = [ [0.6, 0.6], [0.6, 0.6], [0.6, 0.6] ]
+max_usage_ratio_2d = [ [0.6, 0.6], [0.6, 0.6], [0.6, 0.6], [0.6, 0.6] ]
 
 # to handle situation like this
 # |   R0  |
@@ -69,12 +69,12 @@ relay_station_template = 'reg' # 'fifo' or 'reg' or 'reg_srl_fifo'
 constraint_edge = True # whether to add constraints to rs and FIFO
 constraint_marked_edge = True
 only_keep_rs_hierarchy = False
-max_search_time = 1200
-board_name = 'u280'
+max_search_time = 600
+board_name = 'u250'
 NaiveBalance = True
 #-----------------------------
 
-target_dir = '../kernel0_u280_ab'
+target_dir = 'kernel0_u250_autobridge'
 
 
 formator = FormatHLS(
@@ -112,10 +112,10 @@ subprocess.run(['mkdir', f'{target_dir}/'])
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{project_name}'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
-subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', 'pack_xo.tcl', target_dir])
-subprocess.run(['mv', 'AB.log', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
+subprocess.run(['cp', 'constraint.tcl', target_dir])
+subprocess.run(['cp', 'pack_xo.tcl', target_dir])
+subprocess.run(['cp', 'autobridge.log', target_dir])
+subprocess.run(['cp', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
 os.system('rm *.lp')
 subprocess.run(['rm', 'parser.out'])
 subprocess.run(['rm', 'parsetab.py'])
