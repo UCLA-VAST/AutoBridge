@@ -30,7 +30,11 @@ pip install pyverilog
 
 - Xilinx Vivado HLS 2019.2
 - Xilinx Vitis 2019.2
-- Xilinx Alveo Accelerator Card U250, U280
+- Package for Alveo U250 and U280 FPGA
+  -  `https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/alveo.html`
+
+  - U250: `2018.3.2` with `XDMA`
+  - U280: `2019.2` with `XDMA`
 
 
 
