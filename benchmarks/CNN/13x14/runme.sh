@@ -16,7 +16,9 @@ vivado_hls -f generate_rtl.tcl
 ./ab_cnn_13x14.py | tee autobridge.log
 
 # in case of pyverilog bug, run again
-./ab_cnn_13x14.py | tee autobridge.log
+if [ $? -ne 0 ]; then
+  ./ab_cnn_13x14.py | tee autobridge.log
+fi
 
 # step 3: pack xo
 cp -r src ${AUTOBRIDGE_DIR}

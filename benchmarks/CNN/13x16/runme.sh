@@ -14,7 +14,10 @@ vivado_hls -f generate_rtl.tcl
 
 # step 2: run vitis
 ./ab_cnn_13x16.py | tee autobridge.log
-./ab_cnn_13x16.py | tee autobridge.log
+
+if [ $? -ne 0 ]; then
+  ./ab_cnn_13x16.py | tee autobridge.log
+fi
 
 # step 3: pack xo
 cp -r src ${AUTOBRIDGE_DIR}
