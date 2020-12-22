@@ -16,7 +16,8 @@ vivado_hls -f generate_rtl.tcl
 ./ab_cnn_13x2.py | tee autobridge.log
 
 # in case of pyverilog bug, run again
-if [ $? -ne 0 ]; then
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+  echo "Detecting error, Rerun AutoBridge..."
   ./ab_cnn_13x2.py | tee autobridge.log
 fi
 

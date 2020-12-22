@@ -15,7 +15,9 @@ vivado_hls -f generate_rtl.tcl
 # step 2: run vitis
 ./ab_cnn_13x16.py | tee autobridge.log
 
-if [ $? -ne 0 ]; then
+# in case of pyverilog bug, run again
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+  echo "Detecting error, Rerun AutoBridge..."
   ./ab_cnn_13x16.py | tee autobridge.log
 fi
 

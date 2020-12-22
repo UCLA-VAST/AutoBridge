@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 
 import sys
-sys.path.append('/home/einsx7/pr/solver/tlp_solver/src')
+sys.path.append('../../../../src')
 
 import graph
 from formator import FormatHLS
@@ -74,7 +74,7 @@ board_name = 'u250'
 NaiveBalance = True
 #-----------------------------
 
-target_dir = '../kernel0_u250_ab'
+target_dir = 'kernel0_u250_autobridge'
 
 
 formator = FormatHLS(
@@ -112,10 +112,10 @@ subprocess.run(['mkdir', f'{target_dir}/'])
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{project_name}'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
-subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', 'pack_xo.tcl', target_dir])
-subprocess.run(['mv', 'AB.log', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
+subprocess.run(['cp', 'constraint.tcl', target_dir])
+subprocess.run(['cp', 'pack_xo.tcl', target_dir])
+subprocess.run(['cp', 'autobridge.log', target_dir])
+subprocess.run(['cp', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
 os.system('rm *.lp')
 subprocess.run(['rm', 'parser.out'])
 subprocess.run(['rm', 'parsetab.py'])
