@@ -1,4 +1,6 @@
 #! /usr/bin/python3.6
+import sys
+sys.path.append('../../src')
 
 import graph
 from formator import FormatTLP
@@ -6,7 +8,7 @@ import collections
 import os
 import subprocess
 
-tlp_path = '/home/einsx7/pr/application/U280_PageRank/tlp_src/tlpc_result/'
+tlp_path = './tapa_result/'
 top_name = 'PageRank'
 
 rpt_path = f'{tlp_path}/report'
@@ -104,20 +106,7 @@ constraint_marked_edge = True
 
 #######################################
 
-target_dir = '/home/einsx7/pr/application/U280_PageRank/0526_fix_rs'
-
-check = input(f'''
-Please confirm:
-the source project directory is: 
-  {tlp_path}
-the target directory is: 
-  {target_dir}
-The target directory will first be *** REMOVED ***
-(Y/n):  
-''')
-
-if (check != 'Y'):
-  exit
+target_dir = './page_rank_u280_autobridge'
 
 formator = FormatTLP(
   rpt_path = rpt_path,
@@ -138,7 +127,8 @@ formator = FormatTLP(
   relay_station_count = relay_station_count,
   relay_station_template = relay_station_template,
   constraint_edge = constraint_edge,
-  constraint_marked_edge = constraint_marked_edge)
+  constraint_marked_edge = constraint_marked_edge,
+  eight_way_partition = True)
 
 g = graph.Graph(formator)
 
@@ -154,8 +144,8 @@ subprocess.run(['cp', '-r', tlp_path, f'{target_dir}/'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
 subprocess.run(['mv', 'constraint.tcl', target_dir])
-subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tlpc_result/hdl'])
-subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/relay_station.v'])
+subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/tapa_result/hdl'])
+subprocess.run(['rm', f'{target_dir}/tapa_result/hdl/relay_station.v'])
 
 if (relay_station_template == 'fifo'):
-  subprocess.run(['rm', f'{target_dir}/tlpc_result/hdl/fifo_srl.v'])
+  subprocess.run(['rm', f'{target_dir}/tapa_result/hdl/fifo_srl.v'])
