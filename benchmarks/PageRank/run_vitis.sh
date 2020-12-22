@@ -7,7 +7,7 @@ STRATEGY="EarlyBlockPlacement"
 output_dir="$(pwd)/vitis_run"
 
 
-CONSTRAINT="${src_dir}/constraint.tcl"
+CONSTRAINT="${src_dir}/constraint_ref.tcl"
 if [ ! -f "$CONSTRAINT" ]; then
     echo "no constraint file found"
     exit
@@ -16,11 +16,6 @@ fi
 echo "Strategy: ${STRATEGY}"
 echo "Platform: ${PLATFORM}"
 echo "Top: ${TOP}"
-echo "(Y/n): "
-read check
-if [ "$check" != "Y" ]; then
-  exit
-fi
 
 set -x
 
