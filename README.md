@@ -32,10 +32,16 @@ pip install multiprocess
 ```
 pip install mip==1.8.1
 ```
-- It is highly recommended that the user install the Gurobi solver, which is free to academia. 
+- It is highly recommended that the user install the `Gurobi` solver which is free to academia and can be easily installed. 
 
-  - `https://www.gurobi.com/academia/academic-program-and-licenses/`
+  - Register and download the `Gurobi Optimizer` at `https://www.gurobi.com/downloads/gurobi-optimizer-eula/`
+  - Unzip the package to your desired directory
+  - Obtain an academic license at `https://www.gurobi.com/downloads/end-user-license-agreement-academic/`
   - The environment variable `GUROBI_HOME` needs to point to the installation directory, so that Gurobi can be detected by AutoBridge.
+    - `export GUROBI_HOME=WHERE-YOU-INSTALL`
+    - `export GRB_LICENSE_FILE=ADDRESS-OF-YOUR-LICENSE-FILE`
+    - `export PATH="${PATH}:${GUROBI_HOME}/bin"`
+    - `export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"`
 
 - Xilinx Vivado HLS 2019.2
 - Xilinx Vitis 2019.2
