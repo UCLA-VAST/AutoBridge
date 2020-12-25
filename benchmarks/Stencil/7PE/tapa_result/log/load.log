@@ -6,30 +6,36 @@
 
 source /opt/tools/xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
 INFO: [HLS 200-10] Running '/opt/tools/xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
-INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Tue May 19 12:08:10 PDT 2020
+INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Sun May 24 23:12:50 PDT 2020
 INFO: [HLS 200-10] On os Ubuntu 16.04.6 LTS
-INFO: [HLS 200-10] In directory '/tmp/vivado-hls-fgn6pnvz'
-Sourcing Tcl script '/tmp/vivado-hls-fgn6pnvz/commands.tcl'
-INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-v5txgnhs/project'.
-INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp' to the project
-INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-v5txgnhs/project/load'.
-INFO: [HLS 200-10] Setting target device to 'xcu280-fsvh2892-2L-e'
+INFO: [HLS 200-10] In directory '/tmp/vivado-hls-ozx4lz95'
+Sourcing Tcl script '/tmp/vivado-hls-ozx4lz95/commands.tcl'
+INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-7mitweb6/project'.
+INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp' to the project
+INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-7mitweb6/project/load'.
+INFO: [HLS 200-10] Setting target device to 'xcu250-figd2104-2L-e'
 INFO: [SYN 201-201] Setting up clock 'default' with a period of 3.33ns.
 INFO: [XFORM 203-1161] The maximum of name length is set into 253.
 INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
-INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp' ... 
-INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124275 ; free virtual = 128244
-INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124275 ; free virtual = 128244
+INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:22 ; elapsed = 00:00:25 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121958 ; free virtual = 124881
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:22 ; elapsed = 00:00:25 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121957 ; free virtual = 124880
 INFO: [HLS 200-10] Starting code transformations ...
-INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'load' (/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp:40).
-INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124244 ; free virtual = 128217
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'load' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:52).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'load' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:51).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'load' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:50).
+INFO: [XFORM 203-603] Inlining function 'tlp::ostream<ap_uint<512> >::write' into 'load' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:49).
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:24 ; elapsed = 00:00:26 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121660 ; free virtual = 124611
 INFO: [HLS 200-10] Checking synthesizability ...
-INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 124237 ; free virtual = 128211
-WARNING: [XFORM 203-1103] Ignored data pack directive on non-struct variable 'from.V' (/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp:28).
-INFO: [XFORM 203-1101] Packing variable 'to.fifo.V' (/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp:28) into a 513-bit variable.
-INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 968.840 ; gain = 539.035 ; free physical = 124209 ; free virtual = 128184
-INFO: [HLS 200-444] Inferring multiple bus burst read of variable length on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144:2). These data requests might be further partitioned to multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.
-INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 974.609 ; gain = 544.805 ; free physical = 124179 ; free virtual = 128155
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:24 ; elapsed = 00:00:26 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121609 ; free virtual = 124564
+WARNING: [XFORM 203-1103] Ignored data pack directive on non-struct variable 'source.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:33).
+INFO: [XFORM 203-1101] Packing variable 'sink_0.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:29) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'sink_1.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:30) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'sink_2.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:31) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'sink_3.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:32) into a 513-bit variable.
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:24 ; elapsed = 00:00:26 . Memory (MB): peak = 967.895 ; gain = 538.090 ; free physical = 121512 ; free virtual = 124478
+INFO: [HLS 200-444] Inferring multiple bus burst read of variable length on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146:2). These data requests might be further partitioned to multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 967.895 ; gain = 538.090 ; free physical = 121433 ; free virtual = 124405
 INFO: [HLS 200-10] Starting hardware synthesis ...
 INFO: [HLS 200-10] Synthesizing 'load' ...
 INFO: [HLS 200-10] ----------------------------------------------------------------
@@ -37,33 +43,38 @@ INFO: [HLS 200-42] -- Implementing module 'load'
 INFO: [HLS 200-10] ----------------------------------------------------------------
 INFO: [SCHED 204-11] Starting scheduling ...
 INFO: [SCHED 204-61] Pipelining loop 'load_epoch'.
-INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 2.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 3.
 WARNING: [SCHED 204-21] Estimated clock period (4.37062ns) exceeds the target (target clock period: 3.33ns, clock uncertainty: 0.41625ns, effective delay budget: 2.91375ns).
 WARNING: [SCHED 204-21] The critical path in module 'load' consists of the following:
-	bus read on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp:40) [31]  (2.91 ns)
-	fifo write on port 'to_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter7/tlpc_result/cpp/load.cpp:40) [33]  (1.46 ns)
+	bus read on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:49) [40]  (2.91 ns)
+	fifo write on port 'sink_0_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter7/tlpc_result/cpp/load.cpp:49) [42]  (1.46 ns)
 INFO: [SCHED 204-11] Finished scheduling.
-INFO: [HLS 200-111]  Elapsed time: 30.54 seconds; current allocated memory: 133.761 MB.
+INFO: [HLS 200-111]  Elapsed time: 26.71 seconds; current allocated memory: 136.949 MB.
 INFO: [BIND 205-100] Starting micro-architecture generation ...
 INFO: [BIND 205-101] Performing variable lifetime analysis.
 INFO: [BIND 205-101] Exploring resource sharing.
 INFO: [BIND 205-101] Binding ...
 INFO: [BIND 205-100] Finished micro-architecture generation.
-INFO: [HLS 200-111]  Elapsed time: 0.07 seconds; current allocated memory: 133.971 MB.
+INFO: [HLS 200-111]  Elapsed time: 0.05 seconds; current allocated memory: 137.251 MB.
 INFO: [HLS 200-10] ----------------------------------------------------------------
 INFO: [HLS 200-10] -- Generating RTL for module 'load' 
 INFO: [HLS 200-10] ----------------------------------------------------------------
-INFO: [RTGEN 206-500] Setting interface mode on port 'load/from' to 'm_axi'.
-INFO: [RTGEN 206-500] Setting interface mode on port 'load/to_fifo_V' to 'ap_fifo'.
-INFO: [RTGEN 206-500] Setting interface mode on port 'load/from_V' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/source' to 'm_axi'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/sink_0_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/sink_1_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/sink_2_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/sink_3_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'load/source_V' to 'ap_none'.
 INFO: [RTGEN 206-500] Setting interface mode on port 'load/data_num' to 'ap_none'.
 INFO: [RTGEN 206-500] Setting interface mode on function 'load' to 'ap_ctrl_hs'.
+INFO: [RTGEN 206-100] Generating core module 'load_add_512ns_512ns_512_2_1': 3 instance(s).
 INFO: [RTGEN 206-100] Finished creating RTL model for 'load'.
-INFO: [HLS 200-111]  Elapsed time: 0.05 seconds; current allocated memory: 134.604 MB.
+INFO: [HLS 200-111]  Elapsed time: 0.06 seconds; current allocated memory: 138.014 MB.
 INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
 INFO: [HLS 200-789] **** Estimated Fmax: 228.80 MHz
-INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:28 ; elapsed = 00:00:32 . Memory (MB): peak = 974.609 ; gain = 544.805 ; free physical = 124498 ; free virtual = 128477
+INFO: [RTMG 210-283] Generating pipelined adder/subtractor : 'load_load_add_512ns_512ns_512_2_1_AddSubnS_0'
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:25 ; elapsed = 00:00:28 . Memory (MB): peak = 967.895 ; gain = 538.090 ; free physical = 122998 ; free virtual = 126004
 INFO: [VHDL 208-304] Generating VHDL RTL for load with prefix load_.
 INFO: [VLOG 209-307] Generating Verilog RTL for load with prefix load_.
-INFO: [HLS 200-112] Total elapsed time: 32.14 seconds; peak allocated memory: 134.604 MB.
-INFO: [Common 17-206] Exiting vivado_hls at Tue May 19 12:08:42 2020...
+INFO: [HLS 200-112] Total elapsed time: 28.12 seconds; peak allocated memory: 138.014 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Sun May 24 23:13:18 2020...

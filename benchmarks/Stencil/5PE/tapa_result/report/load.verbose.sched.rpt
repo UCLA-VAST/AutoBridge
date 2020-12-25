@@ -3,13 +3,13 @@
 ================================================================
 == Vivado HLS Report for 'load'
 ================================================================
-* Date:           Tue May 19 12:13:30 2020
+* Date:           Sun May 24 23:13:17 2020
 
 * Version:        2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)
 * Project:        project
 * Solution:       load
 * Product family: virtexuplus
-* Target device:  xcu280-fsvh2892-2L-e
+* Target device:  xcu250-figd2104-2L-e
 
 
 ================================================================
@@ -41,7 +41,7 @@
         |              |  Latency (cycles) | Iteration|  Initiation Interval  | Trip |          |
         |   Loop Name  |   min   |   max   |  Latency |  achieved |   target  | Count| Pipelined|
         +--------------+---------+---------+----------+-----------+-----------+------+----------+
-        |- load_epoch  |        ?|        ?|         2|          1|          1|     ?|    yes   |
+        |- load_epoch  |        ?|        ?|         3|          1|          1|     ?|    yes   |
         +--------------+---------+---------+----------+-----------+-----------+------+----------+
 
 ============================================================
@@ -67,15 +67,15 @@ HasImplIP: 0
 IsGatedGlobalClock: 0
 
 + Individual pipeline summary: 
-  * Pipeline-0: initiation interval (II) = 1, depth = 2
+  * Pipeline-0: initiation interval (II) = 1, depth = 3
 
 
 ============================================================
 + Verbose Summary: Schedule
 ============================================================
-* Number of FSM states : 10
+* Number of FSM states : 11
 * Pipeline : 1
-  Pipeline-0 : II = 1, D = 2, States = { 8 9 }
+  Pipeline-0 : II = 1, D = 3, States = { 8 9 10 }
 * Dataflow Pipeline: 0
 
 * FSM state transitions: 
@@ -86,68 +86,98 @@ IsGatedGlobalClock: 0
 5 --> 6 
 6 --> 7 
 7 --> 8 
-8 --> 10 9 
-9 --> 8 
-10 --> 
+8 --> 11 9 
+9 --> 10 
+10 --> 8 
+11 --> 
 
 * FSM state operations: 
 
 State 1 <SV = 0> <Delay = 2.91>
-ST_1 : Operation 11 [1/1] (0.00ns)   --->   "%data_num_read = call i32 @_ssdm_op_Read.ap_auto.i32(i32 %data_num)"   --->   Operation 11 'read' 'data_num_read' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 12 [1/1] (0.00ns)   --->   "%from_V_read = call i64 @_ssdm_op_Read.ap_auto.i64(i64 %from_V)"   --->   Operation 12 'read' 'from_V_read' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 13 [1/1] (0.00ns)   --->   "%from_V1 = call i58 @_ssdm_op_PartSelect.i58.i64.i32.i32(i64 %from_V_read, i32 6, i32 63)"   --->   Operation 13 'partselect' 'from_V1' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 14 [1/1] (0.00ns)   --->   "%empty = zext i58 %from_V1 to i64"   --->   Operation 14 'zext' 'empty' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 15 [1/1] (0.00ns)   --->   "%from_addr = getelementptr i512* %from, i64 %empty"   --->   Operation 15 'getelementptr' 'from_addr' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 16 [7/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 16 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_1 : Operation 12 [1/1] (0.00ns)   --->   "%data_num_read = call i32 @_ssdm_op_Read.ap_auto.i32(i32 %data_num)"   --->   Operation 12 'read' 'data_num_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 13 [1/1] (0.00ns)   --->   "%source_V_read = call i64 @_ssdm_op_Read.ap_auto.i64(i64 %source_V)"   --->   Operation 13 'read' 'source_V_read' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 14 [1/1] (0.00ns)   --->   "%source_V1 = call i58 @_ssdm_op_PartSelect.i58.i64.i32.i32(i64 %source_V_read, i32 6, i32 63)"   --->   Operation 14 'partselect' 'source_V1' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 15 [1/1] (0.00ns)   --->   "%empty = zext i58 %source_V1 to i64"   --->   Operation 15 'zext' 'empty' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 16 [1/1] (0.00ns)   --->   "%source_addr = getelementptr i512* %source, i64 %empty"   --->   Operation 16 'getelementptr' 'source_addr' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 17 [7/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 17 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 2 <SV = 1> <Delay = 2.91>
-ST_2 : Operation 17 [6/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 17 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_2 : Operation 18 [6/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 18 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 3 <SV = 2> <Delay = 2.91>
-ST_3 : Operation 18 [5/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 18 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_3 : Operation 19 [5/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 19 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 4 <SV = 3> <Delay = 2.91>
-ST_4 : Operation 19 [4/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 19 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_4 : Operation 20 [4/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 20 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 5 <SV = 4> <Delay = 2.91>
-ST_5 : Operation 20 [3/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 20 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_5 : Operation 21 [3/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 21 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 6 <SV = 5> <Delay = 2.91>
-ST_6 : Operation 21 [2/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 21 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_6 : Operation 22 [2/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 22 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
 
 State 7 <SV = 6> <Delay = 2.91>
-ST_7 : Operation 22 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %from), !map !24"   --->   Operation 22 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 23 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %to_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str13, i32 0, i32 0, [1 x i8]* @p_str14, [1 x i8]* @p_str15, [1 x i8]* @p_str16, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str17, [1 x i8]* @p_str18)"   --->   Operation 23 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 24 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %to_fifo_V), !map !28"   --->   Operation 24 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 25 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i32 %data_num), !map !35"   --->   Operation 25 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 26 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([5 x i8]* @load_str) nounwind"   --->   Operation 26 'spectopmodule' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 27 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i512* %from, [6 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [5 x i8]* @p_str2, [7 x i8]* @p_str3, [1 x i8]* @p_str1, i32 16, i32 16, i32 16, i32 16, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:30]   --->   Operation 27 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_7 : Operation 28 [1/7] (2.91ns)   --->   "%from_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %from_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 28 'readreq' 'from_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
-ST_7 : Operation 29 [1/1] (0.60ns)   --->   "br label %1" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 29 'br' <Predicate = true> <Delay = 0.60>
+ST_7 : Operation 23 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i512* %source), !map !51"   --->   Operation 23 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 24 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %sink_3_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str31, i32 0, i32 0, [1 x i8]* @p_str32, [1 x i8]* @p_str33, [1 x i8]* @p_str34, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str35, [1 x i8]* @p_str36)"   --->   Operation 24 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 25 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %sink_2_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str25, i32 0, i32 0, [1 x i8]* @p_str26, [1 x i8]* @p_str27, [1 x i8]* @p_str28, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str29, [1 x i8]* @p_str30)"   --->   Operation 25 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 26 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %sink_1_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str19, i32 0, i32 0, [1 x i8]* @p_str20, [1 x i8]* @p_str21, [1 x i8]* @p_str22, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str23, [1 x i8]* @p_str24)"   --->   Operation 26 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 27 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i513* %sink_0_fifo_V, [8 x i8]* @ap_fifo_str, i32 0, i32 0, [1 x i8]* @p_str13, i32 0, i32 0, [1 x i8]* @p_str14, [1 x i8]* @p_str15, [1 x i8]* @p_str16, i32 2, i32 2, i32 16, i32 16, [1 x i8]* @p_str17, [1 x i8]* @p_str18)"   --->   Operation 27 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 28 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %sink_3_fifo_V), !map !55"   --->   Operation 28 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 29 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %sink_2_fifo_V), !map !62"   --->   Operation 29 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 30 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %sink_1_fifo_V), !map !69"   --->   Operation 30 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 31 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i513* %sink_0_fifo_V), !map !76"   --->   Operation 31 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 32 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i32 %data_num), !map !83"   --->   Operation 32 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 33 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([5 x i8]* @load_str) nounwind"   --->   Operation 33 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 34 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i512* %source, [6 x i8]* @p_str, i32 0, i32 0, [1 x i8]* @p_str1, i32 0, i32 0, [7 x i8]* @p_str2, [7 x i8]* @p_str3, [1 x i8]* @p_str1, i32 16, i32 16, i32 16, i32 16, [1 x i8]* @p_str1, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 34 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_7 : Operation 35 [1/7] (2.91ns)   --->   "%source_addr_rd_req = call i1 @_ssdm_op_ReadReq.m_axi.i512P(i512* %source_addr, i32 %data_num_read)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 35 'readreq' 'source_addr_rd_req' <Predicate = true> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_7 : Operation 36 [1/1] (0.60ns)   --->   "br label %1" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 36 'br' <Predicate = true> <Delay = 0.60>
 
 State 8 <SV = 7> <Delay = 0.85>
-ST_8 : Operation 30 [1/1] (0.00ns)   --->   "%i_0 = phi i31 [ 0, %0 ], [ %i, %load_epoch_begin ]"   --->   Operation 30 'phi' 'i_0' <Predicate = true> <Delay = 0.00>
-ST_8 : Operation 31 [1/1] (0.00ns)   --->   "%zext_ln36 = zext i31 %i_0 to i32" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 31 'zext' 'zext_ln36' <Predicate = true> <Delay = 0.00>
-ST_8 : Operation 32 [1/1] (0.85ns)   --->   "%icmp_ln36 = icmp slt i32 %zext_ln36, %data_num_read" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 32 'icmp' 'icmp_ln36' <Predicate = true> <Delay = 0.85> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 0.85> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
-ST_8 : Operation 33 [1/1] (0.66ns)   --->   "%i = add i31 %i_0, 1" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 33 'add' 'i' <Predicate = true> <Delay = 0.66> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 0.66> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
-ST_8 : Operation 34 [1/1] (0.00ns)   --->   "br i1 %icmp_ln36, label %load_epoch_begin, label %2" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 34 'br' <Predicate = true> <Delay = 0.00>
+ST_8 : Operation 37 [1/1] (0.00ns)   --->   "%i_0 = phi i31 [ 0, %0 ], [ %i, %load_epoch_begin ]"   --->   Operation 37 'phi' 'i_0' <Predicate = true> <Delay = 0.00>
+ST_8 : Operation 38 [1/1] (0.00ns)   --->   "%zext_ln45 = zext i31 %i_0 to i32" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 38 'zext' 'zext_ln45' <Predicate = true> <Delay = 0.00>
+ST_8 : Operation 39 [1/1] (0.85ns)   --->   "%icmp_ln45 = icmp slt i32 %zext_ln45, %data_num_read" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 39 'icmp' 'icmp_ln45' <Predicate = true> <Delay = 0.85> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 0.85> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_8 : Operation 40 [1/1] (0.66ns)   --->   "%i = add i31 %i_0, 1" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 40 'add' 'i' <Predicate = true> <Delay = 0.66> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 0.66> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_8 : Operation 41 [1/1] (0.00ns)   --->   "br i1 %icmp_ln45, label %load_epoch_begin, label %2" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 41 'br' <Predicate = true> <Delay = 0.00>
 
 State 9 <SV = 8> <Delay = 4.37>
-ST_9 : Operation 35 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLoopName([11 x i8]* @p_str4) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:37]   --->   Operation 35 'specloopname' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 36 [1/1] (0.00ns)   --->   "%tmp_1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([11 x i8]* @p_str4)" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:37]   --->   Operation 36 'specregionbegin' 'tmp_1' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 37 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:38]   --->   Operation 37 'specpipeline' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 38 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:39]   --->   Operation 38 'specpipeline' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 39 [1/1] (0.00ns)   --->   "%rbegin1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 39 'specregionbegin' 'rbegin1' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 40 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:143->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 40 'specprotocol' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 41 [1/1] (2.91ns)   --->   "%tmp_val_V = call i512 @_ssdm_op_Read.m_axi.i512P(i512* %from_addr)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 41 'read' 'tmp_val_V' <Predicate = (icmp_ln36)> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
-ST_9 : Operation 42 [1/1] (0.00ns)   --->   "%tmp = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 42 'bitconcatenate' 'tmp' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 43 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %to_fifo_V, i513 %tmp)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40]   --->   Operation 43 'write' <Predicate = (icmp_ln36)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
-ST_9 : Operation 44 [1/1] (0.00ns)   --->   "%rend2 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str, i32 %rbegin1) nounwind" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:41]   --->   Operation 44 'specregionend' 'rend2' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 45 [1/1] (0.00ns)   --->   "%empty_5 = call i32 (...)* @_ssdm_op_SpecRegionEnd([11 x i8]* @p_str4, i32 %tmp_1)" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:41]   --->   Operation 45 'specregionend' 'empty_5' <Predicate = (icmp_ln36)> <Delay = 0.00>
-ST_9 : Operation 46 [1/1] (0.00ns)   --->   "br label %1" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36]   --->   Operation 46 'br' <Predicate = (icmp_ln36)> <Delay = 0.00>
+ST_9 : Operation 42 [1/1] (0.00ns)   --->   "%rbegin1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 42 'specregionbegin' 'rbegin1' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_9 : Operation 43 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:145->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 43 'specprotocol' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_9 : Operation 44 [1/1] (2.91ns)   --->   "%tmp_val_V = call i512 @_ssdm_op_Read.m_axi.i512P(i512* %source_addr)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 44 'read' 'tmp_val_V' <Predicate = (icmp_ln45)> <Delay = 2.91> <Core = "m_axi">   --->   Core 9 'm_axi' <Latency = 6> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write' 'readreq' 'writereq' 'writeresp'>
+ST_9 : Operation 45 [1/1] (0.00ns)   --->   "%tmp = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_V)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 45 'bitconcatenate' 'tmp' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_9 : Operation 46 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %sink_0_fifo_V, i513 %tmp)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49]   --->   Operation 46 'write' <Predicate = (icmp_ln45)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
+ST_9 : Operation 47 [1/1] (0.00ns)   --->   "%rend143 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str, i32 %rbegin1) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 47 'specregionend' 'rend143' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_9 : Operation 48 [2/2] (1.16ns)   --->   "%tmp_val_V_1 = add i512 %tmp_val_V, 1" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 48 'add' 'tmp_val_V_1' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_9 : Operation 49 [2/2] (1.16ns)   --->   "%tmp_val_V_2 = add i512 %tmp_val_V, 2" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 49 'add' 'tmp_val_V_2' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_9 : Operation 50 [2/2] (1.16ns)   --->   "%tmp_val_V_3 = add i512 %tmp_val_V, 3" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 50 'add' 'tmp_val_V_3' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
 
-State 10 <SV = 8> <Delay = 0.00>
-ST_10 : Operation 47 [1/1] (0.00ns)   --->   "ret void" [/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:42]   --->   Operation 47 'ret' <Predicate = true> <Delay = 0.00>
+State 10 <SV = 9> <Delay = 2.62>
+ST_10 : Operation 51 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecLoopName([11 x i8]* @p_str4) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:46]   --->   Operation 51 'specloopname' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 52 [1/1] (0.00ns)   --->   "%tmp_4 = call i32 (...)* @_ssdm_op_SpecRegionBegin([11 x i8]* @p_str4)" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:46]   --->   Operation 52 'specregionbegin' 'tmp_4' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 53 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:47]   --->   Operation 53 'specpipeline' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 54 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str1) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:48]   --->   Operation 54 'specpipeline' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 55 [1/2] (1.16ns)   --->   "%tmp_val_V_1 = add i512 %tmp_val_V, 1" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 55 'add' 'tmp_val_V_1' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_10 : Operation 56 [1/1] (0.00ns)   --->   "%rbegin2 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 56 'specregionbegin' 'rbegin2' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 57 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:145->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 57 'specprotocol' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 58 [1/1] (0.00ns)   --->   "%tmp_1 = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_V_1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 58 'bitconcatenate' 'tmp_1' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 59 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %sink_1_fifo_V, i513 %tmp_1)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50]   --->   Operation 59 'write' <Predicate = (icmp_ln45)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
+ST_10 : Operation 60 [1/1] (0.00ns)   --->   "%rend139 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str, i32 %rbegin2) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 60 'specregionend' 'rend139' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 61 [1/2] (1.16ns)   --->   "%tmp_val_V_2 = add i512 %tmp_val_V, 2" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 61 'add' 'tmp_val_V_2' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_10 : Operation 62 [1/1] (0.00ns)   --->   "%rbegin3 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 62 'specregionbegin' 'rbegin3' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 63 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:145->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 63 'specprotocol' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 64 [1/1] (0.00ns)   --->   "%tmp_2 = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_V_2)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 64 'bitconcatenate' 'tmp_2' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 65 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %sink_2_fifo_V, i513 %tmp_2)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:51]   --->   Operation 65 'write' <Predicate = (icmp_ln45)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
+ST_10 : Operation 66 [1/1] (0.00ns)   --->   "%rend135 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str, i32 %rbegin3) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 66 'specregionend' 'rend135' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 67 [1/2] (1.16ns)   --->   "%tmp_val_V_3 = add i512 %tmp_val_V, 3" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 67 'add' 'tmp_val_V_3' <Predicate = (icmp_ln45)> <Delay = 1.16> <Core = "AddSubnS">   --->   Core 15 'AddSubnS' <Latency = 1> <II = 1> <Delay = 1.16> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_10 : Operation 68 [1/1] (0.00ns)   --->   "%rbegin4 = call i32 (...)* @_ssdm_op_SpecRegionBegin([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 68 'specregionbegin' 'rbegin4' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 69 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str1) nounwind" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:145->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 69 'specprotocol' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 70 [1/1] (0.00ns)   --->   "%tmp_3 = call i513 @_ssdm_op_BitConcatenate.i513.i1.i512(i1 false, i512 %tmp_val_V_3)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 70 'bitconcatenate' 'tmp_3' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 71 [1/1] (1.45ns)   --->   "call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %sink_3_fifo_V, i513 %tmp_3)" [/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:52]   --->   Operation 71 'write' <Predicate = (icmp_ln45)> <Delay = 1.45> <Core = "FIFO">   --->   Core 32 'FIFO' <Latency = 0> <II = 1> <Delay = 1.45> <Storage> <Opcode : 'read' 'write' 'nbread' 'nbwrite'> <Ports = 0> <Width = 513> <Depth = 0> <FIFO>
+ST_10 : Operation 72 [1/1] (0.00ns)   --->   "%rend133 = call i32 (...)* @_ssdm_op_SpecRegionEnd([42 x i8]* @tlp_KD_KD_ostream_MD_ap_uint_MD_512_OD_AC_OD_KD_KD_write_OC_region_str, i32 %rbegin4) nounwind" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:53]   --->   Operation 72 'specregionend' 'rend133' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 73 [1/1] (0.00ns)   --->   "%empty_5 = call i32 (...)* @_ssdm_op_SpecRegionEnd([11 x i8]* @p_str4, i32 %tmp_4)" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:53]   --->   Operation 73 'specregionend' 'empty_5' <Predicate = (icmp_ln45)> <Delay = 0.00>
+ST_10 : Operation 74 [1/1] (0.00ns)   --->   "br label %1" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45]   --->   Operation 74 'br' <Predicate = (icmp_ln45)> <Delay = 0.00>
+
+State 11 <SV = 8> <Delay = 0.00>
+ST_11 : Operation 75 [1/1] (0.00ns)   --->   "ret void" [/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:54]   --->   Operation 75 'ret' <Predicate = true> <Delay = 0.00>
 
 
 ============================================================
@@ -157,44 +187,49 @@ Target clock period: 3.33ns, clock uncertainty: 0.416ns.
 
  <State 1>: 2.91ns
 The critical path consists of the following:
-	wire read on port 'data_num' [5]  (0 ns)
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	wire read on port 'data_num' [8]  (0 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 2>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 3>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 4>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 5>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 6>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 7>: 2.91ns
 The critical path consists of the following:
-	bus request on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [16]  (2.91 ns)
+	bus request on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [25]  (2.91 ns)
 
  <State 8>: 0.859ns
 The critical path consists of the following:
-	'phi' operation ('i') with incoming values : ('i', /home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36) [19]  (0 ns)
-	'icmp' operation ('icmp_ln36', /home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:36) [21]  (0.859 ns)
+	'phi' operation ('i') with incoming values : ('i', /home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45) [28]  (0 ns)
+	'icmp' operation ('icmp_ln45', /home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:45) [30]  (0.859 ns)
 
  <State 9>: 4.37ns
 The critical path consists of the following:
-	bus read on port 'from' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [31]  (2.91 ns)
-	fifo write on port 'to_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:144->/home/einsx7/pr/application/soda/dac_iter5/tlpc_result/cpp/load.cpp:40) [33]  (1.46 ns)
+	bus read on port 'source' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [40]  (2.91 ns)
+	fifo write on port 'sink_0_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:49) [42]  (1.46 ns)
 
- <State 10>: 0ns
+ <State 10>: 2.62ns
+The critical path consists of the following:
+	'add' operation ('tmp.val.V', /home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50) [44]  (1.17 ns)
+	fifo write on port 'sink_1_fifo_V' (/curr/einsx7/.local/lib/python3.6/site-packages/tlp/assets/cpp/tlp/stream.h:146->/home/einsx7/pr/application/soda_U250/orig/dac_iter5/tlpc_result/cpp/load.cpp:50) [48]  (1.46 ns)
+
+ <State 11>: 0ns
 The critical path consists of the following:
 
 
@@ -216,6 +251,7 @@ N/A
 	State 8
 	State 9
 	State 10
+	State 11
 
 
 ============================================================

@@ -25,11 +25,20 @@
 #error BURST_WIDTH != 512
 #endif//BURST_WIDTH != 512
 
-void load(tlp::ostream<ap_uint<BURST_WIDTH> > &to, tlp::mmap< ap_uint<BURST_WIDTH> > from, int data_num)
+void load(
+    tlp::ostream<ap_uint<BURST_WIDTH> > &sink_0, 
+    tlp::ostream<ap_uint<BURST_WIDTH> > &sink_1, 
+    tlp::ostream<ap_uint<BURST_WIDTH> > &sink_2, 
+    tlp::ostream<ap_uint<BURST_WIDTH> > &sink_3, 
+    tlp::mmap< ap_uint<BURST_WIDTH> > source, 
+    int data_num)
 {
-#pragma HLS interface m_axi port = from offset = direct bundle = from
-#pragma HLS data_pack variable = to.fifo
-#pragma HLS data_pack variable = from
+#pragma HLS interface m_axi port = source offset = direct bundle = source
+#pragma HLS data_pack variable = sink_0.fifo
+#pragma HLS data_pack variable = sink_1.fifo
+#pragma HLS data_pack variable = sink_2.fifo
+#pragma HLS data_pack variable = sink_3.fifo
+#pragma HLS data_pack variable = source
 
 
 load_epoch:
@@ -37,11 +46,12 @@ load_epoch:
     {
 #pragma HLS pipeline II = 1
 #pragma HLS pipeline II=1
-        to.write(from[i]);
+        sink_0.write(source[i]);
+        sink_1.write(source[i]+1);
+        sink_2.write(source[i]+2);
+        sink_3.write(source[i]+3);
     }
 }
-
-
 
 
 

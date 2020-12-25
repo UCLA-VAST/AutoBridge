@@ -6,65 +6,88 @@
 
 source /opt/tools/xilinx/Vivado/2019.2/scripts/vivado_hls/hls.tcl -notrace
 INFO: [HLS 200-10] Running '/opt/tools/xilinx/Vivado/2019.2/bin/unwrapped/lnx64.o/vivado_hls'
-INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Tue May 19 12:10:17 PDT 2020
+INFO: [HLS 200-10] For user 'einsx7' on host 'u13-einsx7' (Linux_x86_64 version 4.4.0-169-generic) on Sun May 24 23:12:50 PDT 2020
 INFO: [HLS 200-10] On os Ubuntu 16.04.6 LTS
-INFO: [HLS 200-10] In directory '/tmp/vivado-hls-nkr1t3lf'
-Sourcing Tcl script '/tmp/vivado-hls-nkr1t3lf/commands.tcl'
-INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-xkmr9t8c/project'.
-INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp' to the project
-INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-xkmr9t8c/project/store'.
-INFO: [HLS 200-10] Setting target device to 'xcu280-fsvh2892-2L-e'
+INFO: [HLS 200-10] In directory '/tmp/vivado-hls-k5ml826v'
+Sourcing Tcl script '/tmp/vivado-hls-k5ml826v/commands.tcl'
+INFO: [HLS 200-10] Creating and opening project '/tmp/run-hls-18hzcrtu/project'.
+INFO: [HLS 200-10] Adding design file '/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp' to the project
+INFO: [HLS 200-10] Creating and opening solution '/tmp/run-hls-18hzcrtu/project/store'.
+INFO: [HLS 200-10] Setting target device to 'xcu250-figd2104-2L-e'
 INFO: [SYN 201-201] Setting up clock 'default' with a period of 3.33ns.
 INFO: [XFORM 203-1161] The maximum of name length is set into 253.
 INFO: [SCHED 204-61] Option 'relax_ii_for_timing' is enabled, will increase II to preserve clock frequency constraints.
-INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp' ... 
-INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 122359 ; free virtual = 126363
-INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 122358 ; free virtual = 126363
+INFO: [HLS 200-10] Analyzing design file '/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp' ... 
+INFO: [HLS 200-111] Finished Linking Time (s): cpu = 00:00:23 ; elapsed = 00:00:25 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121962 ; free virtual = 124886
+INFO: [HLS 200-111] Finished Checking Pragmas Time (s): cpu = 00:00:23 ; elapsed = 00:00:25 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121961 ; free virtual = 124885
 INFO: [HLS 200-10] Starting code transformations ...
-INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'store' (/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp:43).
-INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 122422 ; free virtual = 126432
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'store' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:55).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'store' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:55).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'store' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:55).
+INFO: [XFORM 203-603] Inlining function 'tlp::istream<ap_uint<512> >::read' into 'store' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:55).
+INFO: [HLS 200-111] Finished Standard Transforms Time (s): cpu = 00:00:24 ; elapsed = 00:00:26 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121610 ; free virtual = 124564
 INFO: [HLS 200-10] Checking synthesizability ...
-INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 122437 ; free virtual = 126447
-WARNING: [XFORM 203-1103] Ignored data pack directive on non-struct variable 'to.V' (/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp:30).
-INFO: [XFORM 203-1101] Packing variable 'from.fifo.V' (/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp:30) into a 513-bit variable.
-INFO: [XFORM 203-1101] Packing variable 'from.peek_val' (/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp:30) into a 513-bit variable.
-INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 968.840 ; gain = 539.035 ; free physical = 122417 ; free virtual = 126428
-INFO: [HLS 200-444] Inferring multiple bus burst write of variable length on port 'to' (/home/einsx7/pr/application/soda/dac_iter6/tlpc_result/cpp/store.cpp:43:10). These data requests might be further partitioned to multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.
-INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 974.609 ; gain = 544.805 ; free physical = 122383 ; free virtual = 126394
+INFO: [HLS 200-111] Finished Checking Synthesizability Time (s): cpu = 00:00:24 ; elapsed = 00:00:26 . Memory (MB): peak = 967.684 ; gain = 537.879 ; free physical = 121571 ; free virtual = 124528
+WARNING: [XFORM 203-1103] Ignored data pack directive on non-struct variable 'sink.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:31).
+INFO: [XFORM 203-1101] Packing variable 'source_0.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:32) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_0.peek_val' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:32) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_1.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:33) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_1.peek_val' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:33) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_2.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:34) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_2.peek_val' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:34) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_3.fifo.V' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:35) into a 513-bit variable.
+INFO: [XFORM 203-1101] Packing variable 'source_3.peek_val' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:35) into a 513-bit variable.
+INFO: [XFORM 203-11] Balancing expressions in function 'store' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:31)...3 expression(s) balanced.
+INFO: [HLS 200-111] Finished Pre-synthesis Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 967.918 ; gain = 538.113 ; free physical = 121442 ; free virtual = 124411
+INFO: [HLS 200-444] Inferring multiple bus burst write of variable length on port 'sink' (/home/einsx7/pr/application/soda_U250/orig/dac_iter6/tlpc_result/cpp/store.cpp:55:66). These data requests might be further partitioned to multiple requests during RTL generation, based on max_read_burst_length or max_write_burst_length settings.
+INFO: [HLS 200-111] Finished Architecture Synthesis Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 967.918 ; gain = 538.113 ; free physical = 121384 ; free virtual = 124361
 INFO: [HLS 200-10] Starting hardware synthesis ...
 INFO: [HLS 200-10] Synthesizing 'store' ...
-WARNING: [SYN 201-107] Renaming port name 'store/to' to 'store/to_r' to avoid the conflict with HDL keywords or other object names.
 INFO: [HLS 200-10] ----------------------------------------------------------------
 INFO: [HLS 200-42] -- Implementing module 'store' 
 INFO: [HLS 200-10] ----------------------------------------------------------------
 INFO: [SCHED 204-11] Starting scheduling ...
 INFO: [SCHED 204-61] Pipelining loop 'store_epoch'.
-INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 3.
+INFO: [SCHED 204-61] Pipelining result : Target II = 1, Final II = 1, Depth = 5.
 INFO: [SCHED 204-11] Finished scheduling.
-INFO: [HLS 200-111]  Elapsed time: 29.12 seconds; current allocated memory: 133.929 MB.
+INFO: [HLS 200-111]  Elapsed time: 26.92 seconds; current allocated memory: 138.823 MB.
 INFO: [BIND 205-100] Starting micro-architecture generation ...
 INFO: [BIND 205-101] Performing variable lifetime analysis.
 INFO: [BIND 205-101] Exploring resource sharing.
 INFO: [BIND 205-101] Binding ...
 INFO: [BIND 205-100] Finished micro-architecture generation.
-INFO: [HLS 200-111]  Elapsed time: 0.04 seconds; current allocated memory: 134.137 MB.
+INFO: [HLS 200-111]  Elapsed time: 0.06 seconds; current allocated memory: 139.147 MB.
 INFO: [HLS 200-10] ----------------------------------------------------------------
 INFO: [HLS 200-10] -- Generating RTL for module 'store' 
 INFO: [HLS 200-10] ----------------------------------------------------------------
-INFO: [RTGEN 206-500] Setting interface mode on port 'store/to_r' to 'm_axi'.
-INFO: [RTGEN 206-500] Setting interface mode on port 'store/to_V' to 'ap_none'.
-INFO: [RTGEN 206-500] Setting interface mode on port 'store/from_fifo_V' to 'ap_fifo'.
-INFO: [RTGEN 206-500] Setting interface mode on port 'store/from_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/sink' to 'm_axi'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/sink_V' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_0_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_0_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_1_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_1_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_2_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_2_peek_val' to 'ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_3_fifo_V' to 'ap_fifo'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'store/source_3_peek_val' to 'ap_none'.
 INFO: [RTGEN 206-500] Setting interface mode on port 'store/data_num' to 'ap_none'.
 INFO: [RTGEN 206-500] Setting interface mode on function 'store' to 'ap_ctrl_hs'.
-WARNING: [RTGEN 206-101] Port 'store/from_peek_val' has no fanin or fanout and is left dangling.
+WARNING: [RTGEN 206-101] Port 'store/source_0_peek_val' has no fanin or fanout and is left dangling.
                Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'store/source_1_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'store/source_2_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+WARNING: [RTGEN 206-101] Port 'store/source_3_peek_val' has no fanin or fanout and is left dangling.
+               Please use C simulation to confirm this function argument can be read from or written to.
+INFO: [RTGEN 206-100] Generating core module 'store_add_512ns_512ns_512_2_1': 1 instance(s).
 INFO: [RTGEN 206-100] Finished creating RTL model for 'store'.
-INFO: [HLS 200-111]  Elapsed time: 0.04 seconds; current allocated memory: 134.769 MB.
+INFO: [HLS 200-111]  Elapsed time: 0.08 seconds; current allocated memory: 139.915 MB.
 INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
 INFO: [HLS 200-789] **** Estimated Fmax: 343.20 MHz
-INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:27 ; elapsed = 00:00:31 . Memory (MB): peak = 974.609 ; gain = 544.805 ; free physical = 122527 ; free virtual = 126553
+INFO: [RTMG 210-283] Generating pipelined adder/subtractor : 'store_store_add_512ns_512ns_512_2_1_AddSubnS_0'
+INFO: [HLS 200-111] Finished generating all RTL models Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 967.918 ; gain = 538.113 ; free physical = 124082 ; free virtual = 127088
 INFO: [VHDL 208-304] Generating VHDL RTL for store with prefix store_.
 INFO: [VLOG 209-307] Generating Verilog RTL for store with prefix store_.
-INFO: [HLS 200-112] Total elapsed time: 30.6 seconds; peak allocated memory: 134.769 MB.
-INFO: [Common 17-206] Exiting vivado_hls at Tue May 19 12:10:47 2020...
+INFO: [HLS 200-112] Total elapsed time: 28.76 seconds; peak allocated memory: 139.915 MB.
+INFO: [Common 17-206] Exiting vivado_hls at Sun May 24 23:13:19 2020...

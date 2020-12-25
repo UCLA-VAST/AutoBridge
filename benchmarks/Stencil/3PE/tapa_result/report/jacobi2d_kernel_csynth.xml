@@ -7,7 +7,7 @@
 <UserAssignments>
 <unit>ns</unit>
 <ProductFamily>virtexuplus</ProductFamily>
-<Part>xcu280-fsvh2892-2L-e</Part>
+<Part>xcu250-figd2104-2L-e</Part>
 <TopModelName>jacobi2d_kernel</TopModelName>
 <TargetClockPeriod>3.33</TargetClockPeriod>
 <ClockUncertainty>0.42</ClockUncertainty>
@@ -35,17 +35,17 @@
 <AreaEstimates>
 <Resources>
 <BRAM_18K>0</BRAM_18K>
-<FF>852</FF>
-<LUT>1527</LUT>
+<FF>432</FF>
+<LUT>759</LUT>
 <DSP48E>0</DSP48E>
 <URAM>0</URAM>
 </Resources>
 <AvailableResources>
-<BRAM_18K>4032</BRAM_18K>
-<DSP48E>9024</DSP48E>
-<FF>2607360</FF>
-<LUT>1303680</LUT>
-<URAM>960</URAM>
+<BRAM_18K>5376</BRAM_18K>
+<DSP48E>12288</DSP48E>
+<FF>3456000</FF>
+<LUT>1728000</LUT>
+<URAM>1280</URAM>
 </AvailableResources>
 </AreaEstimates>
 
@@ -84,7 +84,7 @@
 <IOProtocol>s_axi</IOProtocol>
 <IOConfig></IOConfig>
 <Dir>in</Dir>
-<Bits>8</Bits>
+<Bits>7</Bits>
 <Attribute>unknown</Attribute>
 <CType>int</CType>
 <HasCtrl>1</HasCtrl>
@@ -175,7 +175,7 @@
 <IOProtocol>s_axi</IOProtocol>
 <IOConfig></IOConfig>
 <Dir>in</Dir>
-<Bits>8</Bits>
+<Bits>7</Bits>
 <Attribute>unknown</Attribute>
 <CType>int</CType>
 <HasCtrl>1</HasCtrl>

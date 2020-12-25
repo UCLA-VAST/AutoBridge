@@ -2773,7 +2773,7 @@ compute_epoch_begin:5  %rbegin1 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 
 compute_epoch_begin:6  call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="speclatency_ln80"/></StgValue>
+<StgValue><ssdm name="speclatency_ln82"/></StgValue>
 </operation>
 
 <operation id="207" st_id="2" stage="1" lat="1">
@@ -2805,7 +2805,7 @@ compute_epoch_begin:9  %rbegin2 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41 
 compute_epoch_begin:10  call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="speclatency_ln80"/></StgValue>
+<StgValue><ssdm name="speclatency_ln82"/></StgValue>
 </operation>
 
 <operation id="209" st_id="2" stage="1" lat="1">
@@ -2837,7 +2837,7 @@ compute_epoch_begin:13  %rbegin3 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41
 compute_epoch_begin:14  call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="speclatency_ln80"/></StgValue>
+<StgValue><ssdm name="speclatency_ln82"/></StgValue>
 </operation>
 
 <operation id="211" st_id="2" stage="1" lat="1">
@@ -2869,7 +2869,7 @@ compute_epoch_begin:17  %rbegin4 = call i32 (...)* @_ssdm_op_SpecRegionBegin([41
 compute_epoch_begin:18  call void (...)* @_ssdm_op_SpecLatency(i32 0, i32 1, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="speclatency_ln80"/></StgValue>
+<StgValue><ssdm name="speclatency_ln82"/></StgValue>
 </operation>
 
 <operation id="213" st_id="2" stage="1" lat="1">
@@ -72139,7 +72139,7 @@ compute_epoch_begin:2473  %rbegin = call i32 (...)* @_ssdm_op_SpecRegionBegin([4
 compute_epoch_begin:2474  call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="specprotocol_ln143"/></StgValue>
+<StgValue><ssdm name="specprotocol_ln145"/></StgValue>
 </operation>
 
 <operation id="4536" st_id="36" stage="1" lat="1">
@@ -72171,7 +72171,7 @@ compute_epoch_begin:2475  %tmp_4_101 = call i513 @_ssdm_op_BitConcatenate.i513.i
 compute_epoch_begin:2476  call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %to_chan_0_bank_0_fifo_V, i513 %tmp_4_101)
 
 ]]></Node>
-<StgValue><ssdm name="write_ln144"/></StgValue>
+<StgValue><ssdm name="write_ln146"/></StgValue>
 </operation>
 
 <operation id="4538" st_id="36" stage="1" lat="1">
@@ -72219,7 +72219,7 @@ compute_epoch_begin:2478  %rbegin5 = call i32 (...)* @_ssdm_op_SpecRegionBegin([
 compute_epoch_begin:2479  call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="specprotocol_ln143"/></StgValue>
+<StgValue><ssdm name="specprotocol_ln145"/></StgValue>
 </operation>
 
 <operation id="4541" st_id="36" stage="1" lat="1">
@@ -72251,7 +72251,7 @@ compute_epoch_begin:2480  %tmp_5_21 = call i513 @_ssdm_op_BitConcatenate.i513.i1
 compute_epoch_begin:2481  call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %to_chan_0_bank_1_fifo_V, i513 %tmp_5_21)
 
 ]]></Node>
-<StgValue><ssdm name="write_ln144"/></StgValue>
+<StgValue><ssdm name="write_ln146"/></StgValue>
 </operation>
 
 <operation id="4543" st_id="36" stage="1" lat="1">
@@ -72299,7 +72299,7 @@ compute_epoch_begin:2483  %rbegin6 = call i32 (...)* @_ssdm_op_SpecRegionBegin([
 compute_epoch_begin:2484  call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="specprotocol_ln143"/></StgValue>
+<StgValue><ssdm name="specprotocol_ln145"/></StgValue>
 </operation>
 
 <operation id="4546" st_id="36" stage="1" lat="1">
@@ -72331,7 +72331,7 @@ compute_epoch_begin:2485  %tmp_6_11 = call i513 @_ssdm_op_BitConcatenate.i513.i1
 compute_epoch_begin:2486  call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %to_chan_0_bank_2_fifo_V, i513 %tmp_6_11)
 
 ]]></Node>
-<StgValue><ssdm name="write_ln144"/></StgValue>
+<StgValue><ssdm name="write_ln146"/></StgValue>
 </operation>
 
 <operation id="4548" st_id="36" stage="1" lat="1">
@@ -72379,7 +72379,7 @@ compute_epoch_begin:2488  %rbegin7 = call i32 (...)* @_ssdm_op_SpecRegionBegin([
 compute_epoch_begin:2489  call void (...)* @_ssdm_op_SpecProtocol(i32 0, [1 x i8]* @p_str) nounwind
 
 ]]></Node>
-<StgValue><ssdm name="specprotocol_ln143"/></StgValue>
+<StgValue><ssdm name="specprotocol_ln145"/></StgValue>
 </operation>
 
 <operation id="4551" st_id="36" stage="1" lat="1">
@@ -72411,7 +72411,7 @@ compute_epoch_begin:2490  %tmp_7_11 = call i513 @_ssdm_op_BitConcatenate.i513.i1
 compute_epoch_begin:2491  call void @_ssdm_op_Write.ap_fifo.volatile.i513P(i513* %to_chan_0_bank_3_fifo_V, i513 %tmp_7_11)
 
 ]]></Node>
-<StgValue><ssdm name="write_ln144"/></StgValue>
+<StgValue><ssdm name="write_ln146"/></StgValue>
 </operation>
 
 <operation id="4553" st_id="36" stage="1" lat="1">

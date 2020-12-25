@@ -36,13 +36,7 @@ extern "C" {
 
 void jacobi2d_kernel(
     uint64_t var_output_0_0,
-    uint64_t var_output_0_1,
-    uint64_t var_output_0_2,
-    uint64_t var_output_0_3,
     uint64_t var_input_0_0,
-    uint64_t var_input_0_1,
-    uint64_t var_input_0_2,
-    uint64_t var_input_0_3,
     int64_t coalesced_data_num,
     int64_t tile_data_num,
     int32_t tile_num_dim_0,
@@ -50,13 +44,7 @@ void jacobi2d_kernel(
     int32_t input_size_dim_1)
 {
 #pragma HLS interface s_axilite port = var_output_0_0 bundle = control
-#pragma HLS interface s_axilite port = var_output_0_1 bundle = control
-#pragma HLS interface s_axilite port = var_output_0_2 bundle = control
-#pragma HLS interface s_axilite port = var_output_0_3 bundle = control
 #pragma HLS interface s_axilite port = var_input_0_0 bundle = control
-#pragma HLS interface s_axilite port = var_input_0_1 bundle = control
-#pragma HLS interface s_axilite port = var_input_0_2 bundle = control
-#pragma HLS interface s_axilite port = var_input_0_3 bundle = control
 #pragma HLS interface s_axilite port = coalesced_data_num bundle = control
 #pragma HLS interface s_axilite port = tile_data_num bundle = control
 #pragma HLS interface s_axilite port = tile_num_dim_0 bundle = control
@@ -65,13 +53,7 @@ void jacobi2d_kernel(
 #pragma HLS interface s_axilite port = return bundle = control
 
 { auto val = reinterpret_cast<volatile uint8_t&>(var_output_0_0); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_output_0_1); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_output_0_2); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_output_0_3); }
 { auto val = reinterpret_cast<volatile uint8_t&>(var_input_0_0); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_input_0_1); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_input_0_2); }
-{ auto val = reinterpret_cast<volatile uint8_t&>(var_input_0_3); }
 { auto val = reinterpret_cast<volatile uint8_t&>(coalesced_data_num); }
 { auto val = reinterpret_cast<volatile uint8_t&>(tile_data_num); }
 { auto val = reinterpret_cast<volatile uint8_t&>(tile_num_dim_0); }
@@ -81,5 +63,3 @@ void jacobi2d_kernel(
 
 
 }  // extern "C"
-
-

@@ -5,7 +5,7 @@
 `timescale 1ns/1ps
 module jacobi2d_kernel_jacobi2d_kernel_control_s_axi
 #(parameter
-    C_S_AXI_ADDR_WIDTH = 8,
+    C_S_AXI_ADDR_WIDTH = 7,
     C_S_AXI_DATA_WIDTH = 32
 )(
     input  wire                          ACLK,
@@ -34,13 +34,7 @@ module jacobi2d_kernel_jacobi2d_kernel_control_s_axi
     input  wire                          ap_ready,
     input  wire                          ap_idle,
     output wire [63:0]                   var_output_0_0,
-    output wire [63:0]                   var_output_0_1,
-    output wire [63:0]                   var_output_0_2,
-    output wire [63:0]                   var_output_0_3,
     output wire [63:0]                   var_input_0_0,
-    output wire [63:0]                   var_input_0_1,
-    output wire [63:0]                   var_input_0_2,
-    output wire [63:0]                   var_input_0_3,
     output wire [63:0]                   coalesced_data_num,
     output wire [63:0]                   tile_data_num,
     output wire [31:0]                   tile_num_dim_0,
@@ -71,104 +65,56 @@ module jacobi2d_kernel_jacobi2d_kernel_control_s_axi
 // 0x14 : Data signal of var_output_0_0
 //        bit 31~0 - var_output_0_0[63:32] (Read/Write)
 // 0x18 : reserved
-// 0x1c : Data signal of var_output_0_1
-//        bit 31~0 - var_output_0_1[31:0] (Read/Write)
-// 0x20 : Data signal of var_output_0_1
-//        bit 31~0 - var_output_0_1[63:32] (Read/Write)
-// 0x24 : reserved
-// 0x28 : Data signal of var_output_0_2
-//        bit 31~0 - var_output_0_2[31:0] (Read/Write)
-// 0x2c : Data signal of var_output_0_2
-//        bit 31~0 - var_output_0_2[63:32] (Read/Write)
-// 0x30 : reserved
-// 0x34 : Data signal of var_output_0_3
-//        bit 31~0 - var_output_0_3[31:0] (Read/Write)
-// 0x38 : Data signal of var_output_0_3
-//        bit 31~0 - var_output_0_3[63:32] (Read/Write)
-// 0x3c : reserved
-// 0x40 : Data signal of var_input_0_0
+// 0x1c : Data signal of var_input_0_0
 //        bit 31~0 - var_input_0_0[31:0] (Read/Write)
-// 0x44 : Data signal of var_input_0_0
+// 0x20 : Data signal of var_input_0_0
 //        bit 31~0 - var_input_0_0[63:32] (Read/Write)
-// 0x48 : reserved
-// 0x4c : Data signal of var_input_0_1
-//        bit 31~0 - var_input_0_1[31:0] (Read/Write)
-// 0x50 : Data signal of var_input_0_1
-//        bit 31~0 - var_input_0_1[63:32] (Read/Write)
-// 0x54 : reserved
-// 0x58 : Data signal of var_input_0_2
-//        bit 31~0 - var_input_0_2[31:0] (Read/Write)
-// 0x5c : Data signal of var_input_0_2
-//        bit 31~0 - var_input_0_2[63:32] (Read/Write)
-// 0x60 : reserved
-// 0x64 : Data signal of var_input_0_3
-//        bit 31~0 - var_input_0_3[31:0] (Read/Write)
-// 0x68 : Data signal of var_input_0_3
-//        bit 31~0 - var_input_0_3[63:32] (Read/Write)
-// 0x6c : reserved
-// 0x70 : Data signal of coalesced_data_num
+// 0x24 : reserved
+// 0x28 : Data signal of coalesced_data_num
 //        bit 31~0 - coalesced_data_num[31:0] (Read/Write)
-// 0x74 : Data signal of coalesced_data_num
+// 0x2c : Data signal of coalesced_data_num
 //        bit 31~0 - coalesced_data_num[63:32] (Read/Write)
-// 0x78 : reserved
-// 0x7c : Data signal of tile_data_num
+// 0x30 : reserved
+// 0x34 : Data signal of tile_data_num
 //        bit 31~0 - tile_data_num[31:0] (Read/Write)
-// 0x80 : Data signal of tile_data_num
+// 0x38 : Data signal of tile_data_num
 //        bit 31~0 - tile_data_num[63:32] (Read/Write)
-// 0x84 : reserved
-// 0x88 : Data signal of tile_num_dim_0
+// 0x3c : reserved
+// 0x40 : Data signal of tile_num_dim_0
 //        bit 31~0 - tile_num_dim_0[31:0] (Read/Write)
-// 0x8c : reserved
-// 0x90 : Data signal of input_size_dim_0
+// 0x44 : reserved
+// 0x48 : Data signal of input_size_dim_0
 //        bit 31~0 - input_size_dim_0[31:0] (Read/Write)
-// 0x94 : reserved
-// 0x98 : Data signal of input_size_dim_1
+// 0x4c : reserved
+// 0x50 : Data signal of input_size_dim_1
 //        bit 31~0 - input_size_dim_1[31:0] (Read/Write)
-// 0x9c : reserved
+// 0x54 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 //------------------------Parameter----------------------
 localparam
-    ADDR_AP_CTRL                   = 8'h00,
-    ADDR_GIE                       = 8'h04,
-    ADDR_IER                       = 8'h08,
-    ADDR_ISR                       = 8'h0c,
-    ADDR_VAR_OUTPUT_0_0_DATA_0     = 8'h10,
-    ADDR_VAR_OUTPUT_0_0_DATA_1     = 8'h14,
-    ADDR_VAR_OUTPUT_0_0_CTRL       = 8'h18,
-    ADDR_VAR_OUTPUT_0_1_DATA_0     = 8'h1c,
-    ADDR_VAR_OUTPUT_0_1_DATA_1     = 8'h20,
-    ADDR_VAR_OUTPUT_0_1_CTRL       = 8'h24,
-    ADDR_VAR_OUTPUT_0_2_DATA_0     = 8'h28,
-    ADDR_VAR_OUTPUT_0_2_DATA_1     = 8'h2c,
-    ADDR_VAR_OUTPUT_0_2_CTRL       = 8'h30,
-    ADDR_VAR_OUTPUT_0_3_DATA_0     = 8'h34,
-    ADDR_VAR_OUTPUT_0_3_DATA_1     = 8'h38,
-    ADDR_VAR_OUTPUT_0_3_CTRL       = 8'h3c,
-    ADDR_VAR_INPUT_0_0_DATA_0      = 8'h40,
-    ADDR_VAR_INPUT_0_0_DATA_1      = 8'h44,
-    ADDR_VAR_INPUT_0_0_CTRL        = 8'h48,
-    ADDR_VAR_INPUT_0_1_DATA_0      = 8'h4c,
-    ADDR_VAR_INPUT_0_1_DATA_1      = 8'h50,
-    ADDR_VAR_INPUT_0_1_CTRL        = 8'h54,
-    ADDR_VAR_INPUT_0_2_DATA_0      = 8'h58,
-    ADDR_VAR_INPUT_0_2_DATA_1      = 8'h5c,
-    ADDR_VAR_INPUT_0_2_CTRL        = 8'h60,
-    ADDR_VAR_INPUT_0_3_DATA_0      = 8'h64,
-    ADDR_VAR_INPUT_0_3_DATA_1      = 8'h68,
-    ADDR_VAR_INPUT_0_3_CTRL        = 8'h6c,
-    ADDR_COALESCED_DATA_NUM_DATA_0 = 8'h70,
-    ADDR_COALESCED_DATA_NUM_DATA_1 = 8'h74,
-    ADDR_COALESCED_DATA_NUM_CTRL   = 8'h78,
-    ADDR_TILE_DATA_NUM_DATA_0      = 8'h7c,
-    ADDR_TILE_DATA_NUM_DATA_1      = 8'h80,
-    ADDR_TILE_DATA_NUM_CTRL        = 8'h84,
-    ADDR_TILE_NUM_DIM_0_DATA_0     = 8'h88,
-    ADDR_TILE_NUM_DIM_0_CTRL       = 8'h8c,
-    ADDR_INPUT_SIZE_DIM_0_DATA_0   = 8'h90,
-    ADDR_INPUT_SIZE_DIM_0_CTRL     = 8'h94,
-    ADDR_INPUT_SIZE_DIM_1_DATA_0   = 8'h98,
-    ADDR_INPUT_SIZE_DIM_1_CTRL     = 8'h9c,
+    ADDR_AP_CTRL                   = 7'h00,
+    ADDR_GIE                       = 7'h04,
+    ADDR_IER                       = 7'h08,
+    ADDR_ISR                       = 7'h0c,
+    ADDR_VAR_OUTPUT_0_0_DATA_0     = 7'h10,
+    ADDR_VAR_OUTPUT_0_0_DATA_1     = 7'h14,
+    ADDR_VAR_OUTPUT_0_0_CTRL       = 7'h18,
+    ADDR_VAR_INPUT_0_0_DATA_0      = 7'h1c,
+    ADDR_VAR_INPUT_0_0_DATA_1      = 7'h20,
+    ADDR_VAR_INPUT_0_0_CTRL        = 7'h24,
+    ADDR_COALESCED_DATA_NUM_DATA_0 = 7'h28,
+    ADDR_COALESCED_DATA_NUM_DATA_1 = 7'h2c,
+    ADDR_COALESCED_DATA_NUM_CTRL   = 7'h30,
+    ADDR_TILE_DATA_NUM_DATA_0      = 7'h34,
+    ADDR_TILE_DATA_NUM_DATA_1      = 7'h38,
+    ADDR_TILE_DATA_NUM_CTRL        = 7'h3c,
+    ADDR_TILE_NUM_DIM_0_DATA_0     = 7'h40,
+    ADDR_TILE_NUM_DIM_0_CTRL       = 7'h44,
+    ADDR_INPUT_SIZE_DIM_0_DATA_0   = 7'h48,
+    ADDR_INPUT_SIZE_DIM_0_CTRL     = 7'h4c,
+    ADDR_INPUT_SIZE_DIM_1_DATA_0   = 7'h50,
+    ADDR_INPUT_SIZE_DIM_1_CTRL     = 7'h54,
     WRIDLE                         = 2'd0,
     WRDATA                         = 2'd1,
     WRRESP                         = 2'd2,
@@ -176,7 +122,7 @@ localparam
     RDIDLE                         = 2'd0,
     RDDATA                         = 2'd1,
     RDRESET                        = 2'd2,
-    ADDR_BITS         = 8;
+    ADDR_BITS         = 7;
 
 //------------------------Local signal-------------------
     reg  [1:0]                    wstate = WRRESET;
@@ -200,13 +146,7 @@ localparam
     reg  [1:0]                    int_ier = 2'b0;
     reg  [1:0]                    int_isr = 2'b0;
     reg  [63:0]                   int_var_output_0_0 = 'b0;
-    reg  [63:0]                   int_var_output_0_1 = 'b0;
-    reg  [63:0]                   int_var_output_0_2 = 'b0;
-    reg  [63:0]                   int_var_output_0_3 = 'b0;
     reg  [63:0]                   int_var_input_0_0 = 'b0;
-    reg  [63:0]                   int_var_input_0_1 = 'b0;
-    reg  [63:0]                   int_var_input_0_2 = 'b0;
-    reg  [63:0]                   int_var_input_0_3 = 'b0;
     reg  [63:0]                   int_coalesced_data_num = 'b0;
     reg  [63:0]                   int_tile_data_num = 'b0;
     reg  [31:0]                   int_tile_num_dim_0 = 'b0;
@@ -325,47 +265,11 @@ always @(posedge ACLK) begin
                 ADDR_VAR_OUTPUT_0_0_DATA_1: begin
                     rdata <= int_var_output_0_0[63:32];
                 end
-                ADDR_VAR_OUTPUT_0_1_DATA_0: begin
-                    rdata <= int_var_output_0_1[31:0];
-                end
-                ADDR_VAR_OUTPUT_0_1_DATA_1: begin
-                    rdata <= int_var_output_0_1[63:32];
-                end
-                ADDR_VAR_OUTPUT_0_2_DATA_0: begin
-                    rdata <= int_var_output_0_2[31:0];
-                end
-                ADDR_VAR_OUTPUT_0_2_DATA_1: begin
-                    rdata <= int_var_output_0_2[63:32];
-                end
-                ADDR_VAR_OUTPUT_0_3_DATA_0: begin
-                    rdata <= int_var_output_0_3[31:0];
-                end
-                ADDR_VAR_OUTPUT_0_3_DATA_1: begin
-                    rdata <= int_var_output_0_3[63:32];
-                end
                 ADDR_VAR_INPUT_0_0_DATA_0: begin
                     rdata <= int_var_input_0_0[31:0];
                 end
                 ADDR_VAR_INPUT_0_0_DATA_1: begin
                     rdata <= int_var_input_0_0[63:32];
-                end
-                ADDR_VAR_INPUT_0_1_DATA_0: begin
-                    rdata <= int_var_input_0_1[31:0];
-                end
-                ADDR_VAR_INPUT_0_1_DATA_1: begin
-                    rdata <= int_var_input_0_1[63:32];
-                end
-                ADDR_VAR_INPUT_0_2_DATA_0: begin
-                    rdata <= int_var_input_0_2[31:0];
-                end
-                ADDR_VAR_INPUT_0_2_DATA_1: begin
-                    rdata <= int_var_input_0_2[63:32];
-                end
-                ADDR_VAR_INPUT_0_3_DATA_0: begin
-                    rdata <= int_var_input_0_3[31:0];
-                end
-                ADDR_VAR_INPUT_0_3_DATA_1: begin
-                    rdata <= int_var_input_0_3[63:32];
                 end
                 ADDR_COALESCED_DATA_NUM_DATA_0: begin
                     rdata <= int_coalesced_data_num[31:0];
@@ -398,13 +302,7 @@ end
 assign interrupt          = int_gie & (|int_isr);
 assign ap_start           = int_ap_start;
 assign var_output_0_0     = int_var_output_0_0;
-assign var_output_0_1     = int_var_output_0_1;
-assign var_output_0_2     = int_var_output_0_2;
-assign var_output_0_3     = int_var_output_0_3;
 assign var_input_0_0      = int_var_input_0_0;
-assign var_input_0_1      = int_var_input_0_1;
-assign var_input_0_2      = int_var_input_0_2;
-assign var_input_0_3      = int_var_input_0_3;
 assign coalesced_data_num = int_coalesced_data_num;
 assign tile_data_num      = int_tile_data_num;
 assign tile_num_dim_0     = int_tile_num_dim_0;
@@ -526,66 +424,6 @@ always @(posedge ACLK) begin
     end
 end
 
-// int_var_output_0_1[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_1[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_1_DATA_0)
-            int_var_output_0_1[31:0] <= (WDATA[31:0] & wmask) | (int_var_output_0_1[31:0] & ~wmask);
-    end
-end
-
-// int_var_output_0_1[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_1[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_1_DATA_1)
-            int_var_output_0_1[63:32] <= (WDATA[31:0] & wmask) | (int_var_output_0_1[63:32] & ~wmask);
-    end
-end
-
-// int_var_output_0_2[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_2[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_2_DATA_0)
-            int_var_output_0_2[31:0] <= (WDATA[31:0] & wmask) | (int_var_output_0_2[31:0] & ~wmask);
-    end
-end
-
-// int_var_output_0_2[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_2[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_2_DATA_1)
-            int_var_output_0_2[63:32] <= (WDATA[31:0] & wmask) | (int_var_output_0_2[63:32] & ~wmask);
-    end
-end
-
-// int_var_output_0_3[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_3[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_3_DATA_0)
-            int_var_output_0_3[31:0] <= (WDATA[31:0] & wmask) | (int_var_output_0_3[31:0] & ~wmask);
-    end
-end
-
-// int_var_output_0_3[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_output_0_3[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_OUTPUT_0_3_DATA_1)
-            int_var_output_0_3[63:32] <= (WDATA[31:0] & wmask) | (int_var_output_0_3[63:32] & ~wmask);
-    end
-end
-
 // int_var_input_0_0[31:0]
 always @(posedge ACLK) begin
     if (ARESET)
@@ -603,66 +441,6 @@ always @(posedge ACLK) begin
     else if (ACLK_EN) begin
         if (w_hs && waddr == ADDR_VAR_INPUT_0_0_DATA_1)
             int_var_input_0_0[63:32] <= (WDATA[31:0] & wmask) | (int_var_input_0_0[63:32] & ~wmask);
-    end
-end
-
-// int_var_input_0_1[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_1[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_1_DATA_0)
-            int_var_input_0_1[31:0] <= (WDATA[31:0] & wmask) | (int_var_input_0_1[31:0] & ~wmask);
-    end
-end
-
-// int_var_input_0_1[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_1[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_1_DATA_1)
-            int_var_input_0_1[63:32] <= (WDATA[31:0] & wmask) | (int_var_input_0_1[63:32] & ~wmask);
-    end
-end
-
-// int_var_input_0_2[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_2[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_2_DATA_0)
-            int_var_input_0_2[31:0] <= (WDATA[31:0] & wmask) | (int_var_input_0_2[31:0] & ~wmask);
-    end
-end
-
-// int_var_input_0_2[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_2[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_2_DATA_1)
-            int_var_input_0_2[63:32] <= (WDATA[31:0] & wmask) | (int_var_input_0_2[63:32] & ~wmask);
-    end
-end
-
-// int_var_input_0_3[31:0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_3[31:0] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_3_DATA_0)
-            int_var_input_0_3[31:0] <= (WDATA[31:0] & wmask) | (int_var_input_0_3[31:0] & ~wmask);
-    end
-end
-
-// int_var_input_0_3[63:32]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_var_input_0_3[63:32] <= 0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_VAR_INPUT_0_3_DATA_1)
-            int_var_input_0_3[63:32] <= (WDATA[31:0] & wmask) | (int_var_input_0_3[63:32] & ~wmask);
     end
 end
 

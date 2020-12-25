@@ -1,13 +1,13 @@
 <profile>
 
 <section name = "Vivado HLS Report for 'store'" level="0">
-<item name = "Date">Tue May 19 12:10:46 2020
+<item name = "Date">Sun May 24 23:13:17 2020
 </item>
 <item name = "Version">2019.2 (Build 2698951 on Thu Oct 24 19:15:34 MDT 2019)</item>
 <item name = "Project">project</item>
 <item name = "Solution">store</item>
 <item name = "Product family">virtexuplus</item>
-<item name = "Target device">xcu280-fsvh2892-2L-e</item>
+<item name = "Target device">xcu250-figd2104-2L-e</item>
 </section>
 
 <section name = "Performance Estimates" level="0">
@@ -35,7 +35,7 @@
 </item>
 <item name = "Loop"><table name="" hasTotal="0">
 <keys size="8">Loop Name, min, max, Latency, achieved, target, Count, Pipelined</keys>
-<column name="- store_epoch">?, ?, 3, 1, 1, ?, yes</column>
+<column name="- store_epoch">?, ?, 5, 1, 1, ?, yes</column>
 </table>
 </item>
 </section>

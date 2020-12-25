@@ -27,12 +27,24 @@
 
 
 
-void store(tlp::mmap< ap_uint<BURST_WIDTH> > to, tlp::istream< ap_uint<BURST_WIDTH> > &from, int data_num)
+void store(
+    tlp::mmap< ap_uint<BURST_WIDTH> > sink, 
+    tlp::istream< ap_uint<BURST_WIDTH> > &source_0, 
+    tlp::istream< ap_uint<BURST_WIDTH> > &source_1, 
+    tlp::istream< ap_uint<BURST_WIDTH> > &source_2, 
+    tlp::istream< ap_uint<BURST_WIDTH> > &source_3, 
+    int data_num)
 {
-#pragma HLS interface m_axi port = to offset = direct bundle = to
-#pragma HLS data_pack variable = from.fifo
-#pragma HLS data_pack variable = from.peek_val
-#pragma HLS data_pack variable = to
+#pragma HLS interface m_axi port = sink offset = direct bundle = sink
+#pragma HLS data_pack variable = source_0.fifo
+#pragma HLS data_pack variable = source_0.peek_val
+#pragma HLS data_pack variable = source_1.fifo
+#pragma HLS data_pack variable = source_1.peek_val
+#pragma HLS data_pack variable = source_2.fifo
+#pragma HLS data_pack variable = source_2.peek_val
+#pragma HLS data_pack variable = source_3.fifo
+#pragma HLS data_pack variable = source_3.peek_val
+#pragma HLS data_pack variable = sink
 
 
 store_epoch:
@@ -40,7 +52,7 @@ store_epoch:
     {
 #pragma HLS pipeline II = 1
 #pragma HLS pipeline II=1
-        to[i] = from.read();
+        sink[i] = source_0.read() + source_1.read() + source_2.read() + source_3.read();
     }
 }
 
