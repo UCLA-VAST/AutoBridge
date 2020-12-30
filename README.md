@@ -22,7 +22,7 @@
 - Python 3.6+
 - Pyverilog
 ```
-pip install pyverilog
+python3.6 -m pip install pyverilog
 ```
 - Iverilog
 ```
@@ -30,11 +30,11 @@ sudo apt install iverilog
 ```
 - Multiprocess
 ```
-pip install multiprocess
+python3.6 -m pip install multiprocess
 ```
 - Python mip version 1.8.1
 ```
-pip install mip==1.8.1
+python3.6 -m pip install mip==1.8.1
 ```
 - It is highly recommended that the user install the `Gurobi` solver which is free to academia and can be easily installed. 
 
