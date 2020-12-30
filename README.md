@@ -3,13 +3,17 @@
 
 - `What`: AutoBridge is a floorplanning tool for Vivado HLS dataflow designs.
 
-- `Why`: Current EDA tool stack for HLS designs have unsatisfactory achievable frequency.
+- `Why`: Co-optimizing HLS compilation and placement brings new opportunities to improve the final achievable frequency.
 
 - `How`: Pre-determine the rough location of each module during HLS compilation, so that:
     * the long interconnect could be adequately pipelined by the HLS scheduler.
 
     * we prevent the Vivado placer to place the logic too densely.
 
+- In our experiments with a total of 43 design configurations, we improve the average frequency from 147 MHz to 297 MHz. 
+
+    * Notably, in 16 experiments we make the originally unroutable designs achieve 274 MHz on average
+    
 - The pre-print manuscript of our paper could be found at 
 `https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pdf`
 
