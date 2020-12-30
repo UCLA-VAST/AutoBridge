@@ -86,15 +86,14 @@ class FormatHLS:
       DDR_loc_2d_y, 
       DDR_enable,
       max_usage_ratio_2d,
-      column,
       board_name,
-      coorinate_expansion_ratio,
-      max_width_threshold,
-      NUM_PER_SLR_HORIZONTAL,
-      horizontal_cross_weight,
-      target_dir,
-      relay_station_count,
-      relay_station_template,
+      coorinate_expansion_ratio=2,
+      max_width_threshold=10000,
+      NUM_PER_SLR_HORIZONTAL=4,
+      horizontal_cross_weight=0.7,
+      target_dir = './autobridge',
+      relay_station_count = lambda x : 2 * x,
+      relay_station_template = 'reg',
       constraint_edge = True,
       constraint_marked_edge = True,
       only_keep_rs_hierarchy = False,
@@ -111,7 +110,14 @@ class FormatHLS:
     self.DDR_loc_2d_y = DDR_loc_2d_y
     self.DDR_enable = DDR_enable
     self.max_usage_ratio_2d = max_usage_ratio_2d
-    self.column = column
+    
+    if board_name == 'u250':
+      self.column = [2, 2, 2, 2]
+    elif board_name == 'u280':
+      self.column = [2, 2, 2]
+    else:
+      assert False, 'unsupported board'
+
     self.board_name = board_name
     self.eight_way_partition = eight_way_partition
     

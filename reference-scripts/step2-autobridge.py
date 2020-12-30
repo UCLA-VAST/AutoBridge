@@ -129,14 +129,6 @@ max_usage_ratio_2d = [ [0.7, 0.6], [0.75, 0.6], [0.74, 0.61], [0.76, 0.62] ]
 
 ##################### DON'T TOUCH THE SECTION BELOW #################################
 
-
-if board_name == 'u250':
-  column = [2, 2, 2, 2] 
-elif board_name == 'u280':
-  column = [2, 2, 2]
-else:
-  assert False, 'unsupported board'
-
 formator = FormatHLS(
   rpt_path = f'{solution_path}/syn/report/',
   hls_sche_path = f'{solution_path}/.autopilot/db/',
@@ -146,26 +138,18 @@ formator = FormatHLS(
   DDR_loc_2d_y = DDR_loc_2d_y, 
   DDR_enable = DDR_enable,
   max_usage_ratio_2d = max_usage_ratio_2d,
-  column = column,
   board_name = board_name,
-  coorinate_expansion_ratio = 2,
-  max_width_threshold = 10000,
-  NUM_PER_SLR_HORIZONTAL = 4,
-  horizontal_cross_weight = 0.7,
   target_dir = target_dir,
   relay_station_count = lambda x : 2 * x, # how many levels of relay stations to add for x-unit of crossing
-  relay_station_template = 'reg',
-  constraint_edge = True,
-  constraint_marked_edge = True,
-  only_keep_rs_hierarchy = False,
   max_search_time = 600,
   NaiveBalance = True)
 
+# run floorplanning
 g = graph.Graph(formator)
 
+# move results to target dir
 if (os.path.isdir(target_dir)):
   subprocess.run(['rm', '-rf', f'{target_dir}'])
-
 subprocess.run(['mkdir', f'{target_dir}/'])
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{project_name}'])
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
@@ -174,6 +158,8 @@ subprocess.run(['cp', 'constraint.tcl', target_dir])
 subprocess.run(['cp', 'pack_xo.tcl', target_dir])
 subprocess.run(['cp', 'autobridge.log', target_dir])
 subprocess.run(['cp', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
+
+# clean up
 os.system('rm *.lp')
 subprocess.run(['rm', 'parser.out'])
 subprocess.run(['rm', 'parsetab.py'])
