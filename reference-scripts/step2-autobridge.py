@@ -1,5 +1,6 @@
 #! /usr/bin/python3.6
 
+# add the path to where you place the autobridge source code
 import sys
 sys.path.append('../src')
 
@@ -36,7 +37,6 @@ project_name = 'kernel0'
 board_name = 'u250' # or 'u280'
 # where the results will be saved. Your HLS project will be copied there and your top RTL will be replaced.
 # Note that if the directory already exists, we will try to reset the contents
-target_dir = 'kernel0_u250_autobridge' 
 
 # (2) specify how your designs connect to the external memory
 """ Example:
@@ -128,6 +128,7 @@ max_usage_ratio_2d = [ [0.7, 0.6], [0.75, 0.6], [0.74, 0.61], [0.76, 0.62] ]
 
 
 ##################### DON'T TOUCH THE SECTION BELOW #################################
+target_dir = 'autobridge' 
 
 formator = FormatHLS(
   rpt_path = f'{solution_path}/syn/report/',

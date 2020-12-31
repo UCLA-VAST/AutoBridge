@@ -1,5 +1,5 @@
 
-# About AutoBridge
+# About
 
 - `What`: AutoBridge is a floorplanning tool for Vivado HLS dataflow designs.
 
@@ -15,11 +15,22 @@
     * Notably, in 16 experiments we make the originally unroutable designs achieve 274 MHz on average
     
 - The pre-print manuscript of our paper could be found at 
-`https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pdf`
+https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pdf
+
+- Projects using AutoBridge:
+
+    * AutoSA Systolic Array Compiler (https://github.com/UCLA-VAST/AutoSA)
+    * TAPA Compiler (https://github.com/Blaok/tapa)
+
 
 # Requirements
 
 - Python 3.6+
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.6
+```
 - Pyverilog
 ```
 python3.6 -m pip install pyverilog
@@ -38,23 +49,24 @@ python3.6 -m pip install mip==1.8.1
 ```
 - It is highly recommended that the user install the `Gurobi` solver which is free to academia and can be easily installed. 
 
-  - Register and download the `Gurobi Optimizer` at `https://www.gurobi.com/downloads/gurobi-optimizer-eula/`
+  - Register and download the `Gurobi Optimizer` at https://www.gurobi.com/downloads/gurobi-optimizer-eula/
   - Unzip the package to your desired directory
-  - Obtain an academic license at `https://www.gurobi.com/downloads/end-user-license-agreement-academic/`
+  - Obtain an academic license at https://www.gurobi.com/downloads/end-user-license-agreement-academic/
   - The environment variable `GUROBI_HOME` needs to point to the installation directory, so that Gurobi can be detected by AutoBridge.
     - `export GUROBI_HOME=WHERE-YOU-INSTALL`
     - `export GRB_LICENSE_FILE=ADDRESS-OF-YOUR-LICENSE-FILE`
     - `export PATH="${PATH}:${GUROBI_HOME}/bin"`
     - `export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"`
 
-- Xilinx Vivado HLS 2019.2
-- Xilinx Vitis 2019.2
 - Package for Alveo U250 and U280 FPGA
-  -  `https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/alveo.html`
+  -  https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/alveo.html
 
   - U250: `2018.3.2` with `XDMA`
   - U280: `2019.2` with `XDMA`
 
+
+- Xilinx Vivado HLS 2019.2
+- Xilinx Vitis 2019.2
 
 
 # Introduction
@@ -141,6 +153,6 @@ Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folde
 # FPGA'21 Artifact Review
 
 The experiment results for all benchmarks in our submission to FPGA'21 are available at:
-`https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu`
+https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu
 
 Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
