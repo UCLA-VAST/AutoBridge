@@ -1,4 +1,4 @@
-OUTPUT_DIR="./vitis_run"
+OUTPUT_DIR="$(pwd)/vitis_run"
 
 # name of the top function
 TOP="YOUR_TOP_NAME"
@@ -7,7 +7,7 @@ TOP="YOUR_TOP_NAME"
 PLATFORM=xilinx_u250_xdma_201830_2 
 #PLATFORM=xilinx_u280_xdma_201920_3 
 
-XO="YOUR_XO_NAME"
+XO="$(pwd)/YOUR_XO_NAME"
 
 # For different approaches see UG904-vivado-implementation
 STRATEGY="Default" 
@@ -35,7 +35,8 @@ ARG_FOR_DDR_3="YOUR_HLS_ARGUMENT_NAME_FOR_DDR_3"
 ARG_FOR_DDR_4="YOUR_HLS_ARGUMENT_NAME_FOR_DDR_4"
 
 # the constraint file containing the floorplan results
-CONSTRAINT="./constraint.tcl"
+# WARNING: must use absolute address
+CONSTRAINT="$(pwd)/constraint.tcl"
 if [ ! -f "$CONSTRAINT" ]; then
     echo "no constraint file found"
     exit
