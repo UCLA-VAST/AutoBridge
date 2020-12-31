@@ -320,11 +320,14 @@ def outputTopContents(formator, file_name, top_mod_ast):
   # types of relay station
   if (formator.relay_station_template == 'fifo'):
     new_top.write(relay_station_template.relay_station_template)
+    # hls ad-hoc fifos will be replaced by the same fifo template
+    if (type(formator) == FormatHLS):
+      new_top.write(relay_station_template.general_fifo_template)
   elif (formator.relay_station_template == 'reg'): 
     new_top.write(relay_station_template.reg_based_relay_station_template)
     # hls ad-hoc fifos will be replaced by the same fifo template
     if (type(formator) == FormatHLS):
-      new_top.write(relay_station_template.yuze_fifo_template)
+      new_top.write(relay_station_template.general_fifo_template)
   elif (formator.relay_station_template == 'reg_srl_fifo'): 
     new_top.write(relay_station_template.reg_srl_fifo_relay_station_template)
   else:
