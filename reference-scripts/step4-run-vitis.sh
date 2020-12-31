@@ -34,6 +34,13 @@ ARG_FOR_DDR_2="YOUR_HLS_ARGUMENT_NAME_FOR_DDR_2"
 ARG_FOR_DDR_3="YOUR_HLS_ARGUMENT_NAME_FOR_DDR_3"
 ARG_FOR_DDR_4="YOUR_HLS_ARGUMENT_NAME_FOR_DDR_4"
 
+# the constraint file containing the floorplan results
+CONSTRAINT="./constraint.tcl"
+if [ ! -f "$CONSTRAINT" ]; then
+    echo "no constraint file found"
+    exit
+fi
+
 v++ \
   --link \
   --output "${OUTPUT_DIR}/${TOP}_${PLATFORM}.xclbin" \
