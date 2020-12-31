@@ -92,7 +92,7 @@ def assignSLR(vertices : List, edges : List, formator):
       m += mods_p[e.src]['Y'] == mods_p[e.dst]['Y']
 
   # [constraint] area
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     for y in range(SLR_CNT):
       for x in range(column[y]):
         cmd = 'm += 0'
@@ -155,7 +155,7 @@ def splitHorizontalHelper(formator, vertices, edges):
 
   relax_ratio = formator.max_usage_ratio_delta
 
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     for slr in range(len(formator.column)):
       for sub_slr in range(2):
         area_horizontal[slr][sub_slr][item] =  formator.SLR_AREA[item][slr][sub_slr] * (formator.max_usage_ratio_2d[slr][sub_slr] + relax_ratio)
@@ -197,7 +197,7 @@ def splitHorizontal(
     m += d_x_i >= loc_func(mods_x[e.dst.name]) - loc_func(mods_x[e.src.name])
 
   # area constraints
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     for slr in range(len(formator.column)):
       # for 0-area
       cmd = 'm += 0'
@@ -233,7 +233,7 @@ def splitHorizontal(
 def splitQuarterHelper(formator, vertices, edges):
   # second vertical cut
   area_quarter = defaultdict(lambda: defaultdict(list))
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     
     if (formator.board_name == 'u250'):
       for slr in range(4):
@@ -282,7 +282,7 @@ def splitQuarter(
     m += d_x_i >= loc_func(mods_x[e.dst.name], e.dst) - loc_func(mods_x[e.src.name], e.src)
 
   # area constraints
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     # for slr 0
     cmd = 'm += 0'
     for v in vertices:
@@ -334,7 +334,7 @@ def splitQuarter(
 def splitHalfHelper(formator, vertices, edges):
   # first vertical cut
   area = defaultdict(dict)
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     area[0][item] =  formator.SLR_AREA[item][0][0] * formator.max_usage_ratio_2d[0][0] \
                   + formator.SLR_AREA[item][0][1] * formator.max_usage_ratio_2d[0][1] \
                   + formator.SLR_AREA[item][1][0] * formator.max_usage_ratio_2d[1][0] \
@@ -364,8 +364,27 @@ def splitHalfHelper(formator, vertices, edges):
   result = splitHalf(formator, vertices, edges, area, loc_func, user_constraint)
 
   for v, loc in result.items():
-    print(f'{v.name}\t{loc}')
+    print(f'{v.name} \t-> {int(loc)}-half')
     v.vertical_cut.append(loc)
+
+  print(f'In the 0-Half:')
+  bram = 0
+  dsp = 0
+  ff = 0
+  lut = 0
+  uram = 0
+  for v, loc in result.items():
+    if int(loc) == 0:
+      bram += int(v.area.BRAM)
+      dsp += int(v.area.DSP)
+      ff += int(v.area.FF)
+      lut += int(v.area.LUT)
+      uram += int(v.area.URAM)
+  print(f'    BRAM usage: {bram} / {area[0]["BRAM"]} = { bram / area[0]["BRAM"] }')
+  print(f'    DSP usage: {dsp} / {area[0]["DSP"]} = { dsp / area[0]["DSP"] }')
+  print(f'    FF usage: {ff} / {area[0]["FF"]} = { ff / area[0]["FF"] }')
+  print(f'    LUT usage: {lut} / {area[0]["LUT"]} = {lut / area[0]["LUT"] }\n')
+  print(f'    URAM usage: {uram} / {area[0]["URAM"]} = {uram / area[0]["URAM"] }\n')
 
 def splitHalf(
     formator,
@@ -390,7 +409,7 @@ def splitHalf(
     m += d_x_i >= loc_func(mods_x[e.dst.name], e.dst) - loc_func(mods_x[e.src.name], e.src)
 
   # area constraints
-  for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+  for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
     # for 1-area
     cmd = 'm += 0'
     for v in vertices:
@@ -459,6 +478,7 @@ def showAssignResult(vertices : List, edges : List, formator):
       print(f'    DSP usage: {sum(int(v[1]) for v in all)} / {formator.SLR_AREA["DSP"][y][x]} = { (sum(int(v[1]) for v in all)) / (formator.SLR_AREA["DSP"][y][x]) }')
       print(f'    FF usage: {sum(int(v[2]) for v in all)} / {formator.SLR_AREA["FF"][y][x]} = { (sum(int(v[2]) for v in all)) / (formator.SLR_AREA["FF"][y][x]) }')
       print(f'    LUT usage: {sum(int(v[3]) for v in all)} / {formator.SLR_AREA["LUT"][y][x]} = { (sum(int(v[3]) for v in all)) / (formator.SLR_AREA["LUT"][y][x]) }\n')
+      print(f'    URAM usage: {sum(int(v[4]) for v in all)} / {formator.SLR_AREA["URAM"][y][x]} = { (sum(int(v[4]) for v in all)) / (formator.SLR_AREA["URAM"][y][x]) }\n')
 
 
   for e in edges:

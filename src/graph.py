@@ -38,7 +38,7 @@ class Vertex:
     self.out_edges = []
     self.type = type
     self.name = name
-    self.area = autopilot_parser.Area(-1, -1, -1, -1)
+    self.area = autopilot_parser.Area(-1, -1, -1, -1, -1)
     self.slr_loc = -1
     self.slr_sub_loc = -1
     self.sub_vertices = {} # pp id -> sub vertex

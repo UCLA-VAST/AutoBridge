@@ -4,22 +4,6 @@ from collections import defaultdict
 import re
 import pyverilog.vparser.ast as ast
 
-class U250_old:
-  SLR_CNT = 4
-  SLR_AREA = {}
-  SLR_AREA['BRAM'] = 1344
-  SLR_AREA['DSP'] = 3072
-  SLR_AREA['FF'] = 864000
-  SLR_AREA['LUT'] = 432000
-
-class U280_old:
-  SLR_CNT = 3
-  SLR_AREA = {}
-  SLR_AREA['BRAM'] = 1344
-  SLR_AREA['DSP'] = 3008
-  SLR_AREA['FF'] = 869120
-  SLR_AREA['LUT'] = 434560
-
 class U250:
   SLR_CNT = 4
   SLR_AREA = defaultdict(lambda: defaultdict(list))
@@ -27,22 +11,26 @@ class U250:
   SLR_AREA['DSP'][0] = 1536
   SLR_AREA['FF'][0] = 433920
   SLR_AREA['LUT'][0] = 216960
+  SLR_AREA['URAM'][0] = 128
 
   SLR_AREA['BRAM'][1] = 384
   SLR_AREA['DSP'][1] = 1344
   SLR_AREA['FF'][1] = 329280
   SLR_AREA['LUT'][1] = 164640
+  SLR_AREA['URAM'][1] = 192
 
   SLR_AREA_DDR = defaultdict(lambda: defaultdict(list))
   SLR_AREA_DDR['BRAM'][0] = 768
   SLR_AREA_DDR['DSP'][0] = 1536
   SLR_AREA_DDR['FF'][0] = 433920
   SLR_AREA_DDR['LUT'][0] = 216960
+  SLR_AREA_DDR['URAM'][0] = 128
 
   SLR_AREA_DDR['BRAM'][1] = 288
   SLR_AREA_DDR['DSP'][1] = 1152
   SLR_AREA_DDR['FF'][1] = 245760
   SLR_AREA_DDR['LUT'][1] = 122800
+  SLR_AREA_DDR['URAM'][1] = 128
 
 class U280:
   SLR_CNT = 3
@@ -51,24 +39,13 @@ class U280:
   SLR_AREA['DSP'][0] = 1536
   SLR_AREA['FF'][0] = 433920
   SLR_AREA['LUT'][0] = 216960  
+  SLR_AREA['URAM'][0] = 128
   
   SLR_AREA['BRAM'][1] = 384
   SLR_AREA['DSP'][1] = 1344
   SLR_AREA['FF'][1] = 330240
   SLR_AREA['LUT'][1] = 165120  
-
-class test:
-  SLR_CNT = 1
-  SLR_AREA = defaultdict(lambda: defaultdict(list))
-  SLR_AREA['BRAM'][0] = 768*4
-  SLR_AREA['DSP'][0] = 1536*4
-  SLR_AREA['FF'][0] = 433920*4
-  SLR_AREA['LUT'][0] = 216960*4
-
-  SLR_AREA['BRAM'][1] = 384*4
-  SLR_AREA['DSP'][1] = 1344*4
-  SLR_AREA['FF'][1] = 433920*4
-  SLR_AREA['LUT'][1] = 165120*4
+  SLR_AREA['URAM'][1] = 192
 
 class FormatHLS:
   # either xxxx__dout or xxxx_dout
@@ -167,7 +144,7 @@ class FormatHLS:
       self.SLR_AREA = U250.SLR_AREA
 
       self.SLR_AREA = defaultdict(lambda: defaultdict(dict))
-      for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+      for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
         for slr in range(len(self.column)):
           for sub_slr in range(2):
             if (self.DDR_enable[slr] == 1):
@@ -178,7 +155,7 @@ class FormatHLS:
     elif (board_name == 'u280'):
       self.SLR_CNT = U280.SLR_CNT
       self.SLR_AREA = defaultdict(lambda: defaultdict(dict))
-      for item in ['BRAM', 'DSP', 'FF', 'LUT']:
+      for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
         for slr in range(len(self.column)):
           for sub_slr in range(2):
             self.SLR_AREA[item][slr][sub_slr] = U250.SLR_AREA[item][sub_slr]

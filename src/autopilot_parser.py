@@ -231,19 +231,19 @@ def getMapping(mod_name: str, tlp_path:str, top_name:str):
   print('[getMapping]\n', json.dumps(formal_to_actual, indent=2, sort_keys=True))
   return formal_to_actual
 
-Area = collections.namedtuple('Area', 'BRAM DSP FF LUT')
+Area = collections.namedtuple('Area', 'BRAM DSP FF LUT URAM')
 
 def getAreaFromReport(rpt_addr:str):
   try:
     rpt = open(rpt_addr, 'r')
   except IOError:
     print(f'[getAreaFromReport] no report file at {rpt_addr}')
-    return Area(0, 0, 0, 0)
+    return Area(0, 0, 0, 0, 0)
 
   for line in rpt:
     if ('Total' in line):
       x = re.findall('\d+', line)
-      return Area(BRAM=x[0], DSP=x[1], FF=x[2], LUT=x[3])
+      return Area(BRAM=x[0], DSP=x[1], FF=x[2], LUT=x[3], URAM=x[4])
 
 ##############################
 
