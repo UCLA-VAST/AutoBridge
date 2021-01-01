@@ -25,11 +25,13 @@ https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pd
 
 # Requirements
 
-- Python 3.6+
+- Python 3.6+ and Pip
 ```
+sudo apt install software-properties-common
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
 sudo apt install python3.6
+sudo apt install python3-pip
 ```
 - Pyverilog
 ```
@@ -38,10 +40,6 @@ python3.6 -m pip install pyverilog
 - Iverilog
 ```
 sudo apt install iverilog
-```
-- Multiprocess
-```
-python3.6 -m pip install multiprocess
 ```
 - Python mip version 1.8.1
 ```
@@ -143,7 +141,7 @@ Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folde
 
 - Should use mip version 1.8.1.
 
-- Sometimes the mip package complains that "multiprocessing" cannot be found, but running it the second time things will work out.
+- If you encounter the situation where the `mip` package complains that `multiprocessing` cannot be found, please upgrade the `pyverilog` to the latest release. Or if you run the program a second time things may work out.
 
 - In the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
 
