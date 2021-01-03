@@ -20,12 +20,12 @@ def addUserConstraint(m, mods_p, formator):
   # assert that user specified modules are valid
   for mod in formator.DDR_loc_2d_x.keys():
     if not any(v.name == mod for v in mods_p.keys()):
-      print(f'[AssignSLR] CRITICAL WARNING: user specified module {mod} does not exist')
-      exit()
+      print(f'[AssignSLR] ERROR: user specified module {mod} does not exist')
+      exit(1)
   for mod in formator.DDR_loc_2d_y.keys():
     if not any(v.name == mod for v in mods_p.keys()):
-      print(f'[AssignSLR] CRITICAL WARNING: user specified module {mod} does not exist')
-      exit()
+      print(f'[AssignSLR] ERROR: user specified module {mod} does not exist')
+      exit(1)
 
 #
 # Multi-column SLR assignment problem
