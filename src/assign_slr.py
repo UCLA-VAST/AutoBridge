@@ -426,7 +426,7 @@ def splitHalf(
 
   # user constraints
   for mod_name, loc in user_constraint.items():
-    assert(any(v.name == mod_name for v in vertices))
+    assert(any(v.name == mod_name for v in vertices)), f'user-specified constraint on module {mod_name}, which does not exist'
     m += mods_x[mod_name] == loc
 
   m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
