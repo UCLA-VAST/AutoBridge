@@ -46,7 +46,8 @@ def modify_start(file_name, formator):
           insert_lines.append(f"#0 {start_signal}_q{i} = 1'b0;\n")
         insert_lines.append('end\n')
         insert_lines.append('always @ (posedge ap_clk) begin\n')
-        insert_lines.append(f'  {start_signal}_q0 <= {start_signal};\n')
+        # insert_lines.append(f'  {start_signal}_q0 <= {start_signal};\n')
+        insert_lines.append(f'  {start_signal}_q0 <= ap_start;\n')
         for i in range(3):
           insert_lines.append(f'  {start_signal}_q{i+1} <= {start_signal}_q{i};\n')
         insert_lines.append(f'end\n\n')
@@ -79,6 +80,30 @@ def modify_start(file_name, formator):
     f.writelines('// Applied modify_rtl_start.py\n')
     f.writelines(new_lines)
 
+def assign_ap_ready_equal_ap_done(file_name, formator):
+  print('[WARNING] assign ap_ready the same as ap_done')
+  with open(file_name, 'r') as f:
+    lines = f.readlines()
+  
+  # safety check to avoid double processing
+  for line in lines:
+    if 'modify_rtl_ap_ready' in line:
+      raise('ERROR: modify_rtl_ap_ready has already been applied!')
+
+  new_lines = []
+  for pos in range(len(lines)):
+    line = lines[pos]
+    if '.ap_ready(' in line:
+      if '.ap_ready(ap_ready)' in line:
+        new_lines.append('    .ap_ready(ap_done),\n')
+      else:
+        new_lines.append('    .ap_ready(),\n')
+    else:
+      new_lines.append(line)
+
+  with open(file_name, 'w') as f:
+    f.writelines('// Applied modify_rtl_ap_ready\n')
+    f.writelines(new_lines)  
 
 def getResetTemplate():
   pro = []
@@ -201,5 +226,6 @@ def modify_continue_done(file_name):
 
 def postProcessingAPSignals(file_name, formator):
   modify_start(file_name, formator)
+  assign_ap_ready_equal_ap_done(file_name, formator)
   modify_continue_done(file_name)
 
