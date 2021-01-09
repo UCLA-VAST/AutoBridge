@@ -22,6 +22,14 @@ https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pd
     * AutoSA Systolic Array Compiler (https://github.com/UCLA-VAST/AutoSA)
     * TAPA Compiler (https://github.com/Blaok/tapa)
 
+- Motivating Examples:
+
+   * Comparison of a stencil accelerator on Xilinx U280. From routing failure to 297 MHz.
+![][image-1]
+
+   * Comparison of a systolic array on Xilinx U250. From 158 MHz to 316 MHz.
+![][image-2]
+
 
 # Requirements
 
@@ -154,3 +162,7 @@ The experiment results for all benchmarks in our submission to FPGA'21 are avail
 https://ucla.box.com/s/5hpgduqrx93t2j4kx6fflw6z15oylfhu
 
 Currently only a subset of the source code of the benchmarks are open-sourced here, as some designs are not published yet and will be updated later.
+
+[image-1]:	https://user-images.githubusercontent.com/32432619/104076425-e8729880-51ca-11eb-97e0-402e9b67c4e8.png
+[image-2]:	https://user-images.githubusercontent.com/32432619/104076467-017b4980-51cb-11eb-8c44-f01ccf681da5.png
+
