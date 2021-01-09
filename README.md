@@ -71,8 +71,9 @@ python3.6 -m pip install mip==1.8.1
   - U280: `2019.2` with `XDMA`
 
 
-- Xilinx Vivado HLS 2019.2
-- Xilinx Vitis 2019.2
+- Xilinx Vivado HLS and Xilinx Vitis
+   - Note that the original experiments are based on the version 2019.2. 
+   - So far we have not found compatibility issue with the latest Vitis HLS 2020.2. 
 
 
 # Introduction
@@ -108,13 +109,13 @@ means that there are four SLRs (U250) and the DDR controller on the SLR 0 and SL
 
 - `DDR_loc_2d_y`: A dictionary recording the y-dim location of user-specified modules. For each IO module (which will directly connect to peripheral IPs such as DMA or DDR controller) in the design, the user must explicity tell the tool which region this module should be placed, according to the location of the target peripheral IPs (which usually have fixed locations). For example, 
 ```python
-      DDR_loc_2d_y['B_IO_L3_in_wrapper_U0'] = 1
+      DDR_loc_2d_y['foo'] = 1
 ```  
-means that the module (HLS function) **B_IO_L3_in_wrapper_U0** must be placed in the 1-st SLR of the FPGA.
+means that the module (HLS function) **foo** must be placed in the 1-st SLR of the FPGA.
 
 - `DDR_loc_2d_x`: A dictionary recording the x-dim location of user-specified modules. By default we split each SLR by half. For example, 
 ```python
-      DDR_loc_2d_x['B_IO_L3_in_wrapper_U0'] = 1
+      DDR_loc_2d_x['bar'] = 1
 ```  
 means that the module (HLS function) must be placed in the right half (1 for the right half and 0 for the left half) of the FPGA.
 
@@ -153,7 +154,7 @@ Reference scripts for step 1, 3, 4 are provided in the `reference-scripts` folde
 
 - In the divide-and-conquer approach, if a region is packed close to the max_usage_ratio, then it's possible that the next split will fail because a function cannot be split into two sub regions. The current work-around is to increase the max_usage_ratio a little bit.
 
-- Function names in the HLS program should not contain "fifo" or "FIFO"
+- Function names in the HLS program should not contain "fifo" or "FIFO".
 
 
 # FPGA'21 Artifact Review
