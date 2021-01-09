@@ -25,9 +25,14 @@ https://vast.cs.ucla.edu/sites/default/files/publications/AutoBridge_FPGA2021.pd
 - Motivating Examples:
 
    * Comparison of a stencil accelerator on Xilinx U280. From routing failure to 297 MHz.
+      * Each color represents a module.
+      * AutoBridge ensures a clean separation of logic in different regions to minimize unnecessary die crossing.
 ![][image-1]
 
-   * Comparison of a systolic array on Xilinx U250. From 158 MHz to 316 MHz.
+   * Comparison of a systolic array on Xilinx U250. From 158 MHz to 316 MHz. 
+      * Note that Vivado will try to pack things together to avoid die crossing as much as possible. 
+      * Instead, we ensure a balanced resource utilization across the whole device to reduce local congestion.
+      * Meanwhile, the global connections will be adequately pipelined.
 ![][image-2]
 
 
@@ -73,7 +78,7 @@ python3.6 -m pip install mip==1.8.1
 
 - Xilinx Vivado HLS and Xilinx Vitis
    - Note that the original experiments are based on the version 2019.2. 
-   - So far we have not found compatibility issue with the latest Vitis HLS 2020.2. 
+   - So far the floorplanner works well with designs compiled by the latest Vitis HLS 2020.2. However, Vitis HLS 2020.2 seems to have a bug in creating the "xo" object (Step 3). We are contacting Xilinx to confirm.
 
 
 # Introduction
