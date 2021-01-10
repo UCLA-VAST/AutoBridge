@@ -90,6 +90,8 @@ To tackle this challenge, we propose `AutoBridge`, an automated framework that c
 - Second, by exploiting the flexibility of HLS pipelining, the  floorplanner is able to distribute the design logic across multiple dies on the FPGA device without degrading clock frequency; this avoids the aggressive logic packing on a single die, which often results in local routing contention that eventually degrades timing. 
 - Since pipelining may introduce additional latency, we further present analysis and algorithms to ensure the added latency will not hurt the overall throughput. 
 
+![][image-3]
+
 Currently AutoBridge supports two FPGA devices: the Alveo U250 and the Alveo U280. The users could customize the tool to support other FPGA boards as well.
 
 ## Inputs
@@ -171,4 +173,4 @@ Currently only a subset of the source code of the benchmarks are open-sourced he
 
 [image-1]:	https://user-images.githubusercontent.com/32432619/104076425-e8729880-51ca-11eb-97e0-402e9b67c4e8.png
 [image-2]:	https://user-images.githubusercontent.com/32432619/104076467-017b4980-51cb-11eb-8c44-f01ccf681da5.png
-
+[image-3]:  https://user-images.githubusercontent.com/32432619/104138330-441e5c80-5358-11eb-8a7f-bc2841ee72c8.png
