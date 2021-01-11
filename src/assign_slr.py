@@ -105,7 +105,8 @@ def assignSLR(vertices : List, edges : List, formator):
 
   # run
   m.write('assignment.lp')
-  m.optimize(max_seconds=formator.max_search_time)
+  status = m.optimize(max_seconds=formator.max_search_time)
+  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the N-way partitioning floorplan process'
 
   writeBackAssignResult(vertices, edges, formator, mods_p)
 
@@ -223,7 +224,8 @@ def splitHorizontal(
   m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
 
   m.write('splitHorizontal.lp')
-  m.optimize(max_seconds=formator.max_search_time)
+  status = m.optimize(max_seconds=formator.max_search_time)
+  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the third (split into sub-SLRs) 2-way partitioning floorplan process'
 
   # return the results
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
@@ -323,7 +325,8 @@ def splitQuarter(
   m.objective = minimize(xsum(d_x[i] * edge.width for i, edge in enumerate(edges) ) )
   
   m.write('splitQuarter.lp')
-  m.optimize(max_seconds=formator.max_search_time)
+  status = m.optimize(max_seconds=formator.max_search_time)
+  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the second (split into SLRs) 2-way partitioning floorplan process'
 
   # return the results
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
@@ -433,7 +436,9 @@ def splitHalf(
 
   m.write('splitHalf.lp')
 
-  m.optimize(max_seconds=formator.max_search_time)
+  status = m.optimize(max_seconds=formator.max_search_time)
+  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the first 2-way partitioning floorplan process'
+
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
 
 ###############################################################################
@@ -537,8 +542,8 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
   exec(goal)
 
   m.write('rebalance.lp')
-  m.optimize(max_seconds=120)
-
+  status = m.optimize(max_seconds=120)
+  assert status == OptimizationStatus.OPTIMAL, 'Failed to balance reconvergent paths at loop level. Dependency loop detected.'
   ##############################
 
   for e in edges:
@@ -584,7 +589,8 @@ def reBalanceNaive(vertices : List, edges_dict : Dict, formator):
   exec(goal)
 
   m.write('rebalance.lp')
-  m.optimize(max_seconds=120)
+  status = m.optimize(max_seconds=120)
+  assert status == OptimizationStatus.OPTIMAL, 'Failed to balance reconvergent paths at module level. Dependency loop detected.'
 
   ##############################
 
