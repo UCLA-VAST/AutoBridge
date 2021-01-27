@@ -395,10 +395,10 @@ endmodule
 
 ///////////////////////////////////////////////////////////
 
-// first-word fall-through (FWFT) FIFO using block RAM
+// first-word fall-through (FWFT) FIFO using block RAM or URAM (let Vivado choose)
 // based on HLS generated code
 module fifo_bram_almost_full #(
-  parameter MEM_STYLE  = "block",
+  parameter MEM_STYLE  = "auto",
   parameter DATA_WIDTH = 32,
   parameter ADDR_WIDTH = 5,
   parameter DEPTH      = 32,
