@@ -24,19 +24,6 @@ def modify_start(file_name, formator):
       else:
         m = re.search('.ap_start(.+?),', line)
         start_signal = m.group(1)[1:-1]
-        
-        ######### non-IO modules set ap_start to 1 ##########
-        is_io = False
-        for io in formator.DDR_loc_2d_y.keys():
-          if io in start_signal:
-            is_io = True
-            break
-
-        if not is_io:
-          new_lines.append('    .ap_start(1\'b1),\n')
-          new_pos += 1          
-          continue
-        #####################################################
 
         insert_lines = []
         for i in range(4):
