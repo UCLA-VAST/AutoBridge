@@ -152,16 +152,20 @@ g = graph.Graph(formator)
 if (os.path.isdir(target_dir)):
   subprocess.run(['rm', '-rf', f'{target_dir}'])
 subprocess.run(['mkdir', f'{target_dir}/'])
+
+# make a copy of the HLS project to apply the modification
 subprocess.run(['cp', '-r', project_path, f'{target_dir}/{project_name}'])
+
+# keep a record of the autobridge script
 subprocess.run(['cp', os.path.realpath(__file__), f'{target_dir}/archived_source.txt'])
 subprocess.run(['chmod', '+w', '-R', f'{target_dir}'])
-subprocess.run(['cp', 'constraint.tcl', target_dir])
-subprocess.run(['cp', 'pack_xo.tcl', target_dir])
-subprocess.run(['cp', 'autobridge.log', target_dir])
-subprocess.run(['cp', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
+
+# move the new top and the floorplan constraints to the duplicated HLS project
+subprocess.run(['mv', 'constraint.tcl', target_dir])
+subprocess.run(['mv', 'autobridge.log', target_dir])
+subprocess.run(['mv', f'{top_name}_{top_name}.v', f'{target_dir}/{project_name}/solution/syn/verilog/'])
 
 # clean up
-os.system('rm *.lp')
 subprocess.run(['rm', 'parser.out'])
 subprocess.run(['rm', 'parsetab.py'])
 subprocess.run(['rm', '-rf', '__pycache__'])
