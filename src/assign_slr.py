@@ -106,7 +106,7 @@ def assignSLR(vertices : List, edges : List, formator):
   # run
   # m.write('assignment.lp')
   status = m.optimize(max_seconds=formator.max_search_time)
-  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the N-way partitioning floorplan process'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'failed to find optimal solution in the N-way partitioning floorplan process'
 
   writeBackAssignResult(vertices, edges, formator, mods_p)
 
@@ -225,7 +225,7 @@ def splitHorizontal(
 
   # m.write('splitHorizontal.lp')
   status = m.optimize(max_seconds=formator.max_search_time)
-  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the third (split into sub-SLRs) 2-way partitioning floorplan process'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'failed to find optimal solution in the third (split into sub-SLRs) 2-way partitioning floorplan process'
 
   # return the results
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
@@ -326,7 +326,7 @@ def splitQuarter(
   
   # m.write('splitQuarter.lp')
   status = m.optimize(max_seconds=formator.max_search_time)
-  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the second (split into SLRs) 2-way partitioning floorplan process'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'failed to find optimal solution in the second (split into SLRs) 2-way partitioning floorplan process'
 
   # return the results
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
@@ -437,7 +437,7 @@ def splitHalf(
   # m.write('splitHalf.lp')
 
   status = m.optimize(max_seconds=formator.max_search_time)
-  assert status == OptimizationStatus.OPTIMAL, 'failed to find optimal solution in the first 2-way partitioning floorplan process'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'failed to find optimal solution in the first 2-way partitioning floorplan process'
 
   return dict(zip(vertices, [mods_x[v.name].x for v in vertices]))
 
@@ -543,7 +543,7 @@ def reBalance(vertices : List, edges_dict : Dict, formator):
 
   # m.write('rebalance.lp')
   status = m.optimize(max_seconds=120)
-  assert status == OptimizationStatus.OPTIMAL, 'Failed to balance reconvergent paths at loop level. Dependency loop detected.'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'Failed to balance reconvergent paths at loop level. Dependency loop detected.'
   ##############################
 
   for e in edges:
@@ -590,7 +590,7 @@ def reBalanceNaive(vertices : List, edges_dict : Dict, formator):
 
   # m.write('rebalance.lp')
   status = m.optimize(max_seconds=120)
-  assert status == OptimizationStatus.OPTIMAL, 'Failed to balance reconvergent paths at module level. Dependency loop detected.'
+  assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'Failed to balance reconvergent paths at module level. Dependency loop detected.'
 
   ##############################
 
