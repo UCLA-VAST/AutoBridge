@@ -76,7 +76,7 @@ class FormatHLS:
       only_keep_rs_hierarchy = False,
       max_search_time = 600,
       NaiveBalance = False,
-      AssignAxiSubSLR = False,
+      AssignAxiSubSLR = True,
       max_usage_ratio_delta = 0.03,
       eight_way_partition = False):
     self.rpt_path = rpt_path
@@ -160,13 +160,18 @@ class FormatHLS:
           for sub_slr in range(2):
             self.SLR_AREA[item][slr][sub_slr] = U250.SLR_AREA[item][sub_slr]
 
-    elif (board_name == 'test'):
-      self.SLR_CNT = test.SLR_CNT
-      self.SLR_AREA = test.SLR_AREA 
     else:
       print(f'unsupported board name: {board_name}')
       exit()
          
+    self.safety_check()
+
+  def safety_check(self):
+    assert len(self.DDR_loc_2d_y) == len(self.DDR_loc_2d_x), f'must specify the X and Y location of each IO module'
+    assert len(self.DDR_loc_2d_y) >= sum(self.DDR_enable) + 2, f'each M_AXI corresponds to 2 IO modules; there are also 2 S_AXI IO modules'
+    assert any('control_s_axi' in key for key in self.DDR_loc_2d_y.keys()), f'no constraint found for the control_s_axi'
+    assert any('entry' in key for key in self.DDR_loc_2d_y.keys()), f'no constraint found for the entry module connected with the control_s_axi'
+    
   # for non-dataflow use
   def init_taskbased(
       self,
