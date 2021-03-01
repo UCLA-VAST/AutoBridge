@@ -126,6 +126,7 @@ def getResetTemplate():
 
   return pro
 
+# hold the ap_done in case it is not detected
 def getApDonePipeline(s):
   return f'''
   (* dont_touch = "yes" *) reg {s}_q1;
@@ -142,8 +143,16 @@ def getApDonePipeline(s):
     {s}_q1 <= {s};
     {s}_q2 <= {s}_q1;
     {s}_q3 <= {s}_q2;
-    {s}_q4 <= {s}_q3;
-  end\n'''
+  end
+  always @ (posedge ap_clk) begin
+    if (ap_start_reset_ap_done) begin
+      {s}_q4 <= {s}_q3;
+    end
+    else begin
+      {s}_q4 <= {s}_q3 | {s}_q4;
+    end
+  end
+  '''
 
 def getApSyncDonePipeline(wire_name):
   return f'''
@@ -204,8 +213,18 @@ def modify_continue_done(file_name):
     elif 'assign ap_sync_done' in line:
       signals = getSignalsFromApSyncDone(line)
 
-      # new ap_done with registers
+      # register the ap_start signal to reset the ap_done with hold
       insert_lines = ''
+      insert_lines +=   '(* dont_touch = "yes" *) reg ap_start_reset_ap_done_q1;\n'
+      insert_lines +=   '(* dont_touch = "yes" *) reg ap_start_reset_ap_done_q2;\n'
+      insert_lines +=   '(* dont_touch = "yes" *) reg ap_start_reset_ap_done_q3;\n'
+      insert_lines +=   '(* dont_touch = "yes" *) reg ap_start_reset_ap_done;\n'
+      insert_lines +=   'always @ (posedge ap_clk) begin\n'
+      insert_lines +=   '  ap_start_reset_ap_done_q1 <= ap_start;\n'
+      insert_lines +=   '  ap_start_reset_ap_done_q2 <= ap_start_reset_ap_done_q1;\n'
+      insert_lines +=   '  ap_start_reset_ap_done_q3 <= ap_start_reset_ap_done_q2;\n'
+      insert_lines +=   '  ap_start_reset_ap_done <= ap_start_reset_ap_done_q3;\n'
+      insert_lines +=   'end\n'
       for s in signals:
         insert_lines += getApDonePipeline(s)
       insert_lines += 'assign ap_sync_done_wire = 1 ' + ''.join([f' & {s}_q4' for s in signals]) + ';\n'
