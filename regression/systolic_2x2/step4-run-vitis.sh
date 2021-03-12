@@ -1,4 +1,5 @@
 TARGET=hw_emu
+DEBUG=-g
 
 OUTPUT_DIR="$(pwd)/vitis_run_${TARGET}"
 
@@ -44,7 +45,7 @@ if [ ! -f "$CONSTRAINT" ]; then
     exit
 fi
 
-v++ \
+v++ ${DEBUG} \
   --link \
   --output "${OUTPUT_DIR}/${TOP}_${PLATFORM}.xclbin" \
   --kernel ${TOP} \

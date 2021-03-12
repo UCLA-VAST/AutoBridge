@@ -21,5 +21,5 @@ cd ${AUTOBRIDGE_DIR} && vivado_hls -f ../step3-pack-xo.tcl
 
 # step 5: run cosim
 export  XCL_EMULATION_MODE=hw_emu
-cd cosim
+cd ../cosim
 ./host.exe ../autobridge/vitis_run_hw_emu/*.xclbin

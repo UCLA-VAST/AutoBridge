@@ -84,19 +84,25 @@ DDR_loc_2d_y = collections.defaultdict(dict)
 
 # use DDR 0, 1, 3
 DDR_loc_2d_y['A_IO_L3_in_serialize_U0'] = 0
-DDR_loc_2d_x['A_IO_L3_in_serialize_U0'] = 0
+DDR_loc_2d_x['A_IO_L3_in_serialize_U0'] = 1
 DDR_loc_2d_y['kernel0_gmem_A_m_axi_U'] = 0
-DDR_loc_2d_x['kernel0_gmem_A_m_axi_U'] = 0
+DDR_loc_2d_x['kernel0_gmem_A_m_axi_U'] = 1
 
 DDR_loc_2d_y['B_IO_L3_in_serialize_U0'] = 1
-DDR_loc_2d_x['B_IO_L3_in_serialize_U0'] = 0
+DDR_loc_2d_x['B_IO_L3_in_serialize_U0'] = 1
 DDR_loc_2d_y['kernel0_gmem_B_m_axi_U'] = 1
-DDR_loc_2d_x['kernel0_gmem_B_m_axi_U'] = 0
+DDR_loc_2d_x['kernel0_gmem_B_m_axi_U'] = 1
 
 DDR_loc_2d_y['C_drain_IO_L3_out_serialize_U0'] = 3
-DDR_loc_2d_x['C_drain_IO_L3_out_serialize_U0'] = 0
+DDR_loc_2d_x['C_drain_IO_L3_out_serialize_U0'] = 1
 DDR_loc_2d_y['kernel0_gmem_C_m_axi_U'] = 3
-DDR_loc_2d_x['kernel0_gmem_C_m_axi_U'] = 0
+DDR_loc_2d_x['kernel0_gmem_C_m_axi_U'] = 1
+
+# for the controller 
+DDR_loc_2d_y['kernel0_entry12_U0'] = 0
+DDR_loc_2d_x['kernel0_entry12_U0'] = 1
+DDR_loc_2d_y['kernel0_control_s_axi_U'] = 0
+DDR_loc_2d_x['kernel0_control_s_axi_U'] = 1
 
 # (3) specify DDR information
 # If you instantiate a DDR controller, it will consume non-trivial amount of resource
