@@ -44,9 +44,6 @@ DDR_loc_2d_y['kernel0_control_s_axi_U'] = 0
 # only the DDRs in SLR0 and SLR1 are enabled
 DDR_enable = [0, 0, 0]
 
-# the DDR controllers in SLR 0 and SLR 1 are instantiated, so split the two SLR
-column = [2, 2, 2]
-
 # the right half of SLR0 and SLR1 contains the DDR controller and the static region, which takes away half the resources
 max_usage_ratio_2d = [ [0.6, 0.6], [0.6, 0.6], [0.6, 0.6] ]
 
@@ -86,7 +83,6 @@ formator = FormatHLS(
   DDR_loc_2d_y = DDR_loc_2d_y, 
   DDR_enable = DDR_enable,
   max_usage_ratio_2d = max_usage_ratio_2d,
-  column = column,
   board_name = board_name,
   coorinate_expansion_ratio = 2,
   max_width_threshold = 10000,

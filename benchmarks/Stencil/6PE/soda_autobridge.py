@@ -19,7 +19,6 @@ DDR_loc_2d_x['store_0'] = 0
 
 DDR_enable = [1, 0, 0, 1]
 max_usage_ratio_2d = [ [0.6, 0.6], [0.6, 0.6], [0.6, 0.6], [0.6, 0.6] ]
-column = [2, 2, 2, 2]
 
 relay_station_count = lambda x : 2 * x # how many levels of relay stations to add for x-unit of crossing
 relay_station_template = 'reg' # 'fifo' or 'reg' or 'reg_srl_fifo'
@@ -63,7 +62,6 @@ formator = FormatTLP(
   DDR_loc_2d_y = DDR_loc_2d_y, 
   DDR_enable = DDR_enable,
   max_usage_ratio_2d = max_usage_ratio_2d,
-  column = column,
   board_name = board_name,
   coorinate_expansion_ratio = 2,
   max_width_threshold = 10000,

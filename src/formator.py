@@ -167,10 +167,10 @@ class FormatHLS:
     self.safety_check()
 
   def safety_check(self):
-    assert len(self.DDR_loc_2d_y) == len(self.DDR_loc_2d_x), f'must specify the X and Y location of each IO module'
-    assert len(self.DDR_loc_2d_y) >= sum(self.DDR_enable) + 2, f'each M_AXI corresponds to 2 IO modules; there are also 2 S_AXI IO modules'
+    # assert len(self.DDR_loc_2d_y) == len(self.DDR_loc_2d_x), f'must specify the X and Y location of each IO module'
+    # assert len(self.DDR_loc_2d_y) >= sum(self.DDR_enable) + 2, f'each M_AXI corresponds to 2 IO modules; there are also 2 S_AXI IO modules'
     assert any('control_s_axi' in key for key in self.DDR_loc_2d_y.keys()), f'no constraint found for the control_s_axi'
-    assert any('entry' in key for key in self.DDR_loc_2d_y.keys()), f'no constraint found for the entry module connected with the control_s_axi'
+    # assert any('entry' in key for key in self.DDR_loc_2d_y.keys()), f'no constraint found for the entry module connected with the control_s_axi'
     
   # for non-dataflow use
   def init_taskbased(
