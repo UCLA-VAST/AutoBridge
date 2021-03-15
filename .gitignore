@@ -1,0 +1,16 @@
+*.log
+*.lp
+*.v
+parse*
+__*
+*temp*
+*trash*
+/python/autoparallel.egg-info
+/python/build/
+/python/dist/
+**/vitis_run*/
+**/solution/
+**/e2e_test/
+front_end_result.json
+**/kernel0/
+**/wrapper_rtl/
