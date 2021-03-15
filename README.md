@@ -1,3 +1,6 @@
+# Latest
+
+- We are in transition to our new code base in the "in-develop" directory. We hope to make the tool flexible regarding the target device, the optimization methods, which front-end HLS to use, etc. Please let me know if you have any suggestions!
 
 # About
 
