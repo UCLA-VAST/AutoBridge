@@ -300,15 +300,22 @@ class Floorplanner:
     assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, '8-way partioning failed!'
 
     # extract results
-    next_s2v = defaultdict(list)
+    next_s2v = {}
     next_v2s = {}
     
     for v in curr_v2s.keys():
       idx = int(slot_idx(v2var_y1[v].x,  v2var_y2[v].x, v2var_x[v].x))
+      if slot_group[idx] not in next_s2v:
+        next_s2v[slot_group[idx]] = []
       next_s2v[slot_group[idx]].append(v)
       next_v2s[v] = slot_group[idx]
 
     self.printFloorplan()
+
+    # remove empty slots
+    for slot in self.slot_manager.getActiveSlotsIncludeRouting():
+      if slot not in next_s2v:
+        self.slot_manager.removeSlotNonBlocking(slot.getName())
 
     self.s2v, self.v2s = next_s2v, next_v2s
     self.__initSlotToEdges()
