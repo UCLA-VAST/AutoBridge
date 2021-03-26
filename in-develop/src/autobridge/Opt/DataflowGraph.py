@@ -34,8 +34,6 @@ class Vertex():
     self.area = {} # str_name -> count
     self.sub_vertices = {} # pp id -> sub vertex
     self.actual_to_sub = {} # map actual edge name -> sub vertex
-    self.vertical_cut = []
-    self.horizontal_cut = []
 
     logging.debug(f'create vertix {self.name} of type {self.type}')
 
