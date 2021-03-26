@@ -22,9 +22,9 @@ class TapaManager:
     self.board = DeviceManager(config['Board']).getBoard()
 
     self.program_json_manager = ProgramJsonManager(
-      config['ProjectPath'],
       config['Edges'],
       config['Vertices'],
+      config['Area'],
     )
     self.graph = DataflowGraphTapa(self.program_json_manager)
 
