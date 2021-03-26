@@ -1,26 +1,1059 @@
 {
-  "CompiledBy" : "TAPA",
-  "Board" : "U280",
-  "ProjectPath" : "/home/einsx7/auto-parallel/src/benchmark/SSSP-tapa",
-  "TopName" : "SSSP",
-
-  "ExternalPortBinding" : {
-    "COARSE_X0Y0" : [
-      "heap_array",
-      "heap_index"
-    ],
-    "COARSE_X1Y0" : [
-      "vertices_0",
-      "vertices_1", 
-      "metadata",
-      "edges_0",
-      "edges_1"
+  "CompiledBy": "TAPA",
+  "Board": "U280",
+  "OptionalFloorplan": {
+    "COARSE_X1Y0": [
+      "PiHeapArrayMem_0",
+      "heap_array__m_axi",
+      "PiHeapIndexMem_0",
+      "heap_index__m_axi",
+      "EdgeMem_0",
+      "edges_0__m_axi",
+      "EdgeMem_1",
+      "edges_1__m_axi",
+      "VertexMem_0",
+      "vertices_0___VertexMem_0___mem__m_axi",
+      "VertexUpdater_0",
+      "VertexMem_1",
+      "vertices_1___VertexMem_1___mem__m_axi",
+      "VertexUpdater_1"
     ]
   },
-
-  "OptionalFloorplan" : {
-    "COARSE_X1Y0" : [
-      "EdgeMem_0"
-    ]
+  "Vertices": {
+    "Dispatcher_0": "Dispatcher",
+    "EdgeMem_0": "EdgeMem",
+    "EdgeMem_1": "EdgeMem",
+    "EdgeReqArbiter_0": "EdgeReqArbiter",
+    "NoopMerger_0": "NoopMerger",
+    "PiHeapArrayMem_0": "PiHeapArrayMem",
+    "PiHeapIndexMem_0": "PiHeapIndexMem",
+    "PopReqArbiter_0": "PopReqArbiter",
+    "ProcElemS0_0": "ProcElemS0",
+    "ProcElemS0_1": "ProcElemS0",
+    "ProcElemS0_2": "ProcElemS0",
+    "ProcElemS0_3": "ProcElemS0",
+    "ProcElemS0_4": "ProcElemS0",
+    "ProcElemS0_5": "ProcElemS0",
+    "ProcElemS0_6": "ProcElemS0",
+    "ProcElemS0_7": "ProcElemS0",
+    "ProcElemS0_8": "ProcElemS0",
+    "ProcElemS0_9": "ProcElemS0",
+    "ProcElemS0_10": "ProcElemS0",
+    "ProcElemS0_11": "ProcElemS0",
+    "ProcElemS0_12": "ProcElemS0",
+    "ProcElemS0_13": "ProcElemS0",
+    "ProcElemS0_14": "ProcElemS0",
+    "ProcElemS0_15": "ProcElemS0",
+    "ProcElemS0_16": "ProcElemS0",
+    "ProcElemS0_17": "ProcElemS0",
+    "ProcElemS0_18": "ProcElemS0",
+    "ProcElemS0_19": "ProcElemS0",
+    "ProcElemS0_20": "ProcElemS0",
+    "ProcElemS0_21": "ProcElemS0",
+    "ProcElemS0_22": "ProcElemS0",
+    "ProcElemS0_23": "ProcElemS0",
+    "ProcElemS0_24": "ProcElemS0",
+    "ProcElemS0_25": "ProcElemS0",
+    "ProcElemS0_26": "ProcElemS0",
+    "ProcElemS0_27": "ProcElemS0",
+    "ProcElemS0_28": "ProcElemS0",
+    "ProcElemS0_29": "ProcElemS0",
+    "ProcElemS0_30": "ProcElemS0",
+    "ProcElemS0_31": "ProcElemS0",
+    "ProcElemS1_0": "ProcElemS1",
+    "ProcElemS1_1": "ProcElemS1",
+    "PushReqArbiter_0": "PushReqArbiter",
+    "QueueRespArbiter_0": "QueueRespArbiter",
+    "TaskQueue_0": "TaskQueue",
+    "TaskQueue_1": "TaskQueue",
+    "TaskQueue_2": "TaskQueue",
+    "TaskQueue_3": "TaskQueue",
+    "TaskReqArbiter_0": "TaskReqArbiter",
+    "TaskRespArbiter_0": "TaskRespArbiter",
+    "UpdateReqArbiter_0": "UpdateReqArbiter",
+    "VertexMem_0": "VertexMem",
+    "VertexMem_1": "VertexMem",
+    "VertexReaderS0_0": "VertexReaderS0",
+    "VertexReaderS0_1": "VertexReaderS0",
+    "VertexReaderS1_0": "VertexReaderS1",
+    "VertexReaderS1_1": "VertexReaderS1",
+    "VertexUpdater_0": "VertexUpdater",
+    "VertexUpdater_1": "VertexUpdater",
+    "VidDemux_0": "VidDemux",
+    "VidDemux_1": "VidDemux",
+    "VidMux_0": "VidMux",
+    "VidMux_1": "VidMux",
+    "SSSP_control_s_axi_U": "SSSP",
+    "edges_0__m_axi": "edges_0__m_axi",
+    "edges_1__m_axi": "edges_1__m_axi",
+    "heap_array__m_axi": "heap_array__m_axi",
+    "heap_index__m_axi": "heap_index__m_axi",
+    "vertices_0___VertexMem_0___mem__m_axi": "vertices_0___VertexMem_0___mem__m_axi",
+    "vertices_1___VertexMem_1___mem__m_axi": "vertices_1___VertexMem_1___mem__m_axi"
+  },
+  "Edges": {
+    "Dispatcher_0___root": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "Dispatcher_0",
+      "width": 256
+    },
+    "Dispatcher_0___metadata": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "Dispatcher_0",
+      "width": 64
+    },
+    "EdgeMem_0___edges_0": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "EdgeMem_0",
+      "width": 64
+    },
+    "EdgeMem_1___edges_1": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "EdgeMem_1",
+      "width": 64
+    },
+    "VertexMem_0___vertices_0": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "VertexMem_0",
+      "width": 64
+    },
+    "VertexUpdater_0___vertices_0": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "VertexUpdater_0",
+      "width": 64
+    },
+    "VertexMem_1___vertices_1": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "VertexMem_1",
+      "width": 64
+    },
+    "VertexUpdater_1___vertices_1": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "VertexUpdater_1",
+      "width": 64
+    },
+    "PiHeapArrayMem_0___heap_array": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "PiHeapArrayMem_0",
+      "width": 64
+    },
+    "PiHeapIndexMem_0___heap_index": {
+      "produced_by": "SSSP_control_s_axi_U",
+      "consumed_by": "PiHeapIndexMem_0",
+      "width": 64
+    },
+    "edge_read_addr_q_0": {
+      "produced_by": "EdgeReqArbiter_0",
+      "consumed_by": "EdgeMem_0",
+      "width": 33
+    },
+    "edge_read_addr_q_1": {
+      "produced_by": "EdgeReqArbiter_0",
+      "consumed_by": "EdgeMem_1",
+      "width": 33
+    },
+    "edge_read_data_q_0": {
+      "produced_by": "EdgeMem_0",
+      "consumed_by": "ProcElemS1_0",
+      "width": 65
+    },
+    "edge_read_data_q_1": {
+      "produced_by": "EdgeMem_1",
+      "consumed_by": "ProcElemS1_1",
+      "width": 65
+    },
+    "edge_req_q_0": {
+      "produced_by": "ProcElemS0_0",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_10": {
+      "produced_by": "ProcElemS0_10",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_11": {
+      "produced_by": "ProcElemS0_11",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_12": {
+      "produced_by": "ProcElemS0_12",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_13": {
+      "produced_by": "ProcElemS0_13",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_14": {
+      "produced_by": "ProcElemS0_14",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_15": {
+      "produced_by": "ProcElemS0_15",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_16": {
+      "produced_by": "ProcElemS0_16",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_17": {
+      "produced_by": "ProcElemS0_17",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_18": {
+      "produced_by": "ProcElemS0_18",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_19": {
+      "produced_by": "ProcElemS0_19",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_1": {
+      "produced_by": "ProcElemS0_1",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_20": {
+      "produced_by": "ProcElemS0_20",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_21": {
+      "produced_by": "ProcElemS0_21",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_22": {
+      "produced_by": "ProcElemS0_22",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_23": {
+      "produced_by": "ProcElemS0_23",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_24": {
+      "produced_by": "ProcElemS0_24",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_25": {
+      "produced_by": "ProcElemS0_25",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_26": {
+      "produced_by": "ProcElemS0_26",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_27": {
+      "produced_by": "ProcElemS0_27",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_28": {
+      "produced_by": "ProcElemS0_28",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_29": {
+      "produced_by": "ProcElemS0_29",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_2": {
+      "produced_by": "ProcElemS0_2",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_30": {
+      "produced_by": "ProcElemS0_30",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_31": {
+      "produced_by": "ProcElemS0_31",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_3": {
+      "produced_by": "ProcElemS0_3",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_4": {
+      "produced_by": "ProcElemS0_4",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_5": {
+      "produced_by": "ProcElemS0_5",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_6": {
+      "produced_by": "ProcElemS0_6",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_7": {
+      "produced_by": "ProcElemS0_7",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_8": {
+      "produced_by": "ProcElemS0_8",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "edge_req_q_9": {
+      "produced_by": "ProcElemS0_9",
+      "consumed_by": "EdgeReqArbiter_0",
+      "width": 97
+    },
+    "pop_req_q": {
+      "produced_by": "Dispatcher_0",
+      "consumed_by": "PopReqArbiter_0",
+      "width": 3
+    },
+    "pop_req_qi_0": {
+      "produced_by": "PopReqArbiter_0",
+      "consumed_by": "TaskQueue_0",
+      "width": 2
+    },
+    "pop_req_qi_1": {
+      "produced_by": "PopReqArbiter_0",
+      "consumed_by": "TaskQueue_1",
+      "width": 2
+    },
+    "pop_req_qi_2": {
+      "produced_by": "PopReqArbiter_0",
+      "consumed_by": "TaskQueue_2",
+      "width": 2
+    },
+    "pop_req_qi_3": {
+      "produced_by": "PopReqArbiter_0",
+      "consumed_by": "TaskQueue_3",
+      "width": 2
+    },
+    "push_req_q_0": {
+      "produced_by": "VertexUpdater_0",
+      "consumed_by": "PushReqArbiter_0",
+      "width": 144
+    },
+    "push_req_q_1": {
+      "produced_by": "VertexUpdater_1",
+      "consumed_by": "PushReqArbiter_0",
+      "width": 144
+    },
+    "push_req_qi_0": {
+      "produced_by": "PushReqArbiter_0",
+      "consumed_by": "TaskQueue_0",
+      "width": 144
+    },
+    "push_req_qi_1": {
+      "produced_by": "PushReqArbiter_0",
+      "consumed_by": "TaskQueue_1",
+      "width": 144
+    },
+    "push_req_qi_2": {
+      "produced_by": "PushReqArbiter_0",
+      "consumed_by": "TaskQueue_2",
+      "width": 144
+    },
+    "push_req_qi_3": {
+      "produced_by": "PushReqArbiter_0",
+      "consumed_by": "TaskQueue_3",
+      "width": 144
+    },
+    "queue_resp_q": {
+      "produced_by": "QueueRespArbiter_0",
+      "consumed_by": "Dispatcher_0",
+      "width": 208
+    },
+    "queue_resp_qi_0": {
+      "produced_by": "TaskQueue_0",
+      "consumed_by": "QueueRespArbiter_0",
+      "width": 208
+    },
+    "queue_resp_qi_1": {
+      "produced_by": "TaskQueue_1",
+      "consumed_by": "QueueRespArbiter_0",
+      "width": 208
+    },
+    "queue_resp_qi_2": {
+      "produced_by": "TaskQueue_2",
+      "consumed_by": "QueueRespArbiter_0",
+      "width": 208
+    },
+    "queue_resp_qi_3": {
+      "produced_by": "TaskQueue_3",
+      "consumed_by": "QueueRespArbiter_0",
+      "width": 208
+    },
+    "src_q_0": {
+      "produced_by": "EdgeReqArbiter_0",
+      "consumed_by": "ProcElemS1_0",
+      "width": 65
+    },
+    "src_q_1": {
+      "produced_by": "EdgeReqArbiter_0",
+      "consumed_by": "ProcElemS1_1",
+      "width": 65
+    },
+    "task_req_q": {
+      "produced_by": "Dispatcher_0",
+      "consumed_by": "TaskReqArbiter_0",
+      "width": 149
+    },
+    "task_req_qi_0": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_0",
+      "width": 144
+    },
+    "task_req_qi_10": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_10",
+      "width": 144
+    },
+    "task_req_qi_11": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_11",
+      "width": 144
+    },
+    "task_req_qi_12": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_12",
+      "width": 144
+    },
+    "task_req_qi_13": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_13",
+      "width": 144
+    },
+    "task_req_qi_14": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_14",
+      "width": 144
+    },
+    "task_req_qi_15": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_15",
+      "width": 144
+    },
+    "task_req_qi_16": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_16",
+      "width": 144
+    },
+    "task_req_qi_17": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_17",
+      "width": 144
+    },
+    "task_req_qi_18": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_18",
+      "width": 144
+    },
+    "task_req_qi_19": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_19",
+      "width": 144
+    },
+    "task_req_qi_1": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_1",
+      "width": 144
+    },
+    "task_req_qi_20": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_20",
+      "width": 144
+    },
+    "task_req_qi_21": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_21",
+      "width": 144
+    },
+    "task_req_qi_22": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_22",
+      "width": 144
+    },
+    "task_req_qi_23": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_23",
+      "width": 144
+    },
+    "task_req_qi_24": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_24",
+      "width": 144
+    },
+    "task_req_qi_25": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_25",
+      "width": 144
+    },
+    "task_req_qi_26": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_26",
+      "width": 144
+    },
+    "task_req_qi_27": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_27",
+      "width": 144
+    },
+    "task_req_qi_28": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_28",
+      "width": 144
+    },
+    "task_req_qi_29": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_29",
+      "width": 144
+    },
+    "task_req_qi_2": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_2",
+      "width": 144
+    },
+    "task_req_qi_30": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_30",
+      "width": 144
+    },
+    "task_req_qi_31": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_31",
+      "width": 144
+    },
+    "task_req_qi_3": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_3",
+      "width": 144
+    },
+    "task_req_qi_4": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_4",
+      "width": 144
+    },
+    "task_req_qi_5": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_5",
+      "width": 144
+    },
+    "task_req_qi_6": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_6",
+      "width": 144
+    },
+    "task_req_qi_7": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_7",
+      "width": 144
+    },
+    "task_req_qi_8": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_8",
+      "width": 144
+    },
+    "task_req_qi_9": {
+      "produced_by": "TaskReqArbiter_0",
+      "consumed_by": "ProcElemS0_9",
+      "width": 144
+    },
+    "task_resp_q": {
+      "produced_by": "TaskRespArbiter_0",
+      "consumed_by": "Dispatcher_0",
+      "width": 38
+    },
+    "task_resp_qi_0": {
+      "produced_by": "ProcElemS0_0",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_10": {
+      "produced_by": "ProcElemS0_10",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_11": {
+      "produced_by": "ProcElemS0_11",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_12": {
+      "produced_by": "ProcElemS0_12",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_13": {
+      "produced_by": "ProcElemS0_13",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_14": {
+      "produced_by": "ProcElemS0_14",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_15": {
+      "produced_by": "ProcElemS0_15",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_16": {
+      "produced_by": "ProcElemS0_16",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_17": {
+      "produced_by": "ProcElemS0_17",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_18": {
+      "produced_by": "ProcElemS0_18",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_19": {
+      "produced_by": "ProcElemS0_19",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_1": {
+      "produced_by": "ProcElemS0_1",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_20": {
+      "produced_by": "ProcElemS0_20",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_21": {
+      "produced_by": "ProcElemS0_21",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_22": {
+      "produced_by": "ProcElemS0_22",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_23": {
+      "produced_by": "ProcElemS0_23",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_24": {
+      "produced_by": "ProcElemS0_24",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_25": {
+      "produced_by": "ProcElemS0_25",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_26": {
+      "produced_by": "ProcElemS0_26",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_27": {
+      "produced_by": "ProcElemS0_27",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_28": {
+      "produced_by": "ProcElemS0_28",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_29": {
+      "produced_by": "ProcElemS0_29",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_2": {
+      "produced_by": "ProcElemS0_2",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_30": {
+      "produced_by": "ProcElemS0_30",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_31": {
+      "produced_by": "ProcElemS0_31",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_3": {
+      "produced_by": "ProcElemS0_3",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_4": {
+      "produced_by": "ProcElemS0_4",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_5": {
+      "produced_by": "ProcElemS0_5",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_6": {
+      "produced_by": "ProcElemS0_6",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_7": {
+      "produced_by": "ProcElemS0_7",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_8": {
+      "produced_by": "ProcElemS0_8",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "task_resp_qi_9": {
+      "produced_by": "ProcElemS0_9",
+      "consumed_by": "TaskRespArbiter_0",
+      "width": 33
+    },
+    "update_new_qi_0": {
+      "produced_by": "VertexReaderS1_0",
+      "consumed_by": "VertexUpdater_0",
+      "width": 144
+    },
+    "update_new_qi_1": {
+      "produced_by": "VertexReaderS1_1",
+      "consumed_by": "VertexUpdater_1",
+      "width": 144
+    },
+    "update_noop_q": {
+      "produced_by": "NoopMerger_0",
+      "consumed_by": "Dispatcher_0",
+      "width": 4
+    },
+    "update_noop_qi1_0": {
+      "produced_by": "VertexReaderS1_0",
+      "consumed_by": "NoopMerger_0",
+      "width": 2
+    },
+    "update_noop_qi1_1": {
+      "produced_by": "VertexReaderS1_1",
+      "consumed_by": "NoopMerger_0",
+      "width": 2
+    },
+    "update_noop_qi2_0": {
+      "produced_by": "VertexUpdater_0",
+      "consumed_by": "NoopMerger_0",
+      "width": 2
+    },
+    "update_noop_qi2_1": {
+      "produced_by": "VertexUpdater_1",
+      "consumed_by": "NoopMerger_0",
+      "width": 2
+    },
+    "update_qi0_0": {
+      "produced_by": "VertexReaderS0_0",
+      "consumed_by": "VertexReaderS1_0",
+      "width": 144
+    },
+    "update_qi0_1": {
+      "produced_by": "VertexReaderS0_1",
+      "consumed_by": "VertexReaderS1_1",
+      "width": 144
+    },
+    "update_req_0_qi0_0": {
+      "produced_by": "VidDemux_0",
+      "consumed_by": "VidMux_0",
+      "width": 144
+    },
+    "update_req_0_qi0_1": {
+      "produced_by": "VidDemux_1",
+      "consumed_by": "VidMux_0",
+      "width": 144
+    },
+    "update_req_1_qi0_0": {
+      "produced_by": "VidDemux_0",
+      "consumed_by": "VidMux_1",
+      "width": 144
+    },
+    "update_req_1_qi0_1": {
+      "produced_by": "VidDemux_1",
+      "consumed_by": "VidMux_1",
+      "width": 144
+    },
+    "update_req_q_0": {
+      "produced_by": "ProcElemS1_0",
+      "consumed_by": "UpdateReqArbiter_0",
+      "width": 144
+    },
+    "update_req_q_1": {
+      "produced_by": "ProcElemS1_1",
+      "consumed_by": "UpdateReqArbiter_0",
+      "width": 144
+    },
+    "update_req_qi0_0": {
+      "produced_by": "VidMux_0",
+      "consumed_by": "VertexReaderS0_0",
+      "width": 144
+    },
+    "update_req_qi0_1": {
+      "produced_by": "VidMux_1",
+      "consumed_by": "VertexReaderS0_1",
+      "width": 144
+    },
+    "update_req_qi1_0": {
+      "produced_by": "UpdateReqArbiter_0",
+      "consumed_by": "VidDemux_0",
+      "width": 144
+    },
+    "update_req_qi1_1": {
+      "produced_by": "UpdateReqArbiter_0",
+      "consumed_by": "VidDemux_1",
+      "width": 144
+    },
+    "vertex_read_addr_q_0": {
+      "produced_by": "VertexReaderS0_0",
+      "consumed_by": "VertexMem_0",
+      "width": 33
+    },
+    "vertex_read_addr_q_1": {
+      "produced_by": "VertexReaderS0_1",
+      "consumed_by": "VertexMem_1",
+      "width": 33
+    },
+    "vertex_read_data_q_0": {
+      "produced_by": "VertexMem_0",
+      "consumed_by": "VertexReaderS1_0",
+      "width": 129
+    },
+    "vertex_read_data_q_1": {
+      "produced_by": "VertexMem_1",
+      "consumed_by": "VertexReaderS1_1",
+      "width": 129
+    }
+  },
+  "Area": {
+    "SSSP": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 826,
+      "LUT": 1512,
+      "URAM": 0
+    },
+    "Dispatcher": {
+      "BRAM": 4,
+      "DSP": 0,
+      "FF": 5543,
+      "LUT": 10034,
+      "URAM": 0
+    },
+    "EdgeMem": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 106,
+      "LUT": 202,
+      "URAM": 0
+    },
+    "EdgeReqArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 217,
+      "LUT": 592,
+      "URAM": 0
+    },
+    "NoopMerger": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 8,
+      "LUT": 83,
+      "URAM": 0
+    },
+    "PiHeapArrayMem": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 2,
+      "LUT": 16,
+      "URAM": 0
+    },
+    "PiHeapIndexMem": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 2,
+      "LUT": 16,
+      "URAM": 0
+    },
+    "PopReqArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 10,
+      "LUT": 115,
+      "URAM": 0
+    },
+    "ProcElemS0": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 285,
+      "LUT": 274,
+      "URAM": 0
+    },
+    "ProcElemS1": {
+      "BRAM": 0,
+      "DSP": 2,
+      "FF": 620,
+      "LUT": 461,
+      "URAM": 0
+    },
+    "PushReqArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 580,
+      "LUT": 701,
+      "URAM": 0
+    },
+    "QueueRespArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 527,
+      "LUT": 123,
+      "URAM": 0
+    },
+    "TaskQueue": {
+      "BRAM": 31,
+      "DSP": 0,
+      "FF": 31149,
+      "LUT": 48079,
+      "URAM": 11
+    },
+    "TaskReqArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 302,
+      "LUT": 269,
+      "URAM": 0
+    },
+    "TaskRespArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 49,
+      "LUT": 343,
+      "URAM": 0
+    },
+    "UpdateReqArbiter": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 580,
+      "LUT": 153,
+      "URAM": 0
+    },
+    "VertexMem": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 170,
+      "LUT": 262,
+      "URAM": 0
+    },
+    "VertexReaderS0": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 174,
+      "LUT": 49,
+      "URAM": 0
+    },
+    "VertexReaderS1": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 150,
+      "LUT": 75,
+      "URAM": 0
+    },
+    "VertexUpdater": {
+      "BRAM": 8,
+      "DSP": 0,
+      "FF": 1704,
+      "LUT": 3058,
+      "URAM": 0
+    },
+    "VidDemux": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 176,
+      "LUT": 189,
+      "URAM": 0
+    },
+    "VidMux": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 152,
+      "LUT": 80,
+      "URAM": 0
+    },
+    "edges_0__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    },
+    "edges_1__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    },
+    "heap_array__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    },
+    "heap_index__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    },
+    "vertices_0___VertexMem_0___mem__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    },
+    "vertices_1___VertexMem_1___mem__m_axi": {
+      "BRAM": 0,
+      "DSP": 0,
+      "FF": 0,
+      "LUT": 0,
+      "URAM": 0
+    }
   }
 }
