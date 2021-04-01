@@ -123,8 +123,8 @@ class SlotManager:
           neighbors.append(candidate)
     return neighbors
 
-  def getNeighborSlotsIncludeRouting(self, slot, dir):
-    potential_target_slots = {**self.pblock_to_slot, **self.pblock_to_routing_slot}
+  def getComputeNeighborSlots(self, slot, dir):
+    potential_target_slots = self.pblock_to_slot
 
     if dir == 'UP':
       return self.getUpNeighborSlots(slot, potential_target_slots)
@@ -144,3 +144,10 @@ class SlotManager:
     slot_name = slot.getName()
     return slot_name in self.pblock_to_routing_slot and slot_name not in self.pblock_to_slot
 
+  def getComputeSlotPairs(self):
+    pairs = []
+    for slot in self.pblock_to_slot.values():
+      neighbors = self.getComputeNeighborSlots(slot, 'UP') + \
+                  self.getComputeNeighborSlots(slot, 'RIGHT')
+      pairs += [(slot, n) for n in neighbors]
+    return pairs
