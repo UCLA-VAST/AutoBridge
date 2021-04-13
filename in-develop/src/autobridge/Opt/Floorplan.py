@@ -8,6 +8,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.HLSParser.vivado_hls.HLSProjectManager import HLSProjectManager
 from mip import *
+import statistics
 
 _logger = logging.getLogger().getChild(__name__)
 
@@ -156,37 +157,76 @@ class Floorplanner:
 
     m.objective = minimize(xsum(edge_costs[i] * edge.width for i, edge in enumerate(all_edges) ) )
 
-  def __getPartitionResult(self, curr_s2v, v2var, dir):
-    # create new mapping
-    next_s2v = {}
-    next_v2s = {}
+  def __getPartitionResult(self, num_solutions, curr_s2v, v2var, dir):
+    def getIthSolution(i, temp_slots):
+      # create new mapping
+      next_s2v = {}
+      next_v2s = {}
 
-    for s, v_group in curr_s2v.items():
-      bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(s, dir)
-      next_s2v[bottom_or_left] = []
-      next_s2v[up_or_right] = []
-      for v in v_group:
-        # if v is assigned to 0-half
-        if v2var[v].x == 0:
-          next_s2v[bottom_or_left].append(v)
-          next_v2s[v] = bottom_or_left
-        
-        # if v is assigned to 1-half
-        elif v2var[v].x == 1:
-          next_s2v[up_or_right].append(v)
-          next_v2s[v] = up_or_right
-        else:
-          assert False
+      for s, v_group in curr_s2v.items():
+        bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(s, dir)
+        temp_slots += [bottom_or_left, up_or_right]
 
-      # if no Vertex is assigned to a Slot, remove that Slot
-      if not next_s2v[bottom_or_left]:
-        next_s2v.pop(bottom_or_left)
-        self.slot_manager.removeSlotNonBlocking(bottom_or_left.getName())
-      if not next_s2v[up_or_right]:
-        next_s2v.pop(up_or_right)
-        self.slot_manager.removeSlotNonBlocking(up_or_right.getName())
+        next_s2v[bottom_or_left] = []
+        next_s2v[up_or_right] = []
+        for v in v_group:
+          # if v is assigned to 0-half in the i-th solution
+          if v2var[v].xi(i) == 0:
+            next_s2v[bottom_or_left].append(v)
+            next_v2s[v] = bottom_or_left
+          
+          # if v is assigned to 1-half in the i-th solution
+          elif v2var[v].xi(i) == 1:
+            next_s2v[up_or_right].append(v)
+            next_v2s[v] = up_or_right
+          else:
+            assert False, v2var[v].xi(i)
 
-    return next_s2v, next_v2s
+        # if no Vertex is assigned to a Slot, remove that Slot
+        if not next_s2v[bottom_or_left]:
+          next_s2v.pop(bottom_or_left)
+          self.slot_manager.removeSlotNonBlocking(bottom_or_left.getName())
+        if not next_s2v[up_or_right]:
+          next_s2v.pop(up_or_right)
+          self.slot_manager.removeSlotNonBlocking(up_or_right.getName())
+      
+      return next_s2v, next_v2s
+
+    logging.info(f'there are {num_solutions} solutions available')
+
+    best_next_s2v = {}
+    best_next_v2s = {}
+    best_var = float('inf')
+
+    # track all temp slots and delete the empty ones at the end
+    temp_slots = []
+
+    # choose the most balanced solution
+    for i in range(num_solutions):
+      next_s2v, next_v2s = getIthSolution(i, temp_slots)
+
+      # get the average variance of each resource
+      var = 0
+      for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+        s2area = {slot : 0 for slot in next_s2v.keys()}
+        for v, s in next_v2s.items():
+          s2area[s] += v.area[r]
+        var += statistics.variance(s2area.values())
+
+      logging.info(f'the {i}-th solution has variance: {var}')
+
+      # track the best solution
+      if var < best_var:
+        best_var = var
+        best_next_s2v = next_s2v
+        best_next_v2s = next_v2s
+
+    # remove unused temp slots
+    for temp in temp_slots:
+      if temp not in best_next_s2v:
+        self.slot_manager.removeSlotNonBlocking(temp.getName())
+
+    return best_next_s2v, best_next_v2s
 
   def __createILPVariables(self, m, curr_v2s):
     v2var = {} # str -> [mip_var]
@@ -348,7 +388,7 @@ class Floorplanner:
     status = m.optimize(max_seconds=self.max_search_time)
     assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, '2-way partioning failed!'
 
-    next_s2v, next_v2s = self.__getPartitionResult(curr_s2v=curr_s2v, v2var=v2var, dir=dir)
+    next_s2v, next_v2s = self.__getPartitionResult(m.num_solutions, curr_s2v=curr_s2v, v2var=v2var, dir=dir)
 
     return next_s2v, next_v2s
 
@@ -418,15 +458,15 @@ class Floorplanner:
 
   def naiveFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartition(init_s2v, init_v2s, 'HORIZONTAL', delta=-0.1) # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartition(init_s2v, init_v2s, 'HORIZONTAL', delta=-0.03) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartition(iter1_s2v, iter1_v2s, 'HORIZONTAL',  delta=-0.05) # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartition(iter1_s2v, iter1_v2s, 'HORIZONTAL',  delta=-0.02) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartition(iter2_s2v, iter2_v2s, 'VERTICAL',  delta=-0.05) # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartition(iter2_s2v, iter2_v2s, 'VERTICAL',  delta=-0.01) # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL',  delta=0.0) # based on die boundary
+    iter4_s2v, iter4_v2s = self.__twoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL',  delta=0.02) # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL',  delta=0.15) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL',  delta=0.03) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
