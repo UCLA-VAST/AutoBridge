@@ -35,6 +35,10 @@ class Floorplanner:
     self.v2s = {}
     self.s2e = {}
 
+    # incrementally adjust "delta" by "step" to calibrate the resource usage limit
+    self.delta = -0.1
+    self.step = 0.03
+    self.MAX_USAGE_ALLOWED = 0.9 # cut the process if surpass this value
     self.max_usage_ratio = self.__getResourceUsageLimit(user_max_usage_ratio)
 
     self.__checker()
@@ -171,16 +175,19 @@ class Floorplanner:
         next_s2v[up_or_right] = []
         for v in v_group:
           # if v is assigned to 0-half in the i-th solution
-          if v2var[v].xi(i) == 0:
+          if int(v2var[v].xi(i)) == 0:
             next_s2v[bottom_or_left].append(v)
             next_v2s[v] = bottom_or_left
           
           # if v is assigned to 1-half in the i-th solution
-          elif v2var[v].xi(i) == 1:
+          elif int(v2var[v].xi(i)) == 1:
             next_s2v[up_or_right].append(v)
             next_v2s[v] = up_or_right
           else:
             assert False, v2var[v].xi(i)
+
+          # sometimes the result is not strictly integer?
+          assert abs(int(v2var[v].xi(i)) - v2var[v].xi(i)) < 0.0001, v2var[v].xi(i)
 
         # if no Vertex is assigned to a Slot, remove that Slot
         if not next_s2v[bottom_or_left]:
@@ -361,7 +368,20 @@ class Floorplanner:
     self.__initSlotToEdges()
 
     return
-  
+
+  # automatically adjust the max usage ratio to get a valid solution
+  def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}):
+    while 1:
+      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta)
+      if not next_s2v and not next_v2s:
+        self.delta += self.step
+        logging.warning(f'use delta of {self.delta} to find valid solution')
+        if self.max_usage_ratio + self.delta > self.MAX_USAGE_ALLOWED:
+          logging.error('not likely there is a reasonable solution')
+          exit(1)
+      else:
+        return next_s2v, next_v2s
+
   # use iterative 2-way partitioning when there are lots of small functions
   def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, delta=0.0):
     assert set(map(type, curr_s2v.keys())) == {Slot}
@@ -386,7 +406,9 @@ class Floorplanner:
     logging.info('Start ILP solver')
     # m.write('Coarse-Grained-Floorplan.lp')
     status = m.optimize(max_seconds=self.max_search_time)
-    assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, '2-way partioning failed!'
+    if status != OptimizationStatus.OPTIMAL and status != OptimizationStatus.FEASIBLE:
+      logging.warning('2-way partioning failed!')
+      return {}, {}
 
     next_s2v, next_v2s = self.__getPartitionResult(m.num_solutions, curr_s2v=curr_s2v, v2var=v2var, dir=dir)
 
@@ -446,11 +468,11 @@ class Floorplanner:
 
   def coarseGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartition(init_s2v, init_v2s, 'HORIZONTAL', delta=-0.05) # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartition(iter1_s2v, iter1_v2s, 'HORIZONTAL', delta=-0.05) # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartition(iter2_s2v, iter2_v2s, 'VERTICAL', delta=0.05) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
@@ -458,32 +480,32 @@ class Floorplanner:
 
   def naiveFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartition(init_s2v, init_v2s, 'HORIZONTAL', delta=-0.03) # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartition(iter1_s2v, iter1_v2s, 'HORIZONTAL',  delta=-0.02) # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartition(iter2_s2v, iter2_v2s, 'VERTICAL',  delta=-0.01) # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL',  delta=0.02) # based on die boundary
+    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'HORIZONTAL') # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL',  delta=0.03) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL') # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
 
   def naiveTwoCRGranularityFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartition(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartition(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartition(iter2_s2v, iter2_v2s, 'HORIZONTAL') # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL') # based on die boundary
+    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'VERTICAL') # based on die boundary
 
-    iter5_s2v, iter5_v2s = self.__twoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL') # based on die boundary
+    iter5_s2v, iter5_v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL') # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartition(iter5_s2v, iter5_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter5_s2v, iter5_v2s, 'VERTICAL') # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()    
     self.printFloorplan()
