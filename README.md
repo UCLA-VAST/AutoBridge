@@ -2,6 +2,9 @@
 
 - We are in transition to our new code base in the "in-develop" directory. We hope to make the tool flexible regarding the target device, the optimization methods, which front-end HLS to use, etc. Please let me know if you have any suggestions!
 
+- A useful example of integrating AutoBridge: 
+https://autosa.readthedocs.io/en/latest/tutorials/auto_bridge.html
+
 # About
 
 - `What`: AutoBridge is a floorplanning tool for Vivado HLS dataflow designs.
