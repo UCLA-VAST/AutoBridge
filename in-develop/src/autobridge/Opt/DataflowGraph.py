@@ -32,8 +32,6 @@ class Vertex():
     self.name = name
     self.id = self.type + self.name
     self.area = {} # str_name -> count
-    self.sub_vertices = {} # pp id -> sub vertex
-    self.actual_to_sub = {} # map actual edge name -> sub vertex
 
     logging.debug(f'create vertix {self.name} of type {self.type}')
 
@@ -72,6 +70,45 @@ class DataflowGraph:
     self.__linkEdgeAndVertex()
     
     self.__checker()
+
+    self.v_type_2_int = {} # map each vertex type to an integer
+    self.v_name_2_int = {} # map each vertex instance to an integer
+    self.__initVTypeToInt()
+    self.__initVInstToInt()
+    
+  # assign an integer to v type
+  def __initVTypeToInt(self):
+    id = 1
+    for v_node in self.vertices.values():
+      if v_node.type not in self.v_type_2_int:
+        self.v_type_2_int[v_node.type] = id
+        logging.debug(f'{v_node.type} : {id}')
+        id += 1
+
+  # assign an integer to v name
+  def __initVInstToInt(self):
+    id = 1
+    for v_node in self.vertices.values():
+      if v_node.name not in self.v_name_2_int:
+        self.v_name_2_int[v_node.name] = id
+        logging.debug(f'{v_node.name} : {id}')
+        id += 1
+      else:
+        assert False, f'Found two modules of the same name {v_node.name}'
+
+  def getIntegerGraph(self):
+    int_e_list = [ [self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name]] \
+                  for e in self.edges.values() ]
+    int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type] ] \
+                  for v in self.vertices.values()]
+    return int_e_list, int_v_labels
+
+  def getIntegerGraphWithText(self):
+    int_e_list = [ [self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name], '\t\t'+e.src.name, '\t'+e.dst.name] \
+                  for e in self.edges.values() ]
+    int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type], '\t\t'+v.name, '\t' + v.type ] \
+                  for v in self.vertices.values()]
+    return int_e_list, int_v_labels
 
   def __checker(self):
     v_name_list = [v.type + v.name for v in self.getAllVertices()]
