@@ -97,9 +97,14 @@ class Floorplanner:
         # for the down/left child slot (if mod_x is assigned 0)        
         m += xsum( (1-v_var_list[i]) * area_list[i] for i in I ) <= bottom_or_left.getArea()[r] * (self.max_usage_ratio + delta)
 
-  def __addUserConstraints(self, m, curr_v2s, v2var, dir):
+  def __addUserConstraints(self, m, curr_v2s, v2var, dir, enforce_check = True):
     for expect_slot, v_group in self.user_constraint_s2v.items():
       for v in v_group:
+        # this corner case is for separate partition of small slots
+        if not enforce_check:
+          if v not in curr_v2s:
+            continue
+
         assert v in curr_v2s, f'ERROR: user has forced the location of a non-existing module {v.name}'
         
         curr_slot = curr_v2s[v]
@@ -130,13 +135,13 @@ class Floorplanner:
     def getVertexPosInChildSlot(v : Vertex):
       def getChildSlotPositionX(v):
         if v in external_v2s:
-          return external_v2s[v].getPostionX() # const
+          return external_v2s[v].getPositionX() # const
         else:
           return curr_v2s[v].getQuarterPositionX() + v2var[v] * curr_v2s[v].getHalfLenX() # expr
 
       def getChildSlotPositionY(v):
         if v in external_v2s:
-          return external_v2s[v].getPostionY() # const
+          return external_v2s[v].getPositionY() # const
         else:        
           return curr_v2s[v].getQuarterPositionY() + v2var[v] * curr_v2s[v].getHalfLenY() # expr
 
@@ -369,10 +374,34 @@ class Floorplanner:
 
     return
 
+  # partition each slot separately. Used when the slots are already small
+  def __separateTwoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, enable_grouping = False):
+    next_s2v = defaultdict(list)
+    next_v2s = {}
+    
+    # TODO: do we need to parallelize the loop?
+    for slot, vertices in curr_s2v.items():
+      individual_s2v = {slot : vertices}
+      individual_v2s = {v : slot for v in vertices}
+
+      # need external constraints
+      external_v2s = {}
+      for v in individual_v2s.keys():
+        neighbors = v.getNeighborVertices()
+        for n in neighbors:
+          if n not in individual_v2s:
+            external_v2s[n] = curr_v2s[n]
+
+      indi_next_s2v, indi_next_v2s = self.__twoWayPartitionWrapper(individual_s2v, individual_v2s, dir, external_v2s, False, enforce_check=False)
+      next_s2v.update(indi_next_s2v)
+      next_v2s.update(indi_next_v2s)
+
+    return next_s2v, next_v2s
+
   # automatically adjust the max usage ratio to get a valid solution
-  def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}):
+  def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, enable_grouping = True, enforce_check=True):
     while 1:
-      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta)
+      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta, enable_grouping, enforce_check)
       if not next_s2v and not next_v2s:
         self.delta += self.step
         logging.warning(f'use delta of {self.delta} to find valid solution')
@@ -383,7 +412,9 @@ class Floorplanner:
         return next_s2v, next_v2s
 
   # use iterative 2-way partitioning when there are lots of small functions
-  def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, delta=0.0):
+  # enforce_check: whether to check the modules in user-given constraints exist
+  # set enforce_check to false in seperate partition of small slots 
+  def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, delta=0.0, enable_grouping = True, enforce_check=True):
     assert set(map(type, curr_s2v.keys())) == {Slot}
     assert set(map(type, curr_v2s.keys())) == {Vertex}
     logging.info('Start 2-way partitioning routine')
@@ -399,9 +430,10 @@ class Floorplanner:
     # area constraints for each child slot
     self.__addAreaConstraints(m, curr_s2v=curr_s2v, v2var=v2var, dir=dir, delta=delta)
 
-    self.__addUserConstraints(m, curr_v2s=curr_v2s, v2var=v2var, dir=dir)
+    self.__addUserConstraints(m, curr_v2s=curr_v2s, v2var=v2var, dir=dir, enforce_check=enforce_check)
 
-    self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var)
+    if enable_grouping:
+      self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var)
     
     logging.info('Start ILP solver')
     # m.write('Coarse-Grained-Floorplan.lp')
@@ -486,12 +518,28 @@ class Floorplanner:
 
     iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'HORIZONTAL') # based on die boundary
+    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
+
+  def patternBasedFineGrainedFloorplan(self):
+    init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on die boundary
+
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
+
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # based on ddr ctrl in the middle
+
+    self.__initSlotToEdges()
+    self.printFloorplan()
+
 
   def naiveTwoCRGranularityFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()

@@ -53,6 +53,11 @@ class Vertex():
   def getOutEdges(self):
     return self.out_edges
 
+  def getNeighborVertices(self):
+    src_neighbors = [e.src for e in self.getInEdges()]
+    dst_neighbors = [e.dst for e in self.getOutEdges()]
+    return src_neighbors + dst_neighbors
+
 class DataflowGraph:
   def __init__(self, hls_prj_manager : HLSProjectManager, top_rtl_parser : TopRTLParser):
     self.hls_prj_manager = hls_prj_manager
@@ -73,6 +78,8 @@ class DataflowGraph:
 
     self.v_type_2_int = {} # map each vertex type to an integer
     self.v_name_2_int = {} # map each vertex instance to an integer
+    self.int_2_v_type = {}
+    self.int_2_v_name = {}
     self.__initVTypeToInt()
     self.__initVInstToInt()
     
@@ -82,6 +89,7 @@ class DataflowGraph:
     for v_node in self.vertices.values():
       if v_node.type not in self.v_type_2_int:
         self.v_type_2_int[v_node.type] = id
+        self.int_2_v_type[id] = v_node.type
         logging.debug(f'{v_node.type} : {id}')
         id += 1
 
@@ -91,6 +99,7 @@ class DataflowGraph:
     for v_node in self.vertices.values():
       if v_node.name not in self.v_name_2_int:
         self.v_name_2_int[v_node.name] = id
+        self.int_2_v_name[id] = v_node.name
         logging.debug(f'{v_node.name} : {id}')
         id += 1
       else:
@@ -109,6 +118,17 @@ class DataflowGraph:
     int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type], '\t\t'+v.name, '\t' + v.type ] \
                   for v in self.vertices.values()]
     return int_e_list, int_v_labels
+
+  def getIntEdgeToName(self):
+    int_edge2name = { (self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name]) : e.name \
+                  for e in self.edges.values() }
+    return int_edge2name
+
+  def getIntIdToVType(self):
+    return self.int_2_v_type
+
+  def getIntIdToVName(self):
+    return self.int_2_v_name
 
   def __checker(self):
     v_name_list = [v.type + v.name for v in self.getAllVertices()]
