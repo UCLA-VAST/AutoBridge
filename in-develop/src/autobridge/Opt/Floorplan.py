@@ -180,19 +180,19 @@ class Floorplanner:
         next_s2v[up_or_right] = []
         for v in v_group:
           # if v is assigned to 0-half in the i-th solution
-          if int(v2var[v].xi(i)) == 0:
+          if round(v2var[v].xi(i)) == 0:
             next_s2v[bottom_or_left].append(v)
             next_v2s[v] = bottom_or_left
           
           # if v is assigned to 1-half in the i-th solution
-          elif int(v2var[v].xi(i)) == 1:
+          elif round(v2var[v].xi(i)) == 1:
             next_s2v[up_or_right].append(v)
             next_v2s[v] = up_or_right
           else:
             assert False, v2var[v].xi(i)
 
           # sometimes the result is not strictly integer?
-          assert abs(int(v2var[v].xi(i)) - v2var[v].xi(i)) < 0.0001, v2var[v].xi(i)
+          assert abs(round(v2var[v].xi(i)) - v2var[v].xi(i)) < 0.0001, v2var[v].xi(i)
 
         # if no Vertex is assigned to a Slot, remove that Slot
         if not next_s2v[bottom_or_left]:
