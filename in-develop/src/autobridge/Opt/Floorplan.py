@@ -220,10 +220,17 @@ class Floorplanner:
       # get the average variance of each resource
       var = 0
       for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
-        s2area = {slot : 0 for slot in next_s2v.keys()}
-        for v, s in next_v2s.items():
-          s2area[s] += v.area[r]
-        var += statistics.variance(s2area.values())
+        # percentage of resource r
+        s2area = {slot : sum(v.area[r] for v in v_list) / slot.getArea()[r] \
+                  for slot, v_list in next_s2v.items() }
+
+        # corner case: if next_s2v only has one slot
+        expect_slot_num = len(curr_s2v) * 2
+        empty_slot_num = expect_slot_num - len(s2area)                    
+        slots_usage_list = list(s2area.values()) + [0] * empty_slot_num
+
+        var += statistics.variance(slots_usage_list)
+
 
       logging.info(f'the {i}-th solution has variance: {var}')
 
