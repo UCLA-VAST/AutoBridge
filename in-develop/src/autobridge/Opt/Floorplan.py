@@ -453,12 +453,10 @@ class Floorplanner:
 
     return next_s2v, next_v2s
 
-  def printFloorplan(self, target_s2v = {}):
+  def printFloorplan(self):
     logging.info('Show current floorplan result:')
-    if not target_s2v:
-      target_s2v = self.s2v
 
-    for s, v_group in target_s2v.items():
+    for s, v_group in self.s2v.items():
       logging.info(f'{s.getName()}:')
       for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
         used = sum([v.area[r] for v in v_group])
@@ -471,6 +469,33 @@ class Floorplanner:
         logging.info(f'  Kernel: {v.name}')
       for e in self.s2e[s]:
         logging.info(f'  FIFO: {e.name}')
+
+    # wire information
+    wire_length_list = []
+    for e_list in self.s2e.values():
+      for e in e_list:
+        src_slot = self.v2s[e.src]
+        dst_slot = self.v2s[e.dst]
+        length = abs(src_slot.getPositionY() - dst_slot.getPositionY()) + \
+                 abs(src_slot.getPositionX() - dst_slot.getPositionX())
+        wire_length_list.append(length)
+
+    logging.info(f'total wire length: {sum(wire_length_list)}')
+    logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
+
+    # SLR crossing information
+    slr_crossing = [0] * (self.board.SLR_NUM-1)
+    for e_list in self.s2e.values():
+      for e in e_list:
+        src_slr = self.v2s[e.src].getSLR()
+        dst_slr = self.v2s[e.dst].getSLR()
+        idx_small = min(src_slr, dst_slr)
+        idx_large = max(src_slr, dst_slr)
+        for i in range(idx_small, idx_large):
+          slr_crossing[i] += e.width
+    
+    for i in range(self.board.SLR_NUM-1):
+      logging.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
 
   def getUtilization(self):
     util = defaultdict(dict)

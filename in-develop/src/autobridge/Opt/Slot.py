@@ -171,6 +171,17 @@ class Slot:
       return f'CLOCKREGION_X{self.down_left_x-len_x}Y{self.down_left_y}:CLOCKREGION_X{self.up_right_x-len_x}Y{self.up_right_y}'
     else: assert False
 
+  def getSLR(self):
+    """ return which SRL the slot is in, starting from 0 """
+    num_rows_per_slr = self.board.CR_NUM_VERTICAL_PER_SLR
+    for i in range(self.board.SLR_NUM):
+      if self.down_left_y >= i * num_rows_per_slr \
+         and self.up_right_y <= (i+1) * num_rows_per_slr - 1:
+        return i
+    
+    assert False, f'the current slot {self.getName()} is beyond 1 SLR'
+    return None
+
   #------------- For TAPA ------------- #
   def isToTheLeftOf(self, other: 'Slot') -> bool:
     return (self.down_left_y == other.down_left_y and
