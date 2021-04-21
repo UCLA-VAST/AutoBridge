@@ -36,9 +36,9 @@ class Floorplanner:
     self.s2e = {}
 
     # incrementally adjust "delta" by "step" to calibrate the resource usage limit
-    self.delta = -0.1
+    self.delta = 0
     self.step = 0.03
-    self.MAX_USAGE_ALLOWED = 0.9 # cut the process if surpass this value
+    self.MAX_USAGE_ALLOWED = 0.85 # cut the process if surpass this value
     self.max_usage_ratio = self.__getResourceUsageLimit(user_max_usage_ratio)
 
     self.__checker()
@@ -97,11 +97,11 @@ class Floorplanner:
         # for the down/left child slot (if mod_x is assigned 0)        
         m += xsum( (1-v_var_list[i]) * area_list[i] for i in I ) <= bottom_or_left.getArea()[r] * (self.max_usage_ratio + delta)
 
-  def __addUserConstraints(self, m, curr_v2s, v2var, dir, enforce_check = True):
+  def __addUserConstraints(self, m, curr_v2s, v2var, dir, check_user_constraints = True):
     for expect_slot, v_group in self.user_constraint_s2v.items():
       for v in v_group:
         # this corner case is for separate partition of small slots
-        if not enforce_check:
+        if not check_user_constraints:
           if v not in curr_v2s:
             continue
 
@@ -121,6 +121,7 @@ class Floorplanner:
   # specify which modules must be assigned to the same slot
   # note that the key of curr_v2s is Vertex instead of name string
   def __addGroupingConstraints(self, m, curr_v2s, v2var):
+    logging.info(f'apply grouping constraints')
     v_name_to_v = {v.name : v for v in curr_v2s.keys()}
     for grouping in self.grouping_constrants:
       assert grouping[0] in v_name_to_v, f'unknown vertex: {grouping[0]}'
@@ -382,7 +383,9 @@ class Floorplanner:
     return
 
   # partition each slot separately. Used when the slots are already small
-  def __separateTwoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, enable_grouping = False):
+  def __separateTwoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, 
+                                enable_grouping = False,
+                                exit_on_failure = True):
     next_s2v = defaultdict(list)
     next_v2s = {}
     
@@ -399,32 +402,49 @@ class Floorplanner:
           if n not in individual_v2s:
             external_v2s[n] = curr_v2s[n]
 
-      indi_next_s2v, indi_next_v2s = self.__twoWayPartitionWrapper(individual_s2v, individual_v2s, dir, external_v2s, False, enforce_check=False)
-      next_s2v.update(indi_next_s2v)
-      next_v2s.update(indi_next_v2s)
+      # disable user constraints checkpoint in separate partition mode
+      # because we only operate on a subset of the design, which may not cover
+      # some of the user-specified modules. Just apply the constraints on available modules
+      indi_next_s2v, indi_next_v2s = self.__twoWayPartitionWrapper(individual_s2v, individual_v2s, dir, external_v2s, 
+                                                                  enable_grouping = False, 
+                                                                  check_user_constraints = False,
+                                                                  exit_on_failure = exit_on_failure)
+
+      if indi_next_s2v:
+        next_s2v.update(indi_next_s2v)
+      if indi_next_v2s:
+        next_v2s.update(indi_next_v2s)
 
     return next_s2v, next_v2s
 
   # automatically adjust the max usage ratio to get a valid solution
-  def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, enable_grouping = True, enforce_check=True):
+  def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {},
+                                enable_grouping = True, 
+                                check_user_constraints=True,
+                                exit_on_failure=True):
     while 1:
-      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta, enable_grouping, enforce_check)
+      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta, enable_grouping, check_user_constraints)
       if not next_s2v and not next_v2s:
         self.delta += self.step
         logging.warning(f'use delta of {self.delta} to find valid solution')
         if self.max_usage_ratio + self.delta > self.MAX_USAGE_ALLOWED:
-          logging.error('not likely there is a reasonable solution')
-          exit(1)
+          logging.critical('not likely there is a reasonable solution')
+
+          if exit_on_failure:
+            exit(1)
+          else:
+            logging.critical('partition failed, returning unpartitioned mapping')
+            return curr_s2v, curr_v2s
       else:
         return next_s2v, next_v2s
 
   # use iterative 2-way partitioning when there are lots of small functions
-  # enforce_check: whether to check the modules in user-given constraints exist
-  # set enforce_check to false in seperate partition of small slots 
-  def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, delta=0.0, enable_grouping = True, enforce_check=True):
+  # check_user_constraints: whether to check the modules in user-given constraints exist
+  # set check_user_constraints to false in seperate partition of small slots 
+  def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, delta=0.0, enable_grouping = True, check_user_constraints=True):
     assert set(map(type, curr_s2v.keys())) == {Slot}
     assert set(map(type, curr_v2s.keys())) == {Vertex}
-    logging.info('Start 2-way partitioning routine')
+    logging.info(f'Start 2-way partitioning routine, pattern-based optimzation is {enable_grouping}')
 
     m = Model()
     if not _logger.isEnabledFor(logging.DEBUG):
@@ -437,7 +457,7 @@ class Floorplanner:
     # area constraints for each child slot
     self.__addAreaConstraints(m, curr_s2v=curr_s2v, v2var=v2var, dir=dir, delta=delta)
 
-    self.__addUserConstraints(m, curr_v2s=curr_v2s, v2var=v2var, dir=dir, enforce_check=enforce_check)
+    self.__addUserConstraints(m, curr_v2s=curr_v2s, v2var=v2var, dir=dir, check_user_constraints=check_user_constraints)
 
     if enable_grouping:
       self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var)
@@ -541,18 +561,18 @@ class Floorplanner:
     self.__initSlotToEdges()
     self.printFloorplan()
 
-
+  # do not use pattern-based clustering
   def naiveFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL', enable_grouping=False) # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
@@ -563,15 +583,31 @@ class Floorplanner:
 
     iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
 
-    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # based on die boundary
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping=False) # 8 CR
 
-    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping=False) # 4 CR
 
     self.__initSlotToEdges()
     self.printFloorplan()
 
+  def hetero4CRFloorplan(self):
+    init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL', enable_grouping=False) # 8 CR
+
+    # in the last partition, go as small as possible but do not enforce
+    # allow heterogeneous slot sizes
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping=False, exit_on_failure=False) # 4 CR
+    
+    self.__initSlotToEdges()
+    self.printFloorplan()
 
   def naiveTwoCRGranularityFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
