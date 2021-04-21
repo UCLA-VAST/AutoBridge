@@ -105,17 +105,13 @@ class DataflowGraph:
       else:
         assert False, f'Found two modules of the same name {v_node.name}'
 
+  # note that we need to merge repetitve edges
   def getIntegerGraph(self):
-    int_e_list = [ [self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name]] \
+    int_e_list = [ (self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name]) \
                   for e in self.edges.values() ]
-    int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type] ] \
-                  for v in self.vertices.values()]
-    return int_e_list, int_v_labels
+    int_e_list = list(set(int_e_list))
 
-  def getIntegerGraphWithText(self):
-    int_e_list = [ [self.v_name_2_int[e.src.name], self.v_name_2_int[e.dst.name], '\t\t'+e.src.name, '\t'+e.dst.name] \
-                  for e in self.edges.values() ]
-    int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type], '\t\t'+v.name, '\t' + v.type ] \
+    int_v_labels = [ [self.v_name_2_int[v.name], self.v_type_2_int[v.type] ] \
                   for v in self.vertices.values()]
     return int_e_list, int_v_labels
 
