@@ -24,7 +24,12 @@ class TopRTLParser:
     self.fifo_name_to_wires = defaultdict(list) # fifo -> interface wires
     self.fifo_name_to_outbound_wires = defaultdict(list)
     self.fifo_name_to_inbound_wires = defaultdict(list)
+
+    # CRITICAL:
+    # if two vertices are connected by direct wire
+    # one wire will map to 2 vertices
     self.wire_to_v_name = {} # str -> str
+    
     self.v_name_to_wires = defaultdict(list) # vertex -> interface wires
     self.inst_name_to_rtl = {}
     self.reg_wire_name_to_width = {} # from name to full declaration (with width, etc) 
@@ -36,6 +41,9 @@ class TopRTLParser:
     self.ap_ready_v_name_to_wire = {}
     self.param_to_value_str = {}
     self.e_name_to_ast_node = {}
+
+    # record which vertices have direct wire connection
+    self.grouping_constraints = set()
 
     self.__initWireToFIFOMapping()
     self.__initWireToVertexMapping()
@@ -202,6 +210,14 @@ class TopRTLParser:
           continue
 
         wire_name = portarg.argname.name
+        if 'ap_clk' in wire_name or 'ap_rst' in wire_name:
+          continue
+        
+        # if two vertices are connected by direct wire, they must be bundled together
+        if wire_name in self.wire_to_v_name:
+          self.grouping_constraints.add( (self.wire_to_v_name[wire_name], v_node.name) )
+          logging.info(f'grouping {self.wire_to_v_name[wire_name]} and {v_node.name} based on wire {wire_name}')
+
         self.wire_to_v_name[wire_name] = v_node.name
         self.v_name_to_wires[v_node.name].append(wire_name)
 
@@ -384,3 +400,8 @@ class TopRTLParser:
 
   def getFIFONameFromWire(self, wire):
     return self.wire_to_fifo_name[wire]
+
+  # if two vertices are connected by direct wires
+  # they must always remain in the same slot
+  def getStrictGroupingConstraints(self):
+    return list(self.grouping_constraints)
