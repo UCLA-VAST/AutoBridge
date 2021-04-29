@@ -182,6 +182,18 @@ class Slot:
     assert False, f'the current slot {self.getName()} is beyond 1 SLR'
     return None
 
+  def getBoundarySegmentName(self, dir):
+    if dir == 'UP':
+      return f'Boundary_X{self.down_left_x}Y{self.up_right_y+1}_To_X{self.up_right_x+1}Y{self.up_right_y+1}'
+    elif dir == 'DOWN':
+      return f'Boundary_X{self.down_left_x}Y{self.down_left_y}_To_X{self.up_right_x+1}Y{self.down_left_y}'
+    elif dir == 'RIGHT':
+      return f'Boundary_X{self.up_right_x+1}Y{self.down_left_y}_To_X{self.up_right_x+1}Y{self.up_right_y+1}'
+    elif dir == 'LEFT':
+      return f'Boundary_X{self.down_left_x}Y{self.down_left_y}_To_X{self.down_left_x}Y{self.up_right_y+1}'
+    else:
+      assert False
+
   #------------- For TAPA ------------- #
   def isToTheLeftOf(self, other: 'Slot') -> bool:
     return (self.down_left_y == other.down_left_y and
