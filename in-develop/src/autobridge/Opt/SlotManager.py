@@ -69,7 +69,7 @@ class SlotManager:
   # split by the middle column
   def getLeftAndRightSplit(self, slot):
     left =  self.createSlot(slot.getLeftChildSlotName())
-    right = self.createSlot(slot.getRightChildSlotname())
+    right = self.createSlot(slot.getRightChildSlotName())
     self.removeSlotNonBlocking(slot.getName())
 
     return left, right

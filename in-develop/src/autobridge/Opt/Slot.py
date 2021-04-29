@@ -141,7 +141,7 @@ class Slot:
     up_right_cr  = f'CLOCKREGION_X{mid_x - 1       }Y{self.up_right_y}'
     return f'{down_left_cr}:{up_right_cr}'
 
-  def getRightChildSlotname(self):
+  def getRightChildSlotName(self):
     assert self.down_left_x != self.up_right_x or \
       self.down_left_y != self.up_right_y, 'Cannot split a single CR'
 
