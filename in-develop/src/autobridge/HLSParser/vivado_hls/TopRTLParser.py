@@ -360,8 +360,14 @@ class TopRTLParser:
     return self.io_name_to_dir[io_name]
 
   def getDirWidthNameOfAllIO(self):
-    return [(self.io_name_to_dir[name], width, name) for name, width in self.io_name_to_width.items()]
-
+    top_io = []
+    for name, width in self.io_name_to_width.items():
+      if width:
+        top_io.append((self.io_name_to_dir[name], width, name))
+      else:
+        top_io.append((self.io_name_to_dir[name], name))
+    return top_io
+    
   def getInFIFOsOfModuleInst(self, inst_name):
     return self.mod_to_fifo_in[inst_name]
 
