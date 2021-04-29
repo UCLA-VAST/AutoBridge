@@ -151,3 +151,25 @@ class SlotManager:
                   self.getComputeNeighborSlots(slot, 'RIGHT')
       pairs += [(slot, n) for n in neighbors]
     return pairs
+
+  def getAnyNeighborSlots(self, slot, dir):
+    potential_target_slots = {**self.pblock_to_slot, **self.pblock_to_routing_slot}
+
+    if dir == 'UP':
+      return self.getUpNeighborSlots(slot, potential_target_slots)
+    elif dir == 'DOWN':
+      return self.getDownNeighborSlots(slot, potential_target_slots)
+    elif dir == 'LEFT':
+      return self.getLeftNeighborSlots(slot, potential_target_slots)
+    elif dir == 'RIGHT':
+      return self.getRightNeighborSlots(slot, potential_target_slots)
+    else:
+      assert False, f'wrong direction: {dir}'
+
+  def getAllSlotPairs(self):
+    pairs = []
+    for slot in self.getActiveSlotsIncludeRouting():
+      neighbors = self.getComputeNeighborSlots(slot, 'UP') + \
+                  self.getComputeNeighborSlots(slot, 'RIGHT')
+      pairs += [(slot, n) for n in neighbors]
+    return pairs
