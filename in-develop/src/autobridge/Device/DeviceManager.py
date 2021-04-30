@@ -229,6 +229,87 @@ class DeviceU250:
     }
   """
 
+  @staticmethod
+  def getAllLagunaRange():
+    return 'LAGUNA_X0Y0:LAGUNA_X31Y839'
+
+  @staticmethod
+  def getSLICEVacentRegion(col_width, row_width):
+    """
+    create a buffer region among 2x2 slots
+    use the concise clockregion-based pblock subtract this buffer region
+    """
+
+    # for each slot, get the index of the first and the last SLICE column
+    idx_1st_col_Slot_X = [0] * 4
+    idx_last_col_Slot_X = [0] * 4
+
+    idx_1st_col_Slot_X[0] = 0 # index of the first SLICE column in the 0-th CR column
+    idx_1st_col_Slot_X[1] = 57 # 2-th CR column
+    idx_1st_col_Slot_X[2] = 117 # 4-th CR column
+    idx_1st_col_Slot_X[3] = 176 # 6-th CR column
+
+    idx_last_col_Slot_X[3] = 232 # index of the last SLICE column in the 7-th CR column
+    idx_last_col_Slot_X[2] = idx_1st_col_Slot_X[3] - 1 # 5-th CR column
+    idx_last_col_Slot_X[1] = idx_1st_col_Slot_X[2] - 1 # 3-th CR column
+    idx_last_col_Slot_X[0] = idx_1st_col_Slot_X[1] - 1 # 1-th CR column
+
+    # each CR has 60 SLICE vertically, each slot 120
+    CR_SLICE_height = 60
+    Slot_SLICE_height = 120 # 2x2 slot
+
+    last_row_idx = 959 # Y index of the highest SLICE
+    last_col_idx = 232 # X index of the rightest SLICE
+
+    # the vertical columns of the buffer region
+    col_buffer_region_pblock = ''
+    for i in range(4):
+      col_buffer_region_pblock += f'''
+        SLICE_X{idx_1st_col_Slot_X[i]}Y0:SLICE_X{idx_1st_col_Slot_X[i]+col_width-1}Y959
+        SLICE_X{idx_last_col_Slot_X[i] - col_width + 1}Y0:SLICE_X{idx_last_col_Slot_X[i]}Y959
+      '''
+    
+    # the horizontal rows of the buffer region
+    row_buffer_region_pblock = ''
+    for i in range(8):
+      col_buffer_region_pblock += f'''
+        SLICE_X0Y{i * 120}:SLICE_X232Y{i * 120 + row_width - 1}
+        SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1}
+      '''
+
+    # exclude the immediate neighbor SLICE to laguna sites
+    # This allows more space for anchor placement for cross-SLR slot pairs
+    laguna_neighbor_idx = (
+      7,
+      18,
+      36,
+      49,
+      62,
+      84,
+      96,
+      110,
+      123,
+      138,
+      151,
+      163,
+      181,
+      193,
+      213,
+      224
+    )
+    laguna_row_range = (
+      (180, 299),
+      (420, 539),
+      (660, 779)
+    )
+
+    laguna_buffer_region_pblock = ''
+    for idx in laguna_neighbor_idx:
+      for beg, end in laguna_row_range:
+        laguna_buffer_region_pblock += f'SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end}'
+
+    return col_buffer_region_pblock + row_buffer_region_pblock + laguna_buffer_region_pblock
+
 class DeviceU280:
   NAME = 'U280'
   FPGA_PART_NAME = 'xcu280-fsvh2892-2L-e'
