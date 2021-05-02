@@ -12,6 +12,8 @@ class Slot:
     assert 'COARSE_' not in pblock
     
     match = re.search(r'^CLOCKREGION_X(\d+)Y(\d+)[ ]*:[ ]*CLOCKREGION_X(\d+)Y(\d+)$', pblock)
+    if not match:
+      match = re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock)
     assert match, f'incorrect pblock {pblock}'
 
     # DO NOT convert CR coordinate to boundary intersect coordinates

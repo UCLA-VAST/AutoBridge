@@ -1,4 +1,5 @@
 from collections import defaultdict
+from autobridge.Opt.Slot import Slot
 import re
 
 # TODO: calibrate resource when DDRs are enabled
@@ -113,7 +114,8 @@ class DeviceU250:
   # Remember to change "DeviceU250" to "DeviceU280"
   @staticmethod
   def getArea(pblock_def):
-    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def), f'unexpected format of the slot name {pblock_def}'
+    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def) \
+        or re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock) , f'unexpected format of the slot name {pblock_def}'
     DL_x, DL_y, UR_x, UR_y = [int(val) for val in re.findall(r'[XY](\d+)', pblock_def)] # DownLeft & UpRight
 
     # treat the pseudo SLR with 0 area
@@ -234,6 +236,98 @@ class DeviceU250:
     return 'LAGUNA_X0Y0:LAGUNA_X31Y839'
 
   @staticmethod
+  def getBufferRegionBetweenSlotPair(slot_name1, slot_name2, col_width_each_side, row_width_each_side):
+    """
+    Given a pair of neighbor slots, return the tight buffer region in between
+    to help constrain the anchor placement  
+    """
+
+    idx_1st_col_CR_X = [0] * 9
+    idx_1st_col_CR_X[0] = 0 # index of the first SLICE column in the 0-th CR column
+    idx_1st_col_CR_X[1] = 31 # index of the first SLICE column in the 1-th CR column
+    idx_1st_col_CR_X[2] = 57 # 2-th CR column
+    idx_1st_col_CR_X[3] = 95 # 3-th CR column
+    idx_1st_col_CR_X[4] = 117 # 4-th CR column
+    idx_1st_col_CR_X[5] = 146 # 5-th CR column
+    idx_1st_col_CR_X[6] = 176 # 6-th CR column    
+    idx_1st_col_CR_X[7] = 206 # 7-th CR column    
+    idx_1st_col_CR_X[8] = 233 # pseudo 8-th CR column. There are 232 columns in total 
+
+    Slot_SLICE_height = 120 # 2x2 slot
+    CR_SLICE_height = 60
+    
+    slot1 = Slot(DeviceU250, slot_name1)
+    slot2 = Slot(DeviceU250, slot_name2)
+
+    if slot1.isToTheLeftOf(slot2) or slot1.isToTheRightOf(slot2):
+      orient = 'HORIZONTAL'
+    elif slot1.isAbove(slot2) or slot1.isBelow(slot2):
+      orient = 'VERTICAL'
+    else:
+      assert False
+
+    if orient == 'HORIZONTAL':
+      y_range_beg = slot1.down_left_y * CR_SLICE_height
+      y_range_end = y_range_beg + Slot_SLICE_height - 1  # 2x2 slot
+      mid_SLICE_col_idx = idx_1st_col_CR_X[max(slot1.down_left_x, slot2.down_left_x)]
+      x_range_beg = mid_SLICE_col_idx - col_width_each_side
+      x_range_end = mid_SLICE_col_idx + col_width_each_side - 1
+      return f'SLICE_X{x_range_beg}Y{y_range_beg}:SLICE_X{x_range_end}Y{y_range_end} '
+    
+    elif orient == 'VERTICAL':
+      x_range_beg = idx_1st_col_CR_X[slot1.down_left_x]
+      x_range_end = idx_1st_col_CR_X[slot1.up_right_x+1] - 1
+      mid_SLICE_row_idx = max(slot1.down_left_y, slot2.down_left_y) *  CR_SLICE_height
+      y_range_beg = mid_SLICE_row_idx - row_width_each_side
+      y_range_end = mid_SLICE_row_idx + row_width_each_side - 1
+      slice_buffer_region = f'SLICE_X{x_range_beg}Y{y_range_beg}:SLICE_X{x_range_end}Y{y_range_end} '
+
+      # the buffer region for cross-SLR vertical pairs should also include the buffer around laguna sites
+      laguna_buffer_region = ''
+      if slot1.getSLR() != slot2.getSLR():
+        laguna_buffer_region = DeviceU250.getLagunaVacentRegion()
+
+      return slice_buffer_region + laguna_buffer_region
+
+    else:
+      assert False
+
+  @staticmethod
+  def getLagunaVacentRegion():
+    # exclude the immediate neighbor SLICE to laguna sites
+    # This allows more space for anchor placement for cross-SLR slot pairs
+    laguna_neighbor_idx = (
+      7,
+      18,
+      36,
+      49,
+      62,
+      84,
+      96,
+      110,
+      123,
+      138,
+      151,
+      163,
+      181,
+      193,
+      213,
+      224
+    )
+    laguna_row_range = (
+      (180, 299),
+      (420, 539),
+      (660, 779)
+    )
+
+    laguna_buffer_region_pblock = ''
+    for idx in laguna_neighbor_idx:
+      for beg, end in laguna_row_range:
+        laguna_buffer_region_pblock += f'SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end} '
+    
+    return laguna_buffer_region_pblock
+
+  @staticmethod
   def getSLICEVacentRegion(col_width, row_width):
     """
     create a buffer region among 2x2 slots
@@ -277,36 +371,7 @@ class DeviceU250:
         SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1}
       '''
 
-    # exclude the immediate neighbor SLICE to laguna sites
-    # This allows more space for anchor placement for cross-SLR slot pairs
-    laguna_neighbor_idx = (
-      7,
-      18,
-      36,
-      49,
-      62,
-      84,
-      96,
-      110,
-      123,
-      138,
-      151,
-      163,
-      181,
-      193,
-      213,
-      224
-    )
-    laguna_row_range = (
-      (180, 299),
-      (420, 539),
-      (660, 779)
-    )
-
-    laguna_buffer_region_pblock = ''
-    for idx in laguna_neighbor_idx:
-      for beg, end in laguna_row_range:
-        laguna_buffer_region_pblock += f'SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end}'
+    laguna_buffer_region_pblock = DeviceU250.getLagunaVacentRegion()
 
     return col_buffer_region_pblock + row_buffer_region_pblock + laguna_buffer_region_pblock
 
