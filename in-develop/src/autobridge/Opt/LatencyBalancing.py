@@ -24,6 +24,8 @@ class LatencyBalancing:
     for e_name, e in self.name2edge.items():
       # +1 because each FIFO by itself has 1 unit of latency
       # in case the original design is not balanced
+      # note that additional pipelining for full_n will not lead to additional latency
+      # we only need to increase the grace period of almost full FIFOs by 1
       m += v2var[e.src] >= v2var[e.dst] + self.global_router.getPipelineLevelOfEdge(e) + 1
 
     m.objective = minimize(xsum( 
