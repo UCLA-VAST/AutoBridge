@@ -115,7 +115,7 @@ class DeviceU250:
   @staticmethod
   def getArea(pblock_def):
     assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def) \
-        or re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock) , f'unexpected format of the slot name {pblock_def}'
+        or re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock_def) , f'unexpected format of the slot name {pblock_def}'
     DL_x, DL_y, UR_x, UR_y = [int(val) for val in re.findall(r'[XY](\d+)', pblock_def)] # DownLeft & UpRight
 
     # treat the pseudo SLR with 0 area
@@ -323,7 +323,7 @@ class DeviceU250:
     laguna_buffer_region_pblock = ''
     for idx in laguna_neighbor_idx:
       for beg, end in laguna_row_range:
-        laguna_buffer_region_pblock += f'SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end} '
+        laguna_buffer_region_pblock += f' SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end} '
     
     return laguna_buffer_region_pblock
 
@@ -356,24 +356,30 @@ class DeviceU250:
     last_col_idx = 232 # X index of the rightest SLICE
 
     # the vertical columns of the buffer region
-    col_buffer_region_pblock = ''
+    col_buffer_region_pblock = []
     for i in range(4):
-      col_buffer_region_pblock += f'''
-        SLICE_X{idx_1st_col_Slot_X[i]}Y0:SLICE_X{idx_1st_col_Slot_X[i]+col_width-1}Y959
-        SLICE_X{idx_last_col_Slot_X[i] - col_width + 1}Y0:SLICE_X{idx_last_col_Slot_X[i]}Y959
-      '''
-    
+      # the left side buffer of a slot
+      col_buffer_region_pblock.append(f'SLICE_X{idx_1st_col_Slot_X[i]}Y0:SLICE_X{idx_1st_col_Slot_X[i]+col_width-1}Y959')
+      
+      # the right side buffer of a slot
+      col_buffer_region_pblock.append(f'SLICE_X{idx_last_col_Slot_X[i] - col_width + 1}Y0:SLICE_X{idx_last_col_Slot_X[i]}Y959')
+
+    # exclude the region for the left and right device boundaries
+    col_buffer_region_pblock[0] = '' # the leftest slot does not need left side buffer
+    col_buffer_region_pblock[-1] = '' # the rightest slot does not need right side buffer
+
     # the horizontal rows of the buffer region
-    row_buffer_region_pblock = ''
+    # exclude the region for the up and down device boundaries & die boundaries
+    row_buffer_region_pblock = []
     for i in range(8):
-      col_buffer_region_pblock += f'''
-        SLICE_X0Y{i * 120}:SLICE_X232Y{i * 120 + row_width - 1}
-        SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1}
-      '''
+      if i % 2 == 1: # only need buffer at the down side
+        row_buffer_region_pblock.append(f'SLICE_X0Y{i * 120}:SLICE_X232Y{i * 120 + row_width - 1} ')
+      else: # only need buffer at the up side
+        row_buffer_region_pblock.append(f'SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1} ')
 
     laguna_buffer_region_pblock = DeviceU250.getLagunaVacentRegion()
 
-    return col_buffer_region_pblock + row_buffer_region_pblock + laguna_buffer_region_pblock
+    return '\n'.join(col_buffer_region_pblock) + '\n'.join(row_buffer_region_pblock) + laguna_buffer_region_pblock
 
 class DeviceU280:
   NAME = 'U280'
