@@ -139,107 +139,86 @@ class DeviceU250:
 
     return area
 
-  # we should use different pblocks for placement and routing
-  # the routing pblock should extend the placement pblock a little bit
-  # to allow more space to route the marginal logic
-  # this function hardcode a smaller pblock for each clock region
-  @staticmethod
-  def shrinkClockRegionPblock(pblock_def : str) :
-    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def), f'unexpected format of the pblock {pblock_def}'
-    DL_x, DL_y, UR_x, UR_y = [int(val) for val in re.findall(r'[XY](\d+)', pblock_def)] # DownLeft & UpRight
-
-    assert DL_x+1 == UR_x and DL_y+1 == UR_y, f'currently only supports translation of 4-CR pblocks'
-    
-    SLICE_height = 120
-    DSP48E2_height = 48
-    LAGUNA_height = 120
-    RAMB18_height = 48
-    RAMB36_height = 24
-    URAM288_height = 32
-    
-    pblock_DL_y = int(DL_y/2)
-    pblock_UR_y = int(UR_y/2)
-
-    if DL_x == 0:
-      return f'''
-        SLICE_X2Y{4 + pblock_DL_y * SLICE_height}:SLICE_X56Y{115 + pblock_UR_y * SLICE_height} 
-        DSP48E2_X0Y{2 + pblock_DL_y * DSP48E2_height}:DSP48E2_X7Y{45 + pblock_UR_y * DSP48E2_height} 
-        LAGUNA_X0Y{8 + pblock_DL_y * LAGUNA_height}:LAGUNA_X7Y{117 + pblock_UR_y * LAGUNA_height} 
-        RAMB18_X0Y{2 + pblock_DL_y * RAMB18_height}:RAMB18_X3Y{45 + pblock_UR_y * RAMB18_height} 
-        RAMB36_X0Y{1 + pblock_DL_y * RAMB36_height}:RAMB36_X3Y{22 + pblock_UR_y * RAMB36_height} 
-        URAM288_X0Y{4 + pblock_DL_y * URAM288_height}:URAM288_X0Y{27 + pblock_UR_y * URAM288_height} '''
-    elif DL_x == 2:
-      return f'''
-        SLICE_X59Y{4 + pblock_DL_y * SLICE_height}:SLICE_X114Y{115 + pblock_UR_y * SLICE_height} 
-        DSP48E2_X8Y{2 + pblock_DL_y * DSP48E2_height}:DSP48E2_X15Y{45 + pblock_UR_y * DSP48E2_height} 
-        LAGUNA_X8Y{8 + pblock_DL_y * LAGUNA_height}:LAGUNA_X15Y{117 + pblock_UR_y * LAGUNA_height} 
-        RAMB18_X4Y{2 + pblock_DL_y * RAMB18_height}:RAMB18_X7Y{45 + pblock_UR_y * RAMB18_height} 
-        RAMB36_X4Y{1 + pblock_DL_y * RAMB36_height}:RAMB36_X7Y{22 + pblock_UR_y * RAMB36_height} 
-        URAM288_X1Y{4 + pblock_DL_y * URAM288_height}:URAM288_X1Y{27 + pblock_UR_y * URAM288_height}
-      '''
-    elif DL_x == 4:
-      return f'''
-        SLICE_X119Y{4 + pblock_DL_y * SLICE_height}:SLICE_X175Y{115 + pblock_UR_y * SLICE_height} 
-        DSP48E2_X16Y{2 + pblock_DL_y * DSP48E2_height}:DSP48E2_X24Y{45 + pblock_UR_y * DSP48E2_height} 
-        LAGUNA_X16Y{8 + pblock_DL_y * LAGUNA_height}:LAGUNA_X23Y{117 + pblock_UR_y * LAGUNA_height} 
-        RAMB18_X8Y{2 + pblock_DL_y * RAMB18_height}:RAMB18_X10Y{45 + pblock_UR_y * RAMB18_height} 
-        RAMB36_X8Y{1 + pblock_DL_y * RAMB36_height}:RAMB36_X10Y{22 + pblock_UR_y * RAMB36_height} 
-        URAM288_X2Y{4 + pblock_DL_y * URAM288_height}:URAM288_X3Y{27 + pblock_UR_y * URAM288_height}
-      '''
-    elif DL_x == 6:
-      return f'''
-        SLICE_X178Y{4 + pblock_DL_y * SLICE_height}:SLICE_X230Y{115 + pblock_UR_y * SLICE_height} 
-        DSP48E2_X25Y{2 + pblock_DL_y * DSP48E2_height}:DSP48E2_X31Y{45 + pblock_UR_y * DSP48E2_height} 
-        LAGUNA_X24Y{8 + pblock_DL_y * LAGUNA_height}:LAGUNA_X31Y{117 + pblock_UR_y * LAGUNA_height} 
-        RAMB18_X11Y{2 + pblock_DL_y * RAMB18_height}:RAMB18_X13Y{45 + pblock_UR_y * RAMB18_height} 
-        RAMB36_X11Y{1 + pblock_DL_y * RAMB36_height}:RAMB36_X13Y{22 + pblock_UR_y * RAMB36_height} 
-        URAM288_X4Y{4 + pblock_DL_y * URAM288_height}:URAM288_X4Y{27 + pblock_UR_y * URAM288_height}      
-      '''
-
-  """
-    resize_pblock pblock_1 -add {
-      SLICE_X2Y4:SLICE_X56Y115 
-      DSP48E2_X0Y2:DSP48E2_X7Y45 
-      LAGUNA_X0Y8:LAGUNA_X7Y119 
-      RAMB18_X0Y2:RAMB18_X3Y45 
-      RAMB36_X0Y1:RAMB36_X3Y22 
-      URAM288_X0Y4:URAM288_X0Y27
-    } 
-    resize_pblock pblock_2 -add {
-      SLICE_X59Y4:SLICE_X114Y115 
-      DSP48E2_X8Y2:DSP48E2_X15Y45 
-      LAGUNA_X8Y8:LAGUNA_X15Y119 
-      RAMB18_X4Y2:RAMB18_X7Y45 
-      RAMB36_X4Y1:RAMB36_X7Y22 
-      URAM288_X1Y4:URAM288_X1Y27
-    }
-    resize_pblock pblock_3 -add {
-      SLICE_X119Y4:SLICE_X175Y115 
-      DSP48E2_X16Y2:DSP48E2_X24Y45 
-      LAGUNA_X16Y8:LAGUNA_X23Y119 
-      RAMB18_X8Y2:RAMB18_X10Y45 
-      RAMB36_X8Y1:RAMB36_X10Y22 
-      URAM288_X2Y4:URAM288_X3Y27
-    } 
-    resize_pblock pblock_4 -add {
-      SLICE_X178Y4:SLICE_X230Y115 
-      DSP48E2_X25Y2:DSP48E2_X31Y45 
-      LAGUNA_X24Y8:LAGUNA_X31Y119 
-      RAMB18_X11Y2:RAMB18_X13Y45 
-      RAMB36_X11Y1:RAMB36_X13Y22 
-      URAM288_X4Y4:URAM288_X4Y27
-    }
-  """
-
   @staticmethod
   def getAllLagunaRange():
     return 'LAGUNA_X0Y0:LAGUNA_X31Y839'
+
+  @staticmethod
+  def __getBufferRegionOfSLRCrossingSlotPair(slot1, slot2):
+    assert slot1.down_left_x == slot2.down_left_x
+    assert slot1.up_right_x == slot2.up_right_x
+
+    laguna_num_per_CR = 4
+    laguna_down_left_x = slot1.down_left_x * laguna_num_per_CR
+    laguna_up_right_x = (slot1.up_right_x + 1) * laguna_num_per_CR - 1
+
+    from_slr = min(slot1.getSLR(), slot2.getSLR())
+    to_slr = max(slot1.getSLR(), slot2.getSLR())
+
+    if from_slr == 0 and to_slr == 1:
+      laguna_down_left_y = 120
+      laguna_up_right_y = 359
+    elif from_slr == 1 and to_slr == 2:
+      laguna_down_left_y = 360
+      laguna_up_right_y = 599
+    elif from_slr == 2 and to_slr == 3:
+      laguna_down_left_y = 600
+      laguna_up_right_y = 839    
+    else:
+      assert False
+
+    laguna_region = f' LAGUNA_X{laguna_down_left_x}Y{laguna_down_left_y}:LAGUNA_X{laguna_up_right_x}Y{laguna_up_right_y} '
+    slice_around_laguna = DeviceU250.__getSliceAroundLagunaSides(laguna_down_left_x, laguna_down_left_y, laguna_up_right_x, laguna_up_right_y)
+
+    return laguna_region + '\n' + slice_around_laguna
+
+  @staticmethod
+  def __getSliceAroundLagunaSides(laguna_down_left_x, laguna_down_left_y, laguna_up_right_x, laguna_up_right_y):
+    # note that each laguna column actually spans 2 in X dimension.
+    # e.g. LAGUNA_X0Y... and LAGUNA_X1Y... are in the same physical column
+    start_from_ith_laguna_column = int((laguna_down_left_x+1) / 2) # round to floor
+    end_at_jth_laguna_column = int((laguna_up_right_x+1) / 2)
+
+    idx_of_left_side_slice_of_laguna_column = (
+      7,
+      18,
+      36,
+      49,
+      62,
+      84,
+      96,
+      110,
+      123,
+      138,
+      151,
+      163,
+      181,
+      193,
+      213,
+      224
+    )
+
+    SLICE_around_laguna = []
+
+    # note that there is no +1
+    # the last laguna column is X31 -> (31+1)/2 = 16 -> the last index should be 15
+    for i in range(start_from_ith_laguna_column, end_at_jth_laguna_column): 
+      # two columns of SLICEs to the left and to the right of the laguna columns
+      # note that the index of SLICE jumps 1 because of the laguna column, so it should be +2 here
+      # although only 2 columns of SLICEs are included
+      idx_SLICE_to_the_left = idx_of_left_side_slice_of_laguna_column[i]
+      idx_SLICE_to_the_right = idx_SLICE_to_the_left + 2
+
+      # note that the Y coordinate of laguna and SLICE is the same
+      SLICE_around_laguna.append(f'SLICE_X{idx_SLICE_to_the_left}Y{laguna_down_left_y}:SLICE_X{idx_SLICE_to_the_right}Y{laguna_up_right_y}')
+    return '\n'.join(SLICE_around_laguna)
 
   @staticmethod
   def getBufferRegionBetweenSlotPair(slot_name1, slot_name2, col_width_each_side, row_width_each_side):
     """
     Given a pair of neighbor slots, return the tight buffer region in between
     to help constrain the anchor placement  
+    For cross-SLR pairs, return the included laguna sites along with the neighbor SLICEs
     """
 
     idx_1st_col_CR_X = [0] * 9
@@ -275,6 +254,11 @@ class DeviceU250:
       return f'SLICE_X{x_range_beg}Y{y_range_beg}:SLICE_X{x_range_end}Y{y_range_end} '
     
     elif orient == 'VERTICAL':
+      # the buffer region for cross-SLR vertical pairs should only include the buffer around laguna sites
+      if slot1.getSLR() != slot2.getSLR():
+        return DeviceU250.__getBufferRegionOfSLRCrossingSlotPair(slot1, slot2)
+        
+      # non-slr-crossing pair
       x_range_beg = idx_1st_col_CR_X[slot1.down_left_x]
       x_range_end = idx_1st_col_CR_X[slot1.up_right_x+1] - 1
       mid_SLICE_row_idx = max(slot1.down_left_y, slot2.down_left_y) *  CR_SLICE_height
@@ -282,50 +266,10 @@ class DeviceU250:
       y_range_end = mid_SLICE_row_idx + row_width_each_side - 1
       slice_buffer_region = f'SLICE_X{x_range_beg}Y{y_range_beg}:SLICE_X{x_range_end}Y{y_range_end} '
 
-      # the buffer region for cross-SLR vertical pairs should also include the buffer around laguna sites
-      laguna_buffer_region = ''
-      if slot1.getSLR() != slot2.getSLR():
-        laguna_buffer_region = DeviceU250.getLagunaVacentRegion()
-
-      return slice_buffer_region + laguna_buffer_region
+      return slice_buffer_region
 
     else:
       assert False
-
-  @staticmethod
-  def getLagunaVacentRegion():
-    # exclude the immediate neighbor SLICE to laguna sites
-    # This allows more space for anchor placement for cross-SLR slot pairs
-    laguna_neighbor_idx = (
-      7,
-      18,
-      36,
-      49,
-      62,
-      84,
-      96,
-      110,
-      123,
-      138,
-      151,
-      163,
-      181,
-      193,
-      213,
-      224
-    )
-    laguna_row_range = (
-      (180, 299),
-      (420, 539),
-      (660, 779)
-    )
-
-    laguna_buffer_region_pblock = ''
-    for idx in laguna_neighbor_idx:
-      for beg, end in laguna_row_range:
-        laguna_buffer_region_pblock += f' SLICE_X{idx}Y{beg}:SLICE_X{idx}Y{end} '
-    
-    return laguna_buffer_region_pblock
 
   @staticmethod
   def getSLICEVacentRegion(col_width, row_width):
@@ -377,9 +321,7 @@ class DeviceU250:
       else: # only need buffer at the up side
         row_buffer_region_pblock.append(f'SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1} ')
 
-    laguna_buffer_region_pblock = DeviceU250.getLagunaVacentRegion()
-
-    return '\n'.join(col_buffer_region_pblock) + '\n'.join(row_buffer_region_pblock) + laguna_buffer_region_pblock
+    return '\n'.join(col_buffer_region_pblock) + '\n'.join(row_buffer_region_pblock)
 
 class DeviceU280:
   NAME = 'U280'
