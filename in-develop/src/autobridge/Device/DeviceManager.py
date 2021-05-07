@@ -182,18 +182,8 @@ class DeviceU250:
 
     return laguna_region + '\n' + slice_around_laguna
 
-  @staticmethod
-  def __getSliceAroundLagunaSides(
-      laguna_down_left_x, 
-      laguna_up_right_x, 
-      slice_down_left_y,
-      slice_up_right_y):
-    # note that each laguna column actually spans 2 in X dimension.
-    # e.g. LAGUNA_X0Y... and LAGUNA_X1Y... are in the same physical column
-    start_from_ith_laguna_column = int((laguna_down_left_x+1) / 2) # round to floor
-    end_at_jth_laguna_column = int((laguna_up_right_x+1) / 2)
-
-    idx_of_left_side_slice_of_laguna_column = (
+  # X index of the SLICE column to the left of the i-th Laguna column
+  idx_of_left_side_slice_of_laguna_column = (
       7,
       18,
       36,
@@ -210,7 +200,25 @@ class DeviceU250:
       193,
       213,
       224
-    )
+  )
+
+  # Y index of the range of SLICEs besides Lagunas
+  y_idx_of_slice_besides_laguna = (
+      (180, 299),
+      (420, 539),
+      (660, 779)
+  )
+
+  @staticmethod
+  def __getSliceAroundLagunaSides(
+      laguna_down_left_x, 
+      laguna_up_right_x, 
+      slice_down_left_y,
+      slice_up_right_y):
+    # note that each laguna column actually spans 2 in X dimension.
+    # e.g. LAGUNA_X0Y... and LAGUNA_X1Y... are in the same physical column
+    start_from_ith_laguna_column = int((laguna_down_left_x+1) / 2) # round to floor
+    end_at_jth_laguna_column = int((laguna_up_right_x+1) / 2)
 
     SLICE_around_laguna = []
 
@@ -222,7 +230,7 @@ class DeviceU250:
       # although only 2 columns of SLICEs are included
       # UPDATE: seems that the right SLICE column is not suitable to connect to the laguna sites
       # try using two columns to the left
-      idx_SLICE_to_the_left = idx_of_left_side_slice_of_laguna_column[i]
+      idx_SLICE_to_the_left = DeviceU250.idx_of_left_side_slice_of_laguna_column[i]
       idx_SLICE_to_the_left_by_2 = idx_SLICE_to_the_left - 1
 
       # note that the Y coordinate of laguna and SLICE is the same
@@ -288,7 +296,17 @@ class DeviceU250:
       assert False
 
   @staticmethod
-  def getSLICEVacentRegion(col_width, row_width):
+  def getAllLagunaBufferRegions():
+    """ two columns of SLICE to the left of all laguna columns """
+    slice_besides_laguna = []
+    for x in DeviceU250.idx_of_left_side_slice_of_laguna_column:
+      for y_beg, y_end in DeviceU250.y_idx_of_slice_besides_laguna:
+        slice_besides_laguna.append(f' SLICE_X{x-1}Y{y_beg}:SLICE_X{x}Y{y_end} ')
+
+    return '\n'.join(slice_besides_laguna)
+
+  @staticmethod
+  def getAllBoundaryBufferRegions(col_width, row_width):
     """
     create a buffer region among 2x2 slots
     use the concise clockregion-based pblock subtract this buffer region
