@@ -169,7 +169,7 @@ class SlotManager:
   def getAllSlotPairs(self):
     pairs = []
     for slot in self.getActiveSlotsIncludeRouting():
-      neighbors = self.getComputeNeighborSlots(slot, 'UP') + \
-                  self.getComputeNeighborSlots(slot, 'RIGHT')
+      neighbors = self.getAnyNeighborSlots(slot, 'UP') + \
+                  self.getAnyNeighborSlots(slot, 'RIGHT')
       pairs += [(slot, n) for n in neighbors]
     return pairs
