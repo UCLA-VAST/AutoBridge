@@ -158,22 +158,36 @@ class DeviceU250:
     if from_slr == 0 and to_slr == 1:
       laguna_down_left_y = 120
       laguna_up_right_y = 359
+      slice_down_left_y = 180
+      slice_up_right_y = 299
     elif from_slr == 1 and to_slr == 2:
       laguna_down_left_y = 360
       laguna_up_right_y = 599
+      slice_down_left_y = 420
+      slice_up_right_y = 539
     elif from_slr == 2 and to_slr == 3:
       laguna_down_left_y = 600
-      laguna_up_right_y = 839    
+      laguna_up_right_y = 839
+      slice_down_left_y = 660
+      slice_up_right_y = 779
     else:
       assert False
 
     laguna_region = f' LAGUNA_X{laguna_down_left_x}Y{laguna_down_left_y}:LAGUNA_X{laguna_up_right_x}Y{laguna_up_right_y} '
-    slice_around_laguna = DeviceU250.__getSliceAroundLagunaSides(laguna_down_left_x, laguna_down_left_y, laguna_up_right_x, laguna_up_right_y)
+    slice_around_laguna = DeviceU250.__getSliceAroundLagunaSides(
+        laguna_down_left_x=laguna_down_left_x, 
+        laguna_up_right_x=laguna_up_right_x, 
+        slice_down_left_y=slice_down_left_y,
+        slice_up_right_y=slice_up_right_y)
 
     return laguna_region + '\n' + slice_around_laguna
 
   @staticmethod
-  def __getSliceAroundLagunaSides(laguna_down_left_x, laguna_down_left_y, laguna_up_right_x, laguna_up_right_y):
+  def __getSliceAroundLagunaSides(
+      laguna_down_left_x, 
+      laguna_up_right_x, 
+      slice_down_left_y,
+      slice_up_right_y):
     # note that each laguna column actually spans 2 in X dimension.
     # e.g. LAGUNA_X0Y... and LAGUNA_X1Y... are in the same physical column
     start_from_ith_laguna_column = int((laguna_down_left_x+1) / 2) # round to floor
@@ -206,11 +220,13 @@ class DeviceU250:
       # two columns of SLICEs to the left and to the right of the laguna columns
       # note that the index of SLICE jumps 1 because of the laguna column, so it should be +2 here
       # although only 2 columns of SLICEs are included
+      # UPDATE: seems that the right SLICE column is not suitable to connect to the laguna sites
+      # try using two columns to the left
       idx_SLICE_to_the_left = idx_of_left_side_slice_of_laguna_column[i]
-      idx_SLICE_to_the_right = idx_SLICE_to_the_left + 2
+      idx_SLICE_to_the_left_by_2 = idx_SLICE_to_the_left - 1
 
       # note that the Y coordinate of laguna and SLICE is the same
-      SLICE_around_laguna.append(f'SLICE_X{idx_SLICE_to_the_left}Y{laguna_down_left_y}:SLICE_X{idx_SLICE_to_the_right}Y{laguna_up_right_y}')
+      SLICE_around_laguna.append(f'SLICE_X{idx_SLICE_to_the_left_by_2}Y{slice_down_left_y}:SLICE_X{idx_SLICE_to_the_left}Y{slice_up_right_y}')
     return '\n'.join(SLICE_around_laguna)
 
   @staticmethod
