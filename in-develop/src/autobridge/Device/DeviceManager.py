@@ -270,14 +270,18 @@ class DeviceU250:
       assert False
 
     if orient == 'HORIZONTAL':
+      y_range_beg = slot1.down_left_y * CR_SLICE_height
+      y_range_end = y_range_beg + Slot_SLICE_height - 1 # 2x2 slot
+      
       # shrink buffer regions of horizontal pairs
       # to avoid the slight overlapping with the buffer regions of vertical pairs
-      y_range_beg = slot1.down_left_y * CR_SLICE_height + row_width_each_side
-      y_range_end = y_range_beg + Slot_SLICE_height - 1 - row_width_each_side # 2x2 slot
+      y_range_beg_delta = y_range_beg + row_width_each_side
+      y_range_end_delta = y_range_end - row_width_each_side # 2x2 slot
+
       mid_SLICE_col_idx = idx_1st_col_CR_X[max(slot1.down_left_x, slot2.down_left_x)]
       x_range_beg = mid_SLICE_col_idx - col_width_each_side
       x_range_end = mid_SLICE_col_idx + col_width_each_side - 1
-      return f'SLICE_X{x_range_beg}Y{y_range_beg}:SLICE_X{x_range_end}Y{y_range_end} '
+      return f'SLICE_X{x_range_beg}Y{y_range_beg_delta}:SLICE_X{x_range_end}Y{y_range_end_delta} '
     
     elif orient == 'VERTICAL':
       # the buffer region for cross-SLR vertical pairs should only include the buffer around laguna sites
