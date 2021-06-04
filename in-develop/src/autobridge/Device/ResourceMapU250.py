@@ -30,6 +30,10 @@ class ResourceMapU250:
       sum(x < i for x in self.x_of_left_slice_of_dsp_u250) \
         for i in range(self.num_SLICE_column)]
 
+    # map from calibrated x -> orig x
+    self.orig_x_pos_of_slice = {self.calibrated_x_pos_of_slice[i] : i \
+                                for i in range(self.num_SLICE_column)}
+
     # first get the calibrated pos of the nearby SLICE, then add by 1
     self.calibrated_x_pos_of_bram = [
       self.calibrated_x_pos_of_slice[i] + 1 \
@@ -64,3 +68,6 @@ class ResourceMapU250:
       return (self.calibrated_x_pos_of_bram[orig_x], orig_y * 2.5)
     else:
       assert False, f'unsupported type {type}'
+
+  def getSliceOrigXCoordinates(self, calibrated_x):
+    return self.orig_x_pos_of_slice[calibrated_x]
