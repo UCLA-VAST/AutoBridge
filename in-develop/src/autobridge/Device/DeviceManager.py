@@ -313,7 +313,7 @@ class DeviceU250:
       assert False
 
   @staticmethod
-  def getAllLagunaBufferRegions():
+  def getAllLagunaBufferRegions(add_empty_space):
     """ 
     one column of SLICE to the right of all laguna columns 
     FIXME: this function must sync with __getSliceAroundLagunaSides()
@@ -321,6 +321,11 @@ class DeviceU250:
     slice_besides_laguna = []
     for x in DeviceU250.idx_of_left_side_slice_of_laguna_column:
       for y_beg, y_end in DeviceU250.y_idx_of_slice_besides_laguna:
+        
+        # slightly enlarge the buffer region. This can help create additional empty space to help routing
+        if add_empty_space:
+          y_beg -= 1
+          y_end += 1
 
         # ******* sync with __getSliceAroundLagunaSides() ********
         x_hidden_slice = x + 1
