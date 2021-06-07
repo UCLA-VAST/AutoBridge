@@ -228,13 +228,24 @@ class DeviceU250:
       # two columns of SLICEs to the left and to the right of the laguna columns
       # note that the index of SLICE jumps 1 because of the laguna column, so it should be +2 here
       # although only 2 columns of SLICEs are included
+      #
       # UPDATE: seems that the right SLICE column is not suitable to connect to the laguna sites
       # try using two columns to the left
+      #
+      # UPDATE 06-06-21: the SLICE to the right share the same switch box to the laguna registers
+      # Use the right column may minimize the anchor routes that spill out into the slot region
+      # Also, one SLICE column is enough to cover all SLL connections. Each laguna column contains 720 wires
+      # one SLICE column with a height of 120 has 120 * 16 = 1920 registers, far more than enough to cover the maximal 720 connections
+      
+      # ************** FIXME: this part must sync with getAllLagunaBufferRegions() ********************
       idx_SLICE_to_the_left = DeviceU250.idx_of_left_side_slice_of_laguna_column[i]
-      idx_SLICE_to_the_left_by_2 = idx_SLICE_to_the_left - 1
+      idx_hidden_SLICE = idx_SLICE_to_the_left + 1
+      idx_SLICE_to_the_right = idx_hidden_SLICE + 1
+      # ***********************************************************************************************
 
-      # note that the Y coordinate of laguna and SLICE is the same
-      SLICE_around_laguna.append(f'SLICE_X{idx_SLICE_to_the_left_by_2}Y{slice_down_left_y}:SLICE_X{idx_SLICE_to_the_left}Y{slice_up_right_y}')
+      # note that the Y coordinate of laguna and SLICE is NOT the same
+      # select the SLICE column to the right of the laguna column.
+      SLICE_around_laguna.append(f'SLICE_X{idx_SLICE_to_the_right}Y{slice_down_left_y}:SLICE_X{idx_SLICE_to_the_right}Y{slice_up_right_y}')
     return '\n'.join(SLICE_around_laguna)
 
   @staticmethod
@@ -303,11 +314,19 @@ class DeviceU250:
 
   @staticmethod
   def getAllLagunaBufferRegions():
-    """ two columns of SLICE to the left of all laguna columns """
+    """ 
+    one column of SLICE to the right of all laguna columns 
+    FIXME: this function must sync with __getSliceAroundLagunaSides()
+    """
     slice_besides_laguna = []
     for x in DeviceU250.idx_of_left_side_slice_of_laguna_column:
       for y_beg, y_end in DeviceU250.y_idx_of_slice_besides_laguna:
-        slice_besides_laguna.append(f' SLICE_X{x-1}Y{y_beg}:SLICE_X{x}Y{y_end} ')
+
+        # ******* sync with __getSliceAroundLagunaSides() ********
+        x_hidden_slice = x + 1
+        x_slice_on_the_right = x + 2
+        slice_besides_laguna.append(f' SLICE_X{x_hidden_slice}Y{y_beg}:SLICE_X{x_slice_on_the_right}Y{y_end} ')
+        # ********************************************************
 
     return '\n'.join(slice_besides_laguna)
 
