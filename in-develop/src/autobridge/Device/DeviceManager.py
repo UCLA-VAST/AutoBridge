@@ -1,6 +1,7 @@
 from collections import defaultdict
 from autobridge.Opt.Slot import Slot
 import re
+import regex_engine
 
 # TODO: calibrate resource when DDRs are enabled
 class DeviceU250:
@@ -396,6 +397,66 @@ class DeviceU250:
         row_buffer_region_pblock.append(f'SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1} ')
 
     return '\n'.join(col_buffer_region_pblock) + '\n'.join(row_buffer_region_pblock)
+
+  @staticmethod
+  def getAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width):
+    assert col_width == 4
+    assert row_width == 5
+
+    RAMB_items = [
+      'RAMB18_X3Y0:RAMB18_X3Y383',
+      'RAMB18_X4Y0:RAMB18_X4Y383',
+      'RAMB18_X11Y0:RAMB18_X11Y383',
+      'RAMB36_X3Y0:RAMB36_X3Y191',
+      'RAMB36_X4Y0:RAMB36_X4Y191',
+      'RAMB36_X11Y0:RAMB36_X11Y191',
+
+      'RAMB18_X0Y334:RAMB18_X13Y337',
+      'RAMB18_X0Y238:RAMB18_X13Y241',
+      'RAMB18_X0Y142:RAMB18_X13Y145',
+      'RAMB18_X0Y46:RAMB18_X13Y49',
+      'RAMB36_X0Y167:RAMB36_X13Y168',
+      'RAMB36_X0Y119:RAMB36_X13Y120',
+      'RAMB36_X0Y71:RAMB36_X13Y72',
+      'RAMB36_X0Y23:RAMB36_X13Y24'      
+    ]
+
+    DSP_items = [
+      'DSP48E2_X7Y0:DSP48E2_X7Y383',
+      'DSP48E2_X15Y0:DSP48E2_X15Y383',
+      'DSP48E2_X24Y0:DSP48E2_X24Y383',
+
+      'DSP48E2_X0Y334:DSP48E2_X31Y337',
+      'DSP48E2_X0Y238:DSP48E2_X31Y241',
+      'DSP48E2_X0Y142:DSP48E2_X31Y145',
+      'DSP48E2_X0Y46:DSP48E2_X31Y49'
+    ]
+
+    return RAMB_items + DSP_items 
+
+  @staticmethod
+  def getRegexpOfAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width):
+    regexp_translator = regex_engine.generator()
+
+    def getRegexpFromSiteRange(site_range):
+      match = re.search(f'(.*)_X(\d+)Y(\d+):(.*)_X(\d+)Y(\d+)', site_range)
+      name1 = match.group(1)
+      x1 = int(match.group(2))
+      y1 = int(match.group(3))
+      name2 = match.group(4)
+      x2 = int(match.group(5))
+      y2 = int(match.group(6))
+      assert name1 == name2
+
+      # the regexp in -filter is different from vivado tcl and does not require '\' before '[' or ']' 
+      x_range = regexp_translator.numerical_range(x1, x2)[1:-1]
+      y_range = regexp_translator.numerical_range(y1, y2)[1:-1]
+      return fr'{name1}_X{x_range}Y{y_range}'
+
+    all_site_ranges = DeviceU250.getAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width)
+    all_site_regexp = [getRegexpFromSiteRange(site_range) for site_range in all_site_ranges]
+    return all_site_regexp
+
 
 class DeviceU280:
   NAME = 'U280'
