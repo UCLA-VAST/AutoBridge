@@ -273,6 +273,16 @@ class DeviceU250:
     slot1 = Slot(DeviceU250, slot_name1)
     slot2 = Slot(DeviceU250, slot_name2)
 
+    #******************************************
+    # a hack to preven routing conflicts between slots and anchors
+    # see comment in __getBufferRegionSize()
+    assert col_width_each_side == 4
+    assert row_width_each_side == 5
+    if (slot1.down_left_x == 4 and slot2.down_left_x == 6) or \
+       (slot1.down_left_x == 6 and slot2.down_left_x == 4):
+      col_width_each_side = 3
+    #******************************************
+
     if slot1.isToTheLeftOf(slot2) or slot1.isToTheRightOf(slot2):
       orient = 'HORIZONTAL'
     elif slot1.isAbove(slot2) or slot1.isBelow(slot2):
