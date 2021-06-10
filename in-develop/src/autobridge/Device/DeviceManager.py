@@ -300,9 +300,20 @@ class DeviceU250:
       y_range_beg_delta = y_range_beg + row_width_each_side
       y_range_end_delta = y_range_end - row_width_each_side # 2x2 slot
 
-      mid_SLICE_col_idx = idx_1st_col_CR_X[max(slot1.down_left_x, slot2.down_left_x)]
-      x_range_beg = mid_SLICE_col_idx - col_width_each_side
-      x_range_end = mid_SLICE_col_idx + col_width_each_side - 1
+      # the values are selected to avoid spliting a switchbox
+      # sync with getAllBoundaryBufferRegions()
+      if slot1.down_left_x + slot2.down_left_x == 2:
+        x_range_beg = 53
+        x_range_end = 58
+      elif slot1.down_left_x + slot2.down_left_x == 6:
+        x_range_beg = 114
+        x_range_end = 119
+      elif slot1.down_left_x + slot2.down_left_x == 10:
+        x_range_beg = 173
+        x_range_end = 178
+      else:
+        assert False
+
       return f'SLICE_X{x_range_beg}Y{y_range_beg_delta}:SLICE_X{x_range_end}Y{y_range_end_delta} '
     
     elif orient == 'VERTICAL':
@@ -375,17 +386,12 @@ class DeviceU250:
     last_col_idx = 232 # X index of the rightest SLICE
 
     # the vertical columns of the buffer region
+    # manually selected to avoid spliting switch boxes. 
+    # Sync with getBufferRegionBetweenSlotPair() 
     col_buffer_region_pblock = []
-    for i in range(4):
-      # the left side buffer of a slot
-      col_buffer_region_pblock.append(f'SLICE_X{idx_1st_col_Slot_X[i]}Y0:SLICE_X{idx_1st_col_Slot_X[i]+col_width-1}Y959')
-      
-      # the right side buffer of a slot
-      col_buffer_region_pblock.append(f'SLICE_X{idx_last_col_Slot_X[i] - col_width + 1}Y0:SLICE_X{idx_last_col_Slot_X[i]}Y959')
-
-    # exclude the region for the left and right device boundaries
-    col_buffer_region_pblock[0] = '' # the leftest slot does not need left side buffer
-    col_buffer_region_pblock[-1] = '' # the rightest slot does not need right side buffer
+    col_buffer_region_pblock.append(f'SLICE_X53Y0:SLICE_X58Y959')
+    col_buffer_region_pblock.append(f'SLICE_X114Y0:SLICE_X119Y959')
+    col_buffer_region_pblock.append(f'SLICE_X173Y0:SLICE_X178Y959')
 
     # the horizontal rows of the buffer region
     # exclude the region for the up and down device boundaries & die boundaries
@@ -396,19 +402,21 @@ class DeviceU250:
       else: # only need buffer at the up side
         row_buffer_region_pblock.append(f'SLICE_X0Y{(i+1) * 120 - row_width}:SLICE_X232Y{(i+1) * 120 - 1} ')
 
-    return '\n'.join(col_buffer_region_pblock) + '\n'.join(row_buffer_region_pblock)
+    return '\n'.join(col_buffer_region_pblock) + '\n' + '\n'.join(row_buffer_region_pblock)
 
   @staticmethod
   def getAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width):
+    """
+    should sync up with getAllBoundaryBufferRegions()
+    get the DSP and BRAM tiles that fall in the anchor buffer region
+    """
     assert col_width == 4
     assert row_width == 5
 
     RAMB_items = [
       'RAMB18_X3Y0:RAMB18_X3Y383',
-      'RAMB18_X4Y0:RAMB18_X4Y383',
       'RAMB18_X11Y0:RAMB18_X11Y383',
       'RAMB36_X3Y0:RAMB36_X3Y191',
-      'RAMB36_X4Y0:RAMB36_X4Y191',
       'RAMB36_X11Y0:RAMB36_X11Y191',
 
       'RAMB18_X0Y334:RAMB18_X13Y337',
