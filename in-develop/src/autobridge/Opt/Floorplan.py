@@ -586,6 +586,24 @@ class Floorplanner:
     self.__initSlotToEdges()
     self.printFloorplan()
 
+  def floorplanVHHvh(self):
+    """
+    switch the order of partitioning. Seems that this one is much faster than other order.
+    """
+    init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'VERTICAL') # based on die boundary
+
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'HORIZONTAL') # based on ddr ctrl in the middle
+
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL', enable_grouping_hints=False) # 4 CR
+
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False) # 8 CR
+
+    self.__initSlotToEdges()
+    self.printFloorplan()
+
   def patternBasedFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
     iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
