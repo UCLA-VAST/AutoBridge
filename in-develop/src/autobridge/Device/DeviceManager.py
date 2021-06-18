@@ -300,14 +300,14 @@ class DeviceU250:
       # the values are selected to avoid spliting a switchbox
       # sync with getAllBoundaryBufferRegions()
       if slot1.down_left_x + slot2.down_left_x == 2:
-        x_range_beg = 53
+        x_range_beg = 56
         x_range_end = 58
       elif slot1.down_left_x + slot2.down_left_x == 6:
-        x_range_beg = 114
-        x_range_end = 119
+        x_range_beg = 115
+        x_range_end = 117
       elif slot1.down_left_x + slot2.down_left_x == 10:
-        x_range_beg = 173
-        x_range_end = 178
+        x_range_beg = 175
+        x_range_end = 177
       else:
         assert False
 
@@ -386,9 +386,9 @@ class DeviceU250:
     # manually selected to avoid spliting switch boxes. 
     # Sync with getBufferRegionBetweenSlotPair() 
     col_buffer_region_pblock = []
-    col_buffer_region_pblock.append(f'SLICE_X53Y0:SLICE_X58Y959')
-    col_buffer_region_pblock.append(f'SLICE_X114Y0:SLICE_X119Y959')
-    col_buffer_region_pblock.append(f'SLICE_X173Y0:SLICE_X178Y959')
+    col_buffer_region_pblock.append(f'SLICE_X56Y0:SLICE_X58Y959')
+    col_buffer_region_pblock.append(f'SLICE_X115Y0:SLICE_X117Y959')
+    col_buffer_region_pblock.append(f'SLICE_X175Y0:SLICE_X177Y959')
 
     # the horizontal rows of the buffer region
     # exclude the region for the up and down device boundaries & die boundaries
@@ -410,12 +410,8 @@ class DeviceU250:
     assert col_width == 4
     assert row_width == 5
 
+    # only BRAMs in the horizontable buffer region will be discarded
     RAMB_items = [
-      'RAMB18_X3Y0:RAMB18_X3Y383',
-      'RAMB18_X11Y0:RAMB18_X11Y383',
-      'RAMB36_X3Y0:RAMB36_X3Y191',
-      'RAMB36_X11Y0:RAMB36_X11Y191',
-
       'RAMB18_X0Y334:RAMB18_X13Y337',
       'RAMB18_X0Y238:RAMB18_X13Y241',
       'RAMB18_X0Y142:RAMB18_X13Y145',
@@ -426,9 +422,9 @@ class DeviceU250:
       'RAMB36_X0Y23:RAMB36_X13Y24'      
     ]
 
+    # two columns of DSPs in the vertical buffer region will be discarded
     DSP_items = [
       'DSP48E2_X7Y0:DSP48E2_X7Y383',
-      'DSP48E2_X15Y0:DSP48E2_X15Y383',
       'DSP48E2_X24Y0:DSP48E2_X24Y383',
 
       'DSP48E2_X0Y334:DSP48E2_X31Y337',
@@ -438,29 +434,6 @@ class DeviceU250:
     ]
 
     return RAMB_items + DSP_items 
-
-  @staticmethod
-  def getRegexpOfAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width):
-    regexp_translator = regex_engine.generator()
-
-    def getRegexpFromSiteRange(site_range):
-      match = re.search(f'(.*)_X(\d+)Y(\d+):(.*)_X(\d+)Y(\d+)', site_range)
-      name1 = match.group(1)
-      x1 = int(match.group(2))
-      y1 = int(match.group(3))
-      name2 = match.group(4)
-      x2 = int(match.group(5))
-      y2 = int(match.group(6))
-      assert name1 == name2
-
-      # the regexp in -filter is different from vivado tcl and does not require '\' before '[' or ']' 
-      x_range = regexp_translator.numerical_range(x1, x2)[1:-1]
-      y_range = regexp_translator.numerical_range(y1, y2)[1:-1]
-      return fr'{name1}_X{x_range}Y{y_range}'
-
-    all_site_ranges = DeviceU250.getAllDSPAndBRAMInBoundaryBufferRegions(col_width, row_width)
-    all_site_regexp = [getRegexpFromSiteRange(site_range) for site_range in all_site_ranges]
-    return all_site_regexp
 
 
 class DeviceU280:
