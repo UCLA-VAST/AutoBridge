@@ -622,6 +622,17 @@ class DeviceU280:
           slot_user_area[item] -= overlap_area[item]
     return slot_user_area
 
+  def getSlotPblockTcl(self, slot_pblock, slot_name):
+    """
+    remove the overlaps with vitis IPs
+    """
+    return f'''
+create_pblock {slot_name}
+resize_pblock {slot_name} -add {slot_pblock}
+resize_pblock {slot_name} -remove {{
+  ''' + '\n  '.join(self.pre_existing_area) + '\n}'
+
+
 class DeviceManager:
   def __init__(self, board_name, ddr_list = [], is_vitis_enabled = False):
     if board_name == 'U250':

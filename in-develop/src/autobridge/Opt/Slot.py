@@ -46,11 +46,6 @@ class Slot:
   def getOrigDownLeftY(self):
     return self.down_left_y
 
-  def getNameConsiderVitisIP(self):
-    """ usually there are 8 columns and the 7-th (starting from 0) is consumed by Vitis """
-    up_right_x_update = 6 if self.up_right_x == 7 else self.up_right_x
-    return f'CLOCKREGION_X{self.down_left_x}Y{self.down_left_y}:CLOCKREGION_X{up_right_x_update}Y{self.up_right_y}'
-
   def getRTLModuleName(self):
     return f'CR_X{self.down_left_x}Y{self.down_left_y}_To_CR_X{self.up_right_x}Y{self.up_right_y}'
 
@@ -220,10 +215,8 @@ class Slot:
 
   @property
   def pblock_tcl(self) -> str:
-    return f'''
-create_pblock {self.pblock_name}
-resize_pblock {self.pblock_name} -add {self.getNameConsiderVitisIP()}
-'''
+    """ remove the overlaps with vitis IPs """
+    return self.board.getSlotPblockTcl(self.getName(), self.getRTLModuleName())
   #------------------------------------ #
 
 # For TAPA. To be replaced by GlobalRouting
