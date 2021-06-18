@@ -14,7 +14,11 @@ from autobridge.Opt.SlotManager import SlotManager
 def generate_constraints(config):
   assert config['CompiledBy'] == 'TAPA'
 
-  board = DeviceManager(config['Board']).getBoard()
+  board = DeviceManager(
+      board_name=config['Board'],
+      ddr_list=config.get('DDR', []),
+      is_vitis_enabled=True,
+  ).getBoard()
   program_json_manager = ProgramJsonManager(
       config['Edges'],
       config['Vertices'],
