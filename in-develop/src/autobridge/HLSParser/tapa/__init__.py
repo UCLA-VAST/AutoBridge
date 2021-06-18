@@ -32,12 +32,17 @@ def generate_constraints(config):
       user_constraint_s2v[slot].append(graph.getVertex(mod_name))
 
   # generate floorplan
+  kwargs = {}
+  user_max_usage_ratio = config.get('MaxUsage')
+  if user_max_usage_ratio is not None:
+    kwargs['user_max_usage_ratio'] = user_max_usage_ratio
   floorplan = Floorplanner(
       graph,
       user_constraint_s2v,
       slot_manager=slot_manager,
       total_usage=program_json_manager.getVertexTotalArea(),
       board=board,
+      **kwargs,
   )
   floorplan.eightWayPartition()
 
