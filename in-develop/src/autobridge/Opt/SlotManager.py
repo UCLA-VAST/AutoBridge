@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Dict
 from autobridge.Opt.Slot import Slot
 import re
+import math
 
 class SlotManager:
   def __init__(self, board):
@@ -83,7 +84,16 @@ class SlotManager:
       assert False, f'unrecognized partition direction: {dir}'
 
   def getInitialSlot(self):
-    return self.createSlot(f'CLOCKREGION_X0Y0:CLOCKREGION_X{self.board.CR_NUM_HORIZONTAL-1}Y{self.board.CR_NUM_VERTICAL-1}')
+    """
+    get the initial slot for partitioning.
+    Note that we expand the slot to the power of 2.
+    This helps the partition process.
+    The parts beyond the physical device will have 0 area
+    """
+    ceil_to_power_of_2 = lambda CR_NUM_VERTICAL : int(math.pow(2, math.ceil(math.log(CR_NUM_VERTICAL, 2))))
+    UR_X = ceil_to_power_of_2(self.board.CR_NUM_HORIZONTAL) - 1
+    UR_Y = ceil_to_power_of_2(self.board.CR_NUM_VERTICAL) - 1
+    return self.createSlot(f'CLOCKREGION_X0Y0:CLOCKREGION_X{UR_X}Y{UR_Y}')
 
   def __haveOverlappedYRange(self, a : Slot, b : Slot):
     return min(a.getOrigUpRightY(), b.getOrigUpRightY()) > max(a.getOrigDownLeftY(), b.getOrigDownLeftY())
