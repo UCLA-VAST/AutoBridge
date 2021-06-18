@@ -1,9 +1,96 @@
 from collections import defaultdict
 from autobridge.Opt.Slot import Slot
 import re
-import regex_engine
 
-# TODO: calibrate resource when DDRs are enabled
+class DeviceBase:
+  NAME = 'Base'
+  CR_AREA = None
+  CR_NUM_VERTICAL = None
+  FPGA_PART_NAME = None
+  
+  def __init__(self, ddr_list, is_vitis_enabled):
+    self.pre_existing_area = self._getVitisRegions(ddr_list, is_vitis_enabled)
+
+  def _getCRPblockIntersect(self, cr_pblock1, cr_pblock2):
+    """
+    get the overlapped part of two pblocks of clock regions
+    """
+    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', cr_pblock1), cr_pblock1
+    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', cr_pblock2), cr_pblock2
+    pblock1_DL_x, pblock1_DL_y, pblock1_UR_x, pblock1_UR_y = \
+      [int(val) for val in re.findall(r'[XY](\d+)', cr_pblock1)] # DownLeft & UpRight    
+    pblock2_DL_x, pblock2_DL_y, pblock2_UR_x, pblock2_UR_y = \
+      [int(val) for val in re.findall(r'[XY](\d+)', cr_pblock2)] # DownLeft & UpRight  
+    
+    intersect_DL_x = max(pblock1_DL_x, pblock2_DL_x)
+    intersect_DL_y = max(pblock1_DL_y, pblock2_DL_y)
+    intersect_UR_x = min(pblock1_UR_x, pblock2_UR_x)
+    intersect_UR_y = min(pblock1_UR_y, pblock2_UR_y)
+
+    if intersect_DL_x <= intersect_UR_x and intersect_DL_y <= intersect_UR_y:
+      overlap_pblock = f'CLOCKREGION_X{intersect_DL_x}Y{intersect_DL_y}:CLOCKREGION_X{intersect_UR_x}Y{intersect_UR_y}'
+    else:
+      overlap_pblock = None
+
+    return overlap_pblock
+
+  def _getPblockArea(self, pblock_def):
+    """
+    get the total resources in the specified pblock
+    Note that if a slot is outside the range of the device, we return an area of 0
+    """
+    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def), f'unexpected format of the slot name {pblock_def}'
+    DL_x, DL_y, UR_x, UR_y = [int(val) for val in re.findall(r'[XY](\d+)', pblock_def)] # DownLeft & UpRight
+
+    # treat the pseudo SLR with 0 area
+    UR_y = min(self.CR_NUM_VERTICAL-1, UR_y) 
+
+    area = {
+      'BRAM' : 0,
+      'DSP' : 0,
+      'FF' : 0,
+      'LUT' : 0,
+      'URAM' : 0
+    }
+    
+    if DL_y > self.CR_NUM_VERTICAL-1:
+      return area 
+
+    for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+      # the total area of one row
+      for i in range(DL_x, UR_x+1): # note the +1 here
+        area[item] += self.CR_AREA[i][item]
+      
+      # how many rows
+      assert UR_y >= DL_y
+      area[item] *= (UR_y - DL_y + 1)
+
+    return area
+
+  def getArea(self, slot_pblock):
+    """
+    get the resources available to user. Exclude any pre-exising IPs
+    """
+    slot_user_area = self._getPblockArea(slot_pblock)
+    for ip_pblock in self.pre_existing_area:
+      overlap_pblock = self._getCRPblockIntersect(slot_pblock, ip_pblock)
+      if overlap_pblock:
+        overlap_area = self._getPblockArea(overlap_pblock)
+        for item in slot_user_area.keys():
+          slot_user_area[item] -= overlap_area[item]
+    return slot_user_area
+
+  def getSlotPblockTcl(self, slot_pblock, slot_name):
+    """
+    remove the overlaps with vitis IPs
+    """
+    return f'''
+create_pblock {slot_name}
+resize_pblock {slot_name} -add {slot_pblock}
+resize_pblock {slot_name} -remove {{
+  ''' + '\n  '.join(self.pre_existing_area) + '\n}'
+
+# TODO: inherit from DeviceBase
 class DeviceU250:
   def __init__(self, ddr_list = [], is_vitis_enabled = False):
     self.ddr_list = ddr_list
@@ -436,73 +523,26 @@ class DeviceU250:
     return RAMB_items + DSP_items 
 
 
-class DeviceU280:
-  def __init__(self, ddr_list, is_vitis_enabled):
-    self.ddr_list = ddr_list # the SLR indices of the ddrs that will be implemented 
+class DeviceU280(DeviceBase):
+  def _getVitisRegions(self, ddr_list, is_vitis_enabled):
     assert all(ddr in [0, 1] for ddr in ddr_list) # u280 only has 2 ddrs on SLR0 and SLR1
 
     # the area used by implicit IPs
-    self.pre_existing_area = []
+    pre_existing_area = []
     for ddr in ddr_list:
-      self.pre_existing_area.append(f'CLOCKREGION_X4Y{4 * ddr}:CLOCKREGION_X4Y{4 * ddr + 3}')
-    
+      pre_existing_area.append(f'CLOCKREGION_X4Y{4 * ddr}:CLOCKREGION_X4Y{4 * ddr + 3}')
+
     # the vitis platform will take away the rightmost column
     if is_vitis_enabled:
-      self.pre_existing_area.append(f'CLOCKREGION_X7Y0:CLOCKREGION_X7Y11') # the area consumed by Vitis platform  
-
-  def __getCRPblockIntersect(self, cr_pblock1, cr_pblock2):
-    """
-    get the overlapped part of two pblocks of clock regions
-    """
-    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', cr_pblock1), cr_pblock1
-    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', cr_pblock2), cr_pblock2
-    pblock1_DL_x, pblock1_DL_y, pblock1_UR_x, pblock1_UR_y = \
-      [int(val) for val in re.findall(r'[XY](\d+)', cr_pblock1)] # DownLeft & UpRight    
-    pblock2_DL_x, pblock2_DL_y, pblock2_UR_x, pblock2_UR_y = \
-      [int(val) for val in re.findall(r'[XY](\d+)', cr_pblock2)] # DownLeft & UpRight  
+      pre_existing_area.append(f'CLOCKREGION_X7Y0:CLOCKREGION_X7Y11') # the area consumed by Vitis platform
     
-    intersect_DL_x = max(pblock1_DL_x, pblock2_DL_x)
-    intersect_DL_y = max(pblock1_DL_y, pblock2_DL_y)
-    intersect_UR_x = min(pblock1_UR_x, pblock2_UR_x)
-    intersect_UR_y = min(pblock1_UR_y, pblock2_UR_y)
+    return pre_existing_area
 
-    if intersect_DL_x <= intersect_UR_x and intersect_DL_y <= intersect_UR_y:
-      overlap_pblock = f'CLOCKREGION_X{intersect_DL_x}Y{intersect_DL_y}:CLOCKREGION_X{intersect_UR_x}Y{intersect_UR_y}'
-    else:
-      overlap_pblock = None
-
-    return overlap_pblock
-    
   NAME = 'U280'
   FPGA_PART_NAME = 'xcu280-fsvh2892-2L-e'
-  
-  SLR_AREA = defaultdict(lambda: defaultdict(list))
-  SLR_AREA['BRAM'][0] = 768
-  SLR_AREA['DSP'][0] = 1536
-  SLR_AREA['FF'][0] = 433920
-  SLR_AREA['LUT'][0] = 216960  
-  
-  SLR_AREA['BRAM'][1] = 384
-  SLR_AREA['DSP'][1] = 1344
-  SLR_AREA['FF'][1] = 330240
-  SLR_AREA['LUT'][1] = 165120  
 
-  LAGUNA_PER_CR = 480
-
-  SLR_NUM = 4 # add a pseudo SLR at the top with area 0
   CR_NUM_HORIZONTAL = 8
-  CR_NUM_VERTICAL = 16
-  CR_NUM_VERTICAL_PER_SLR = 4 # each die has 4 CRs vertically
-
-  ACTUAL_SLR_NUM = 3 # in reality there are only 3 SLRs
-  ACTUAL_CR_NUM_VERTICAL = 12
-
-  TOTAL_AREA = {}
-  TOTAL_AREA['BRAM'] = 4032
-  TOTAL_AREA['DSP'] = 9024
-  TOTAL_AREA['FF'] = 2607360
-  TOTAL_AREA['LUT'] = 1303680
-  TOTAL_AREA['URAM'] = 960
+  CR_NUM_VERTICAL = 12
 
   # Clock Region level
   CR_AREA = [defaultdict(defaultdict) for i in range(CR_NUM_HORIZONTAL)]
@@ -553,57 +593,6 @@ class DeviceU280:
   CR_AREA[7]['FF']   = 25920
   CR_AREA[7]['LUT']  = 12960
   CR_AREA[7]['URAM'] = 0
-
-  def __getPblockArea(self, pblock_def):
-    """
-    get the total resources in the specified pblock
-    """
-    assert re.search(r'CLOCKREGION_X\d+Y\d+:CLOCKREGION_X\d+Y\d+', pblock_def), f'unexpected format of the slot name {pblock_def}'
-    DL_x, DL_y, UR_x, UR_y = [int(val) for val in re.findall(r'[XY](\d+)', pblock_def)] # DownLeft & UpRight
-
-    # treat the pseudo SLR with 0 area
-    UR_y = min(DeviceU280.ACTUAL_CR_NUM_VERTICAL-1, UR_y) 
-
-    area = {}
-    for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
-      area[item] = 0
-
-    if DL_y > DeviceU280.ACTUAL_CR_NUM_VERTICAL-1:
-      return area 
-
-    for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
-      # the total area of one row
-      for i in range(DL_x, UR_x+1): # note the +1 here
-        area[item] += DeviceU280.CR_AREA[i][item]
-      
-      # how many rows
-      assert UR_y >= DL_y
-      area[item] *= (UR_y - DL_y + 1)
-
-    return area
-
-  def getArea(self, slot_pblock):
-    """
-    get the resources available to user. Exclude any pre-exising IPs
-    """
-    slot_user_area = self.__getPblockArea(slot_pblock)
-    for ip_pblock in self.pre_existing_area:
-      overlap_pblock = self.__getCRPblockIntersect(slot_pblock, ip_pblock)
-      if overlap_pblock:
-        overlap_area = self.__getPblockArea(overlap_pblock)
-        for item in slot_user_area.keys():
-          slot_user_area[item] -= overlap_area[item]
-    return slot_user_area
-
-  def getSlotPblockTcl(self, slot_pblock, slot_name):
-    """
-    remove the overlaps with vitis IPs
-    """
-    return f'''
-create_pblock {slot_name}
-resize_pblock {slot_name} -add {slot_pblock}
-resize_pblock {slot_name} -remove {{
-  ''' + '\n  '.join(self.pre_existing_area) + '\n}'
 
 
 class DeviceManager:
