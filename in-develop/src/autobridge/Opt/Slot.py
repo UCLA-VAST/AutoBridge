@@ -216,7 +216,7 @@ class Slot:
   @property
   def pblock_tcl(self) -> str:
     """ remove the overlaps with vitis IPs """
-    return self.board.getSlotPblockTcl(self.getName(), self.getRTLModuleName())
+    return self.board.getSlotPblockTcl(self.getName(), self.pblock_name)
   #------------------------------------ #
 
 # For TAPA. To be replaced by GlobalRouting

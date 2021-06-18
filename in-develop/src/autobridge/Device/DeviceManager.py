@@ -80,14 +80,14 @@ class DeviceBase:
           slot_user_area[item] -= overlap_area[item]
     return slot_user_area
 
-  def getSlotPblockTcl(self, slot_pblock, slot_name):
+  def getSlotPblockTcl(self, slot_pblock, pblock_name):
     """
     remove the overlaps with vitis IPs
     """
     return f'''
-create_pblock {slot_name}
-resize_pblock {slot_name} -add {slot_pblock}
-resize_pblock {slot_name} -remove {{
+create_pblock {pblock_name}
+resize_pblock {pblock_name} -add {slot_pblock}
+resize_pblock {pblock_name} -remove {{
   ''' + '\n  '.join(self.pre_existing_area) + '\n}'
 
 # TODO: inherit from DeviceBase
