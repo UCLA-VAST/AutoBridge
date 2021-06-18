@@ -541,8 +541,17 @@ class DeviceU280(DeviceBase):
   NAME = 'U280'
   FPGA_PART_NAME = 'xcu280-fsvh2892-2L-e'
 
+  SLR_NUM = 4 # add a pseudo SLR at the top with area 0
   CR_NUM_HORIZONTAL = 8
   CR_NUM_VERTICAL = 12
+  CR_NUM_VERTICAL_PER_SLR = 4
+  
+  TOTAL_AREA = {}
+  TOTAL_AREA['BRAM'] = 4032
+  TOTAL_AREA['DSP'] = 9024
+  TOTAL_AREA['FF'] = 2607360
+  TOTAL_AREA['LUT'] = 1303680
+  TOTAL_AREA['URAM'] = 960
 
   # Clock Region level
   CR_AREA = [defaultdict(defaultdict) for i in range(CR_NUM_HORIZONTAL)]
