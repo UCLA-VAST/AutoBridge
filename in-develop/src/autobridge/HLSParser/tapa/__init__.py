@@ -14,7 +14,11 @@ from autobridge.Opt.SlotManager import SlotManager
 def generate_constraints(config):
   assert config['CompiledBy'] == 'TAPA'
 
-  board = DeviceManager(config['Board']).getBoard()
+  board = DeviceManager(
+      board_name=config['Board'],
+      ddr_list=config.get('DDR', []),
+      is_vitis_enabled=True,
+  ).getBoard()
   program_json_manager = ProgramJsonManager(
       config['Edges'],
       config['Vertices'],
@@ -32,12 +36,17 @@ def generate_constraints(config):
       user_constraint_s2v[slot].append(graph.getVertex(mod_name))
 
   # generate floorplan
+  kwargs = {}
+  user_max_usage_ratio = config.get('MaxUsage')
+  if user_max_usage_ratio is not None:
+    kwargs['user_max_usage_ratio'] = user_max_usage_ratio
   floorplan = Floorplanner(
       graph,
       user_constraint_s2v,
       slot_manager=slot_manager,
       total_usage=program_json_manager.getVertexTotalArea(),
       board=board,
+      **kwargs,
   )
   floorplan.eightWayPartition()
 

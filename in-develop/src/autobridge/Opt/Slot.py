@@ -216,7 +216,7 @@ class Slot:
   @property
   def pblock_tcl(self) -> str:
     """ remove the overlaps with vitis IPs """
-    return self.board.getSlotPblockTcl(self.getName(), self.getRTLModuleName())
+    return self.board.getSlotPblockTcl(self.getName(), self.pblock_name)
   #------------------------------------ #
 
 # For TAPA. To be replaced by GlobalRouting
@@ -242,11 +242,19 @@ class Topology:
 
   def yieldPaths(
       self,
-      name: str,
       direction: str,
       init: List[str],
   ) -> Iterator[List[str]]:
-    """Yield connections from `name` on `direction` starting from `init`."""
+    """Yield connections on `direction` starting from `init`.
+
+    Arguments:
+      directions: One of 'up', 'down', 'left', or 'right'.
+      init: Initial connection.
+
+    Yields:
+      Connections with prefix `init` on `direction` (excluding `init` itself).
+    """
+    name = init[-1]
     neighbors = init[:]
     while True:
       name = self.getNeighborOf(name, direction)
@@ -255,22 +263,23 @@ class Topology:
       neighbors.append(name)
       yield neighbors[:]
 
-  def yieldVerticalPaths(
-      self,
-      name: str,
-      init: List[str],
-  ) -> Iterator[List[str]]:
-    yield from self.yieldPaths(name, 'up', init)
-    yield from self.yieldPaths(name, 'down', init)
-
   def getTopologyOf(self, slot: Slot) -> Dict[str, Union[str, List[str]]]:
-    paths = []
-    paths.extend(self.yieldVerticalPaths(slot.pblock_name, []))
+    # list of connections; each connection is a list starting from `slot` to the
+    # slots that are connected to `slot`
+    paths: List[List[str]] = []
     for direction in 'left', 'right':
-      for path in self.yieldPaths(slot.pblock_name, direction, []):
+      for path in self.yieldPaths(direction, [slot.pblock_name]):
         paths.append(path)
-        paths.extend(self.yieldVerticalPaths(path[-1], path[:]))
+        for next_direction in 'up', 'down':
+          paths.extend(self.yieldPaths(next_direction, path))
+    for direction in 'up', 'down':
+      for path in self.yieldPaths(direction, [slot.pblock_name]):
+        paths.append(path)
+        for next_direction in 'left', 'right':
+          paths.extend(self.yieldPaths(next_direction, path))
 
-    topology = {p[-1]: p[1:] for p in paths}
+    # p[-1] is the destination, p[0] is the source, neither of them is required
+    # in the value
+    topology: Dict[str, Union[str, List[str]]] = {p[-1]: p[1:-1] for p in paths}
     topology['tcl'] = slot.pblock_tcl
     return topology
