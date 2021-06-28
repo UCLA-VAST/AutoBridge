@@ -20,7 +20,7 @@ class Floorplanner:
       user_constraint_s2v : Dict, 
       slot_manager : SlotManager,
       total_usage : dict, 
-      board=DeviceU250, 
+      board, 
       user_max_usage_ratio = 0.7,
       max_search_time=600, 
       grouping_hints=[],
