@@ -8,7 +8,7 @@ class DeviceBase:
   CR_NUM_VERTICAL = None
   FPGA_PART_NAME = None
   
-  def __init__(self, ddr_list, is_vitis_enabled):
+  def __init__(self, ddr_list=[], is_vitis_enabled=False):
     self.pre_existing_area = self._getVitisRegions(ddr_list, is_vitis_enabled)
 
   def _getCRPblockIntersect(self, cr_pblock1, cr_pblock2):
