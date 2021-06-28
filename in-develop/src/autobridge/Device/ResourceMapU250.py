@@ -46,11 +46,7 @@ class ResourceMapU250:
     ]
 
   def getCalibratedCoordinatesFromSiteName(self, site_name):
-    try:
-      type, orig_x, orig_y = re.findall(r'(.*)_X(\d+)Y(\d+)', site_name)[0]
-    except:
-      print(site_name)
-      exit()
+    type, orig_x, orig_y = re.findall(r'(.*)_X(\d+)Y(\d+)', site_name)[0]
     orig_x, orig_y = map(int, (orig_x, orig_y))
     return self.getCalibratedCoordinates(type, orig_x, orig_y)
 
@@ -66,8 +62,45 @@ class ResourceMapU250:
     elif type == 'RAMB18':
       # each RAMB18 is 2.5X the height of a SLICE
       return (self.calibrated_x_pos_of_bram[orig_x], orig_y * 2.5)
+    elif type == 'LAGUNA':
+      return self.getLagunaCalibratedCoordinates(orig_x, orig_y)
     else:
       assert False, f'unsupported type {type}'
+
+  def getLagunaCalibratedCoordinates(self, orig_x, orig_y):
+    calibrated_x_pos_of_laguna = [
+      8, 8, 19, 19, 
+      37, 37, 50, 50, 
+      63, 63, 85, 85, 
+      97, 97, 111, 111, 
+      124, 124, 139, 139, 
+      152, 152, 164, 164, 
+      182, 182, 194, 194, 
+      214, 214, 225, 225
+    ]
+    cali_x = calibrated_x_pos_of_laguna[orig_x]
+
+    if 120 <= orig_y <= 359:
+      cali_y = 180 + int( (orig_y-120) / 2)
+    elif 360 <= orig_y <= 599:
+      cali_y = 420 + int( (orig_y-360) / 2)
+    elif 600 <= orig_y <= 839:
+      cali_y = 660 + int( (orig_y-600) / 2)
+    else:
+      assert False
+
+    return (cali_x, cali_y)
+
+  def getLagunaOrigCoordinates(self, cali_x, cali_y):
+    if 180 <= cali_y <= 299:
+      orig_y = (cali_y - 180) * 2 + 120
+    elif 420 <= cali_y <= 539:
+      orig_y = (cali_y - 420) * 2 + 360
+    elif 660 <= cali_y <= 779:
+      orig_y = (cali_y - 660) * 2 + 600
+    else:
+      assert False
+
 
   def getSliceOrigXCoordinates(self, calibrated_x):
     return self.orig_x_pos_of_slice[calibrated_x]
