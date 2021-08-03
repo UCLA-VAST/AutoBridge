@@ -58,6 +58,13 @@ class Vertex():
     dst_neighbors = [e.dst for e in self.getOutEdges()]
     return src_neighbors + dst_neighbors
 
+  def getTotalWireWidth(self) -> int:
+    """
+    sum of the width of all edges of the vertex
+    """
+    return sum(e.width for e in self.getEdges())
+
+
 class DataflowGraph:
   def __init__(self, hls_prj_manager : HLSProjectManager, top_rtl_parser : TopRTLParser):
     self.hls_prj_manager = hls_prj_manager

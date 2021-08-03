@@ -1,8 +1,9 @@
 #! /usr/bin/python3.6
 import logging
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, List
 from autobridge.Device.DeviceManager import *
+from autobridge.Opt.FloorplanLegalize import legalizeFloorplanResults
 from autobridge.Opt.DataflowGraph import *
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
@@ -34,8 +35,8 @@ class Floorplanner:
 
     # hints are optional, constraints are mandatory
     self.grouping_hints = grouping_hints # list of list
-    self.grouping_constraints = grouping_constraints 
-    
+    self.grouping_constraints: List[List[str]] = grouping_constraints
+
     self.s2v = {}
     self.v2s = {}
     self.s2e = {}
@@ -599,7 +600,16 @@ class Floorplanner:
 
     iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL', enable_grouping_hints=False) # 4 CR
 
-    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False) # 8 CR
+    iter5_s2v, iter5_v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False) # 8 CR
+
+    v_list = self.graph.getAllVertices()
+    v_name_to_v = {v.name : v for v in v_list}
+    grouping_list: List[List[Vertex]] = [
+      [v_name_to_v[v_name] for v_name in grouping] \
+        for grouping in self.grouping_constraints
+    ]
+
+    self.s2v, self.v2s = legalizeFloorplanResults(iter5_v2s, grouping_list)
 
     self.__initSlotToEdges()
     self.printFloorplan()

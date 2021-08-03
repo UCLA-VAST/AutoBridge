@@ -191,6 +191,14 @@ class Slot:
     else:
       assert False
 
+  def getDistance(self, other: 'Slot') -> int:
+    """
+    get the manhatten dist from another slot
+    """
+    dist_x = abs(self.getPositionX() - other.getPositionX()) 
+    dist_y = abs(self.getPositionY() - other.getPositionY())
+    return dist_x + dist_y
+
   #------------- For TAPA ------------- #
   def isToTheLeftOf(self, other: 'Slot') -> bool:
     return (self.down_left_y == other.down_left_y and
