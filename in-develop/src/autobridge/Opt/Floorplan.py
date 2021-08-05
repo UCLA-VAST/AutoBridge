@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from typing import Dict, List
 from autobridge.Device.DeviceManager import *
-from autobridge.Opt.FloorplanLegalize import legalizeFloorplanResults
+from autobridge.Opt.FloorplanLegalize import RESOURCE_TYPES, legalizeFloorplanResults
 from autobridge.Opt.DataflowGraph import *
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
@@ -12,6 +12,7 @@ from mip import *
 import statistics
 
 _logger = logging.getLogger().getChild(__name__)
+
 
 class Floorplanner:
 
@@ -57,7 +58,7 @@ class Floorplanner:
   def __getResourceUsageLimit(self, user_max_usage_ratio):
     total_avail = self.board.TOTAL_AREA
 
-    for item in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+    for item in RESOURCE_TYPES:
       usage = self.total_usage[item] / total_avail[item] + 0.05
       ratio = max(usage, user_max_usage_ratio)
 
@@ -92,7 +93,7 @@ class Floorplanner:
       bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(s, dir)
       assert up_or_right.up_right_x >= bottom_or_left.down_left_x
   
-      for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+      for r in RESOURCE_TYPES:
         v_var_list = [v2var[v] for v in v_group]
         area_list = [v.area[r] for v in v_group]
         I = range(len(v_group))
@@ -232,7 +233,7 @@ class Floorplanner:
 
       # get the average variance of each resource
       var = 0
-      for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+      for r in RESOURCE_TYPES:
         # percentage of resource r
         s2area = {slot : sum(v.area[r] for v in v_list) / slot.getArea()[r] \
                   for slot, v_list in next_s2v.items() }
@@ -310,7 +311,7 @@ class Floorplanner:
     slot_idx = lambda y1, y2, x : y1 * 4 + y2 * 2 + x
 
     # area constraint
-    for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+    for r in RESOURCE_TYPES:
       choose = lambda x, num: x if num == 1 else (1-x)     
 
       for y1 in range(2):
@@ -488,7 +489,7 @@ class Floorplanner:
 
     for s, v_group in self.s2v.items():
       logging.info(f'{s.getName()}:')
-      for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+      for r in RESOURCE_TYPES:
         used = sum([v.area[r] for v in v_group])
         avail = s.getArea()[r]
         if avail:
@@ -527,14 +528,18 @@ class Floorplanner:
     for i in range(self.board.SLR_NUM-1):
       logging.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
 
-  def getUtilization(self):
-    util = defaultdict(dict)
+  def getUtilization(self) -> Dict[Slot, Dict[str, float]]:
+    util = {}
     for s, v_group in self.s2v.items():
       assert v_group, f'empty slot should not exist: {s.getName()}'
-      for r in ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']:
+      util[s] = {}
+      for r in RESOURCE_TYPES:
         used = sum([v.area[r] for v in v_group])
         avail = s.getArea()[r]
-        util[s.getRTLModuleName()][r] = f'{used} / {avail} = {used/avail}'
+        # a slot may not contain some type of resources
+        if avail:
+          util[s][r] = used/avail
+
     return util
 
   # obtain the edges that are inside the given slots and the edges between the given slots and the other slots
