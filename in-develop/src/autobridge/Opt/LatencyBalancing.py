@@ -26,7 +26,8 @@ class LatencyBalancing:
       # in case the original design is not balanced
       # note that additional pipelining for full_n will not lead to additional latency
       # we only need to increase the grace period of almost full FIFOs by 1
-      m += v2var[e.src] >= v2var[e.dst] + self.global_router.getPipelineLevelOfEdge(e) + 1
+      # [update]: we skip the +1 for the orginial FIFO. We only take care of our own modifications
+      m += v2var[e.src] >= v2var[e.dst] + self.global_router.getPipelineLevelOfEdge(e)
 
     m.objective = minimize(xsum( 
       e.width * (v2var[e.src] - v2var[e.dst]) for e in self.name2edge.values() 
