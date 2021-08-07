@@ -38,8 +38,14 @@ class LatencyBalancing:
 
     # get result
     for e_name, e in self.name2edge.items():
-      self.e_name2lat[e_name] = int(v2var[e.src].x - v2var[e.dst].x)
-      logging.info(f'Latency of edge {e_name}: {self.e_name2lat[e_name]} ')
+      e.latency = int(v2var[e.src].x - v2var[e.dst].x)
+      self.e_name2lat[e_name] = e.latency
+
+    # logging
+    for e_name, e in self.name2edge.items():
+      orig_lat = self.global_router.getPipelineLevelOfEdge(e)
+      new_lat = self.e_name2lat[e_name]
+      logging.info(f'{e_name}: latency from {orig_lat} to {new_lat}, area from {orig_lat * e.width} to {new_lat * e.width} ')
 
   def getLatencyofEdgeName(self, e_name : str):
     return self.e_name2lat[e_name]
