@@ -323,7 +323,7 @@ class TopRTLParser:
     return self.inst_name_to_rtl[inst_name]
 
   # transform the default FIFO used by HLS to our unified template
-  def getFIFOInstOfNewTemplate(self, e_name:str, e_width : int, e_depth : int, pipeline_level : int):
+  def getFIFOInstOfNewTemplate(self, e_name:str, e_width : int, e_depth : int, pipeline_level : int, fifo_type: str = ""):
     e_inst_list = self.e_name_to_ast_node[e_name]
 
     # use our FIFO template
@@ -338,6 +338,11 @@ class TopRTLParser:
     # pipeline_level equals the required grace period
     param_grace_period = ast.ParamArg( 'GRACE_PERIOD', ast.Rvalue(ast.IntConst(str( pipeline_level ))) )
     
+    if fifo_type == 'BRAM':
+      param_grace_period = ast.ParamArg( 'USE_BRAM', ast.Rvalue(ast.IntConst(str( 1 ))) )
+    elif fifo_type == 'SRL':
+      param_grace_period = ast.ParamArg( 'USE_SRL', ast.Rvalue(ast.IntConst(str( 1 ))) )
+
     params = [param_width, param_depth, param_addr_width, param_grace_period]
     e_inst_list.parameterlist = params
 
