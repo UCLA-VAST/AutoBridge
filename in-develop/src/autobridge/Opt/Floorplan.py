@@ -3,7 +3,8 @@ import logging
 from collections import defaultdict
 from typing import Dict, List
 from autobridge.Device.DeviceManager import *
-from autobridge.Opt.FloorplanLegalize import RESOURCE_TYPES, legalizeFloorplanResults
+from autobridge.Opt.Common import RESOURCE_TYPES
+from autobridge.Opt.FloorplanLegalize import AutoLegalizer
 from autobridge.Opt.DataflowGraph import *
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
@@ -614,7 +615,7 @@ class Floorplanner:
         for grouping in self.grouping_constraints
     ]
 
-    self.s2v, self.v2s = legalizeFloorplanResults(iter5_v2s, grouping_list)
+    self.s2v, self.v2s = AutoLegalizer(iter5_v2s, grouping_list)
 
     self.__initSlotToEdges()
     self.printFloorplan()

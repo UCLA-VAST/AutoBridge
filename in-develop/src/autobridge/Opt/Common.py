@@ -1,0 +1,1 @@
+RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']

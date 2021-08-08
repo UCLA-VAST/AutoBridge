@@ -3,11 +3,9 @@ from collections import defaultdict
 from typing import Dict, List, Tuple
 from mip import Model, minimize, BINARY, xsum, OptimizationStatus, Var
 
+from autobridge.Opt.Common import RESOURCE_TYPES
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
-
-RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']
-RESOURCE_USAGE_LIMIT = 0.7
 
 
 def _createILPVars(
@@ -27,14 +25,18 @@ def _createILPVars(
   return v_to_s_to_var, s_to_v_to_var
 
 
-def _addAreaConstrains(m: Model, s_to_v_to_var: Dict[Slot, Dict[Vertex, Var]]) -> None:
+def _addAreaConstrains(
+    m: Model, 
+    s_to_v_to_var: Dict[Slot, Dict[Vertex, Var]],
+    resource_usage_limit: int
+) -> None:
   """
   limit the capacity of each slot
   """
   logging.info('Adding area constraints...')
   for r in RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
-      capacity = s.area[r] * RESOURCE_USAGE_LIMIT
+      capacity = s.area[r] * resource_usage_limit
       m += xsum(v.area[r] * var for v, var in v_to_var.items()) <= capacity
 
 
@@ -148,13 +150,14 @@ def _logResults(
 
 def legalizeFloorplanResults(
     orig_v2s: Dict[Vertex, Slot],
-    grouping_list: List[ List[Vertex] ]
+    grouping_list: List[ List[Vertex] ],
+    resource_usage_limit: int
 ) -> Tuple[ Dict[Slot, List[Vertex]], Dict[Vertex, Slot] ]:
   """
   adjust the floorplanning to satisfy the area requirement
   """
   logging.info('Begin legalizing the floorplan results...')
-  logging.info(f'Target resource usage limit: {RESOURCE_USAGE_LIMIT}')
+  logging.info(f'Target resource usage limit: {resource_usage_limit}')
 
   m = Model()
 
@@ -164,7 +167,7 @@ def legalizeFloorplanResults(
   v_to_s_to_var, s_to_v_to_var = _createILPVars(m, v_list, s_list)
   v_to_s_to_cost = _getVToSToCost(v_list, s_list, orig_v2s)
 
-  _addAreaConstrains(m, s_to_v_to_var)
+  _addAreaConstrains(m, s_to_v_to_var, resource_usage_limit)
 
   _addUniqueConstrains(m, v_to_s_to_var)
 
@@ -175,7 +178,9 @@ def legalizeFloorplanResults(
   m.write('floorplan_legalization.lp')
 
   status = m.optimize()
-  assert status == OptimizationStatus.OPTIMAL
+  if status != OptimizationStatus.OPTIMAL:
+    logging.warning(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
+    return None, None
 
   new_v2s, new_s2v = _getILPResults(v_to_s_to_var)
 
@@ -184,3 +189,25 @@ def legalizeFloorplanResults(
   logging.info('Finish legalizing the floorplan results.')
 
   return new_s2v, new_v2s
+
+
+def AutoLegalizer(
+    orig_v2s: Dict[Vertex, Slot],
+    grouping_list: List[ List[Vertex] ],
+    init_resource_usage_limit: float = 0.7,
+    resource_usage_cut_threshold: float = 0.75,
+    limit_increase_step: float = 0.01
+) -> Tuple[ Dict[Slot, List[Vertex]], Dict[Vertex, Slot] ]:
+
+  curr_limit = init_resource_usage_limit
+  while 1:
+    if curr_limit > resource_usage_cut_threshold:
+      logging.error(f'Fail to legalize under the cut threhold {resource_usage_cut_threshold}')
+      exit()
+
+    new_s2v, new_v2s = legalizeFloorplanResults(orig_v2s, grouping_list, curr_limit)
+    if new_s2v:
+      logging.info(f'Legalization succeeded with target usage limit {curr_limit}')
+      return new_s2v, new_v2s
+    else:
+      curr_limit += limit_increase_step
