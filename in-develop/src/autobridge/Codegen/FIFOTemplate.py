@@ -9,7 +9,7 @@ module fifo_almost_full #(
   parameter THRESHOLD  = 18432,
   parameter GRACE_PERIOD = 2,
   parameter USE_BRAM = 0,
-  parameter USE_SRL = 0,
+  parameter USE_SRL = 0
 ) (
   input wire clk,
   input wire reset,
