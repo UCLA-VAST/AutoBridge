@@ -60,6 +60,19 @@ class Edge:
       'LUT': 0  # based on HLS report
     }
 
+  def getArea(self, skip_balance_part: bool = False) -> Dict[str, int]:
+    if self.fifo_type == '':
+      fifo_type = self.getDefaultType()
+    else:
+      fifo_type = self.fifo_type
+
+    if fifo_type == 'BRAM':
+      return self.getBRAMFIFOArea(skip_balance_part)
+    elif fifo_type == 'SRL':
+      return self.getSRLFIFOArea(skip_balance_part)
+    else:
+      assert False, fifo_type
+
 
 class Vertex():
   def __init__(self, type:str, name : str):
