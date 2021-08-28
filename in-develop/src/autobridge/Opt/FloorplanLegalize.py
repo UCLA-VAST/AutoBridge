@@ -151,6 +151,7 @@ def _logResults(
 def legalizeFloorplanResults(
     orig_v2s: Dict[Vertex, Slot],
     grouping_list: List[ List[Vertex] ],
+    all_slot_list: List[Slot],
     resource_usage_limit: int
 ) -> Tuple[ Dict[Slot, List[Vertex]], Dict[Vertex, Slot] ]:
   """
@@ -162,7 +163,7 @@ def legalizeFloorplanResults(
   m = Model()
 
   v_list = list(orig_v2s.keys())
-  s_list = list(set(orig_v2s.values()))
+  s_list = all_slot_list
 
   v_to_s_to_var, s_to_v_to_var = _createILPVars(m, v_list, s_list)
   v_to_s_to_cost = _getVToSToCost(v_list, s_list, orig_v2s)
@@ -194,6 +195,7 @@ def legalizeFloorplanResults(
 def AutoLegalizer(
     orig_v2s: Dict[Vertex, Slot],
     grouping_list: List[ List[Vertex] ],
+    all_slot_list: List[Slot],  # which slots are considered in the legalization step
     init_resource_usage_limit: float = 0.7,
     resource_usage_cut_threshold: float = 0.75,
     limit_increase_step: float = 0.01
@@ -205,7 +207,7 @@ def AutoLegalizer(
       logging.error(f'Fail to legalize under the cut threhold {resource_usage_cut_threshold}')
       exit()
 
-    new_s2v, new_v2s = legalizeFloorplanResults(orig_v2s, grouping_list, curr_limit)
+    new_s2v, new_v2s = legalizeFloorplanResults(orig_v2s, grouping_list, all_slot_list, curr_limit)
     if new_s2v:
       logging.info(f'Legalization succeeded with target usage limit {curr_limit}')
       return new_s2v, new_v2s

@@ -436,12 +436,13 @@ class Floorplanner:
                                 enable_grouping_hints = True, 
                                 check_user_constraints=True,
                                 exit_on_failure=True):
+    init_delta = 0
     while 1:
-      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, self.delta, enable_grouping_hints, check_user_constraints)
+      next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, init_delta, enable_grouping_hints, check_user_constraints)
       if not next_s2v and not next_v2s:
-        self.delta += self.step
-        logging.warning(f'use delta of {self.delta} to find valid solution')
-        if self.max_usage_ratio + self.delta > self.MAX_USAGE_ALLOWED:
+        init_delta += self.step
+        logging.warning(f'use delta of {init_delta} to find valid solution')
+        if self.max_usage_ratio + init_delta > self.MAX_USAGE_ALLOWED:
           logging.critical('not likely there is a reasonable solution')
           if exit_on_failure:
             exit(1)
@@ -615,7 +616,13 @@ class Floorplanner:
         for grouping in self.grouping_constraints
     ]
 
-    self.s2v, self.v2s = AutoLegalizer(iter5_v2s, grouping_list)
+    # FIXME: a temp hack to allow the legalizer to use all slots
+    all_slot_list = self.slot_manager.getAllTwoByTwoCRSlots()
+    self.s2v, self.v2s = AutoLegalizer(iter5_v2s, grouping_list, all_slot_list)
+
+    # FIXME: a temp hack to register all used slots as compute slots
+    for slot in self.s2v.keys():
+      self.slot_manager.createSlot(slot.getName())
 
     self.__initSlotToEdges()
     self.printFloorplan()

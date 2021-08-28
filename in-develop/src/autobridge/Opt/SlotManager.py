@@ -33,6 +33,16 @@ class SlotManager:
       assert match, f'incorrect pblock {pblock}'
       return pblock
 
+  def getAllTwoByTwoCRSlots(self):
+    """
+    [FIXME] a temporary fix. Get all Slots of 2x2 clock regions for U250
+    """
+    slot_list = []
+    for x in range(0, 8, 2):
+      for y in range(0, 16, 2):
+        slot_list.append(Slot(self.board, f'CLOCKREGION_X{x}Y{y}:CLOCKREGION_X{x+1}Y{y+1}'))
+    return slot_list
+
   def createSlotForRouting(self, pblock : str):
     """create a Slot object for global routing purpose"""
     pblock = self.__preprocessPblock(pblock)
