@@ -514,7 +514,8 @@ class Floorplanner:
         wire_length_list.append(length)
 
     logging.info(f'total wire length: {sum(wire_length_list)}')
-    logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
+    if len(wire_length_list) > 1:
+      logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
 
     # SLR crossing information
     slr_crossing = [0] * (self.board.SLR_NUM-1)
