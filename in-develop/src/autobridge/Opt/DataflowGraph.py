@@ -116,6 +116,11 @@ class Vertex():
     """
     return sum(e.width for e in self.getEdges())
 
+  def getVertexAndInboundFIFOArea(self) -> Dict[str, int]:
+    return {
+      item: sum(e.getArea()[item] for e in self.in_edges) + val for item, val in self.area.items()
+    }
+  
 
 class DataflowGraph:
   def __init__(self, hls_prj_manager : HLSProjectManager, top_rtl_parser : TopRTLParser):

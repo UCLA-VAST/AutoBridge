@@ -327,7 +327,7 @@ class Floorplanner:
               m +=  choose(v2var_y1[v], y1) + choose(v2var_y2[v], y2) + \
                     choose(v2var_x[v], x) - 3 * prods[v] <= 2
 
-            m += xsum(  prods[v] * v.area[r] for v in curr_v2s.keys() ) \
+            m += xsum(  prods[v] * v.getVertexAndInboundFIFOArea()[r] for v in curr_v2s.keys() ) \
                         <= slot_group[slot_idx(y1, y2, x)].getArea()[r] * self.max_usage_ratio
 
     # user constraint
