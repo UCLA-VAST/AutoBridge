@@ -24,6 +24,7 @@ class DataflowGraphTapa ():
     for e_name, info in fifo_section.items():
       e = Edge(e_name)
       e.width = info['width']
+      e.depth = info['depth']
       self.edges[e_name] = e
 
   def __initVertices(self):
