@@ -10,6 +10,15 @@ from autobridge.Opt.Floorplan import Floorplanner
 from autobridge.Opt.Slot import Topology
 from autobridge.Opt.SlotManager import SlotManager
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=
+    '%(levelname).1s%(asctime)s.%(msecs)03d %(name)s:%(lineno)d] %(message)s',
+    datefmt='%m%d %H:%M:%S',
+)
+
+_logger = logging.getLogger().getChild(__name__)
+
 
 def generate_constraints(config):
   assert config['CompiledBy'] == 'TAPA'
@@ -61,12 +70,6 @@ def generate_constraints(config):
 
 
 def main():
-  logging.basicConfig(
-      filename='auto-parallel.log',
-      filemode='w',
-      level=logging.DEBUG,
-      format="[%(levelname)s: %(funcName)25s() ] %(message)s",
-  )
   with open('SampleUserConfig.json', 'r') as fp:
     constraints = generate_constraints(json.load(fp))
   with open('TapaConstraint.json', 'w') as fp:
