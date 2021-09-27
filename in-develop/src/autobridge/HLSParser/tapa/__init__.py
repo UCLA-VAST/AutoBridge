@@ -2,6 +2,7 @@
 import collections
 import json
 import logging
+import sys
 
 from autobridge.Device.DeviceManager import DeviceManager
 from autobridge.HLSParser.tapa.DataflowGraphTapa import DataflowGraphTapa
@@ -74,10 +75,15 @@ def generate_constraints(config):
 
 
 def main():
-  with open('SampleUserConfig.json', 'r') as fp:
-    constraints = generate_constraints(json.load(fp))
-  with open('TapaConstraint.json', 'w') as fp:
-    json.dump(constraints, fp, indent=2)
+  fp = sys.stdin
+  if fp.isatty():
+    fp = open('SampleUserConfig.json', 'r')
+  constraints = generate_constraints(json.load(fp))
+
+  fp = sys.stdout
+  if fp.isatty():
+    fp = open('TapaConstraint.json', 'w')
+  json.dump(constraints, fp, indent=2)
 
 
 if __name__ == '__main__':
