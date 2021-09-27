@@ -58,6 +58,10 @@ def generate_constraints(config):
       **kwargs,
   )
   floorplan.eightWayPartition()
+  # floorplan.coarseGrainedFloorplan()
+
+  if _logger.isEnabledFor(logging.INFO):
+    floorplan.printFloorplan()
 
   # generate topology
   s2v = floorplan.getSlotToVertices()
