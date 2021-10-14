@@ -128,7 +128,6 @@ module fifo_almost_full #(
   parameter ADDR_WIDTH = 5,
   parameter DEPTH      = 32,
   parameter THRESHOLD  = 18432,
-  parameter GRACE_PERIOD = 2
   parameter GRACE_PERIOD = 2,
   parameter USE_BRAM = 0,
   parameter USE_SRL = 0
