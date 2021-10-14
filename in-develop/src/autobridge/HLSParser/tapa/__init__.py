@@ -2,6 +2,7 @@
 import collections
 import json
 import logging
+import sys
 
 from autobridge.Device.DeviceManager import DeviceManager
 from autobridge.HLSParser.tapa.DataflowGraphTapa import DataflowGraphTapa
@@ -9,6 +10,15 @@ from autobridge.HLSParser.tapa.ProgramJsonManager import ProgramJsonManager
 from autobridge.Opt.Floorplan import Floorplanner
 from autobridge.Opt.Slot import Topology
 from autobridge.Opt.SlotManager import SlotManager
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=
+    '%(levelname).1s%(asctime)s.%(msecs)03d %(name)s:%(lineno)d] %(message)s',
+    datefmt='%m%d %H:%M:%S',
+)
+
+_logger = logging.getLogger().getChild(__name__)
 
 
 def generate_constraints(config):
@@ -49,6 +59,10 @@ def generate_constraints(config):
       **kwargs,
   )
   floorplan.eightWayPartition()
+  # floorplan.coarseGrainedFloorplan()
+
+  if _logger.isEnabledFor(logging.INFO):
+    floorplan.printFloorplan()
 
   # generate topology
   s2v = floorplan.getSlotToVertices()
@@ -61,16 +75,15 @@ def generate_constraints(config):
 
 
 def main():
-  logging.basicConfig(
-      filename='auto-parallel.log',
-      filemode='w',
-      level=logging.DEBUG,
-      format="[%(levelname)s: %(funcName)25s() ] %(message)s",
-  )
-  with open('SampleUserConfig.json', 'r') as fp:
-    constraints = generate_constraints(json.load(fp))
-  with open('TapaConstraint.json', 'w') as fp:
-    json.dump(constraints, fp, indent=2)
+  fp = sys.stdin
+  if fp.isatty():
+    fp = open('SampleUserConfig.json', 'r')
+  constraints = generate_constraints(json.load(fp))
+
+  fp = sys.stdout
+  if fp.isatty():
+    fp = open('TapaConstraint.json', 'w')
+  json.dump(constraints, fp, indent=2)
 
 
 if __name__ == '__main__':

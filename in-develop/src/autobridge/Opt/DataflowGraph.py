@@ -28,8 +28,7 @@ class Edge:
     return self.name == other.name
 
   def getDefaultType(self) -> str:
-    area_in_bit = self.width * (self.depth + self.latency)
-    if area_in_bit > FIFO_TYPE_THRESHOLD:
+    if self.depth >= 128:
       return 'BRAM'
     else:
       return 'SRL'

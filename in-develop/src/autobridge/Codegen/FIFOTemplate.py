@@ -123,14 +123,15 @@ endmodule
 /////////////////////////////////////////////////////////////////
 
 // first-word fall-through (FWFT) FIFO
-// if its capacity > THRESHOLD bits, it uses block RAM, otherwise it will uses
-// shift register LUT
 module fifo_almost_full #(
   parameter DATA_WIDTH = 32,
   parameter ADDR_WIDTH = 5,
   parameter DEPTH      = 32,
   parameter THRESHOLD  = 18432,
   parameter GRACE_PERIOD = 2
+  parameter GRACE_PERIOD = 2,
+  parameter USE_BRAM = 0,
+  parameter USE_SRL = 0
 ) (
   input wire clk,
   input wire reset,
@@ -149,7 +150,45 @@ module fifo_almost_full #(
 );
 
 generate
-  if (DATA_WIDTH * DEPTH > THRESHOLD) begin : bram
+  if ( USE_BRAM != 0 && USE_SRL == 0) begin : bram
+    fifo_bram_almost_full #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .ADDR_WIDTH(REAL_ADDR_WIDTH),
+      .DEPTH     (REAL_DEPTH),
+      .GRACE_PERIOD(GRACE_PERIOD) /*********/
+    ) unit (
+      .clk  (clk),
+      .reset(reset),
+      .if_full_n  (if_full_n),
+      .if_write_ce(if_write_ce),
+      .if_write   (if_write),
+      .if_din     (if_din),
+      .if_empty_n(if_empty_n),
+      .if_read_ce(if_read_ce),
+      .if_read   (if_read),
+      .if_dout   (if_dout)
+    );
+  end 
+  else if ( USE_SRL != 0 && USE_BRAM == 0 ) begin : srl
+    fifo_srl_almost_full #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .ADDR_WIDTH(REAL_ADDR_WIDTH),
+      .DEPTH     (REAL_DEPTH),
+      .GRACE_PERIOD(GRACE_PERIOD) /*********/
+    ) unit (
+      .clk  (clk),
+      .reset(reset),
+      .if_full_n  (if_full_n),
+      .if_write_ce(if_write_ce),
+      .if_write   (if_write),
+      .if_din     (if_din),
+      .if_empty_n(if_empty_n),
+      .if_read_ce(if_read_ce),
+      .if_read   (if_read),
+      .if_dout   (if_dout)
+    );
+  end
+  else if ( DATA_WIDTH * DEPTH > THRESHOLD ) begin : bram
     fifo_bram_almost_full #(
       .DATA_WIDTH(DATA_WIDTH),
       .ADDR_WIDTH(ADDR_WIDTH),
