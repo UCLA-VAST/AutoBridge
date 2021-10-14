@@ -514,7 +514,8 @@ class Floorplanner:
         wire_length_list.append(length)
 
     logging.info(f'total wire length: {sum(wire_length_list)}')
-    logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
+    if len(wire_length_list) > 1:
+      logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
 
     # SLR crossing information
     slr_crossing = [0] * (self.board.SLR_NUM-1)
@@ -691,6 +692,17 @@ class Floorplanner:
       s_name_2_v_names[slot.getName()] = {v.type : v.name for v in v_group}
     return s_name_2_v_names
   
+  def getVertexNameToSlot(self):
+    return {v.name: s for v, s in self.v2s.items()}
+
+  def getEdgeNameToSlot(self):
+    e_name_to_s = {}
+    for slot, e_list in self.s2e.items():
+      for e in e_list:
+        e_name_to_s[e.name] = slot
+
+    return e_name_to_s
+    
   def getSlotNameToEdgeNames(self):
     s_name_2_e_names = {}
     for slot, e_group in self.s2e.items():

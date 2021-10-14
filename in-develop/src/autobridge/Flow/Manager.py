@@ -9,6 +9,7 @@ from autobridge.Opt.Floorplan import Floorplanner
 from autobridge.Opt.GlobalRouting import GlobalRouting
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Opt.LatencyBalancing import LatencyBalancing
+from autobridge.Codegen.Codegen import generate_new_rtl_top
 import logging
 import json
 import re
@@ -40,7 +41,7 @@ class Manager:
     # latency balancing
     rebalance = LatencyBalancing(graph, floorplan, global_router)
 
-    # TODO: code gen
+    generate_new_rtl_top(top_rtl_parser.top_module_ast, graph.getNameToEdgeMap(), top_rtl_parser.getTopModuleName(), floorplan)
 
   def basicSetup(self):
     self.device_manager = DeviceManager(self.config["Board"])
@@ -95,7 +96,7 @@ class Manager:
       total_usage=hls_prj_manager.getTotalArea(), 
       board=self.device_manager.getBoard(),
       user_max_usage_ratio=self.config['AreaUtilizationRatio'],
-      grouping_constrants=grouping_constraints)
+      grouping_constraints=grouping_constraints)
     
     if 'FloorplanMethod' in self.config:
       choice = self.config['FloorplanMethod']

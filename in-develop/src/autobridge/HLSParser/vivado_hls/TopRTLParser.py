@@ -416,3 +416,6 @@ class TopRTLParser:
   # they must always remain in the same slot
   def getStrictGroupingConstraints(self):
     return list(self.grouping_constraints)
+
+  def getTopModuleName(self):
+    return self.top_rtl_path.split('/')[-1]
