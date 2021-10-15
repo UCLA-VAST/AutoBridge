@@ -123,11 +123,13 @@ def make_ap_idle_equal_to_ap_done(node):
         portarg.argname.name = ''
 
 
-def fix_ap_continue_to_zero(node):
+def fix_ap_continue_to_ap_done(node):
   if (not isinstance(node, ast.InstanceList)):
     return
 
   curr_port_list = node.instances[0].portlist
+  mod_name = node.instances[0].name
+
   for portarg in curr_port_list:
     if portarg.portname == 'ap_continue':
-      portarg.argname.name = '1\'b0'
+      portarg.argname.name = f'ap_done_{mod_name}'

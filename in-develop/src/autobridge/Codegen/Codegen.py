@@ -9,7 +9,7 @@ from autobridge.Codegen.PipeliningControl import (
   collect_all_ap_done_signals,
   make_ap_ready_equal_to_ap_done,
   make_ap_idle_equal_to_ap_done,
-  fix_ap_continue_to_zero,
+  fix_ap_continue_to_ap_done,
 )
 from autobridge.Codegen.InjectPipelineLogic import (
   get_ap_start_pipeline_def,
@@ -60,7 +60,7 @@ def generate_new_rtl_top(top_mod_ast, edge_name_to_object: Dict[str, Edge], outp
   level_traverse(top_mod_ast, pipeline_ap_done)
   level_traverse(top_mod_ast, make_ap_ready_equal_to_ap_done)
   level_traverse(top_mod_ast, make_ap_idle_equal_to_ap_done)
-  level_traverse(top_mod_ast, fix_ap_continue_to_zero)
+  level_traverse(top_mod_ast, fix_ap_continue_to_ap_done)
 
   temp_rtl_top = get_rtl(top_mod_ast)
 
