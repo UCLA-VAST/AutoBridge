@@ -122,3 +122,32 @@ def get_ap_done_pipeline_def(v_name_to_s: Dict[str, Slot], ap_done_module_list: 
   return pipeline_def
 
 
+def remove_orig_ctrl_signal(temp_rtl_top: List[str]) -> None:
+  """
+  comment out all assign statement of the original control signals
+  also comment out the always blocks related to the original control signals
+  """
+  ctrl_signals = [
+    'ap_start',
+    'ap_ready',
+    'ap_done',
+    'ap_continue',
+    'ap_idle',
+    'ap_sync_',
+  ]
+
+  # the always blocks are suppose to be after all module instances
+  for i in range(len(temp_rtl_top)):
+    if 'always' in temp_rtl_top[i] and 'ap_clk' in temp_rtl_top[i]:
+      for j in range(i, len(temp_rtl_top)):
+        if 'assign' in temp_rtl_top[j]:
+          break
+        else:
+          temp_rtl_top[j] = f'//  {temp_rtl_top[j]}'
+      break
+
+  # all assign statement are after the always blocks
+  for i in range(len(temp_rtl_top)):
+    if 'assign' in temp_rtl_top[i]:
+      assert any(ctrl_signal in temp_rtl_top[i] for ctrl_signal in ctrl_signals), temp_rtl_top[i]
+      temp_rtl_top[i] = f'//  {temp_rtl_top[i]}'

@@ -15,6 +15,7 @@ from autobridge.Codegen.InjectPipelineLogic import (
   get_ap_start_pipeline_def,
   get_ap_rst_pipeline_def,
   get_ap_done_pipeline_def,
+  remove_orig_ctrl_signal,
 )
 from autobridge.Codegen.FIFOTemplate import fifo_template
 from autobridge.Opt.DataflowGraph import Edge
@@ -63,6 +64,9 @@ def generate_new_rtl_top(top_mod_ast, edge_name_to_object: Dict[str, Edge], outp
   level_traverse(top_mod_ast, fix_ap_continue_to_ap_done)
 
   temp_rtl_top = get_rtl(top_mod_ast)
+
+  # remove the previous assignment of ap_done and ap_ready
+  remove_orig_ctrl_signal(temp_rtl_top)
 
   # then inject the pipeline logic
   pipeline_def = []
