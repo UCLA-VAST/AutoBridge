@@ -10,6 +10,7 @@ from autobridge.Opt.GlobalRouting import GlobalRouting
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Opt.LatencyBalancing import LatencyBalancing
 from autobridge.Codegen.Codegen import generate_new_rtl_top
+from autobridge.Codegen.FloorplanTclGeneration import generate_floorplan_constraints
 import logging
 import json
 import re
@@ -42,7 +43,8 @@ class Manager:
     rebalance = LatencyBalancing(graph, floorplan, global_router)
 
     generate_new_rtl_top(top_rtl_parser.top_module_ast, graph.getNameToEdgeMap(), top_rtl_parser.getTopModuleName(), floorplan)
-
+    generate_floorplan_constraints(floorplan, global_router)
+  
   def basicSetup(self):
     self.device_manager = DeviceManager(self.config["Board"])
     self.board = self.device_manager.getBoard()
