@@ -46,6 +46,11 @@ def convert_fifo_to_relay_station(node, edge_name_to_object: Dict[str, Edge]):
 def add_keep_hierarcy_pragma(node):  #non fifo modules
   if (not isinstance(node, ast.InstanceList)):
     return
+
+  # do not keep hierarchy of relay stations
+  # because they are meant to be split and span long distances
+  if node.module == 'relay_station':
+    return
       
   node.module = f'(* keep_hierarchy = "yes" *) {node.module}'
   for c in node.instances:
