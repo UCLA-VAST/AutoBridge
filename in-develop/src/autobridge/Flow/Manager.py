@@ -46,7 +46,13 @@ class Manager:
     generate_floorplan_constraints(floorplan, global_router)
   
   def basicSetup(self):
-    self.device_manager = DeviceManager(self.config["Board"])
+    if "BundleToDDRMapping" in self.config:
+      ddr_list = list(set(self.config["BundleToDDRMapping"].values()))
+      assert len(ddr_list) == len(self.config["BundleToDDRMapping"].values())
+      self.device_manager = DeviceManager(self.config["Board"], ddr_list, True)
+    else:
+      self.device_manager = DeviceManager(self.config["Board"], [], False)
+    
     self.board = self.device_manager.getBoard()
 
     self.top_rtl_name = self.config["TopName"]
@@ -81,6 +87,9 @@ class Manager:
 
   def parseUserConstraints(self, graph, slot_manager):
     user_constraint_s2v = defaultdict(list)
+    
+    # TODO: automatically generate constraints based on bundle: 
+    
     if "Floorplan" in self.config:
       user_fp_json = self.config["Floorplan"]
       for region, v_name_group in user_fp_json.items():
