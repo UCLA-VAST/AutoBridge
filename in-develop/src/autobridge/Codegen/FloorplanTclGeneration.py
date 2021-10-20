@@ -12,7 +12,7 @@ VITIS_HIERARCHY_ADDRESS = 'pfm_top_i/dynamic_region/.*/inst'
 def create_pblocks(slot_list: List[Slot], board: DeviceBase) -> List[str]:
   tcl = []
   for slot in slot_list:
-    tcl.append(board.getSlotPblockTcl(slot.getName(), slot.getRTLModuleName()))
+    tcl += board.getSlotPblockTcl(slot)
     
   return tcl
 
@@ -72,6 +72,8 @@ def gen_constraints_for_relay_stations(
 
 def generate_floorplan_constraints(floorplan: Floorplanner, global_router: GlobalRouting):
   tcl = []
+
+  tcl += ['write_checkpoint before_applying_floorplan_constriants.dcp']
 
   slot_list = list(floorplan.getSlotToVertices().keys())
   tcl += create_pblocks(slot_list, floorplan.board)

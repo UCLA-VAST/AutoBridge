@@ -9,6 +9,7 @@ class DeviceBase:
   FPGA_PART_NAME = None
   
   def __init__(self, ddr_list=[], is_vitis_enabled=False):
+    self.ddr_list = ddr_list
     self.pre_existing_area = self._getVitisRegions(ddr_list, is_vitis_enabled)
 
   def _getCRPblockIntersect(self, cr_pblock1, cr_pblock2):
@@ -80,15 +81,32 @@ class DeviceBase:
           slot_user_area[item] -= overlap_area[item]
     return slot_user_area
 
-  def getSlotPblockTcl(self, slot_pblock, pblock_name):
+  def getSlotPblockTcl(self, slot: Slot):
     """
     remove the overlaps with vitis IPs
     """
-    return f'''
-create_pblock {pblock_name}
-resize_pblock {pblock_name} -add {slot_pblock}
-resize_pblock {pblock_name} -remove {{
-  ''' + '\n  '.join(self.pre_existing_area) + '\n}'
+    tcl = []
+    pblock_name = slot.getRTLModuleName()
+    pblock_def = slot.getName()
+
+    tcl.append(f'create_pblock {pblock_name}')
+    tcl.append(f'resize_pblock {pblock_name} -add {pblock_def}')
+    tcl.append(f'resize_pblock {pblock_name} -remove {{')
+    tcl.append('  ' + '\n  '.join(self.pre_existing_area))
+    tcl.append(f'}}')
+
+    # stole a few columns from the clock regions assigned to ddrs
+    for ddr, ddr_pblock in self.DDR_TO_CLOCK_REGIONS.items():
+      if slot.containsChildSlot(Slot(slot.board, ddr_pblock)):
+        if self.getDDRSlolenRegion(ddr):
+          tcl.append(f'resize_pblock {pblock_name} -add {{ {self.getDDRSlolenRegion(ddr)} }}')
+
+    return tcl
+
+  def getDDRSlolenRegion(self, ddr: int) -> str:
+    return ''
+
+  DDR_TO_CLOCK_REGIONS = {}
 
 
 class DeviceU250(DeviceBase):
@@ -98,14 +116,18 @@ class DeviceU250(DeviceBase):
     # the area used by implicit IPs
     pre_existing_area = []
     for ddr in ddr_list:
-      pre_existing_area.append(f'CLOCKREGION_X4Y{4 * ddr}:CLOCKREGION_X4Y{4 * ddr + 3}')
+      pre_existing_area.append(self.DDR_TO_CLOCK_REGIONS[ddr])
 
     # the vitis platform will take away the rightmost column
     if is_vitis_enabled:
-      pre_existing_area.append(f'CLOCKREGION_X7Y0:CLOCKREGION_X7Y15') # the area consumed by Vitis platform
+      pre_existing_area.append(self.VITIS_REGION) # the area consumed by Vitis platform
     
     return pre_existing_area
 
+  def getDDRSlolenRegion(self, ddr: int) -> str:
+    assert 0 <= ddr <= 3, ddr
+    # entire sloten region is {SLICE_X144Y0:SLICE_X145Y959 DSP48E2_X19Y0:DSP48E2_X19Y383 RAMB18_X9Y0:RAMB18_X9Y383 RAMB36_X9Y0:RAMB36_X9Y191}
+    return f'SLICE_X144Y{240 * ddr}:SLICE_X145Y{240 * (ddr+1) - 1} DSP48E2_X19Y{96 * ddr}:DSP48E2_X19Y{96 * (ddr+1) - 1} RAMB18_X9Y{96 * ddr}:RAMB18_X9Y{96 * (ddr+1) - 1} RAMB36_X9Y{48 * ddr}:RAMB36_X9Y{48 * (ddr+1) - 1}'
 
   NAME = 'U250'
 
@@ -200,6 +222,16 @@ class DeviceU250(DeviceBase):
   TOTAL_AREA['LUT'] = 1728000
   TOTAL_AREA['URAM'] = 1280
 
+  # note that the location of DDR 3 is not consistent with other DDRs 
+  DDR_TO_CLOCK_REGIONS = {
+    0: 'CLOCKREGION_X4Y1:CLOCKREGION_X4Y3',
+    1: 'CLOCKREGION_X4Y5:CLOCKREGION_X4Y7',
+    2: 'CLOCKREGION_X4Y9:CLOCKREGION_X4Y11',
+    3: 'CLOCKREGION_X4Y12:CLOCKREGION_X4Y14'
+  }
+
+  # the rightmost column
+  VITIS_REGION = 'CLOCKREGION_X7Y0:CLOCKREGION_X7Y15'
 
 class DeviceU280(DeviceBase):
   def _getVitisRegions(self, ddr_list, is_vitis_enabled):
