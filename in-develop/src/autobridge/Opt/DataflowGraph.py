@@ -5,7 +5,7 @@ from typing import Dict
 from autobridge.HLSParser.vivado_hls.TopRTLParser import TopRTLParser
 from autobridge.HLSParser.vivado_hls.HLSProjectManager import HLSProjectManager
 
-FIFO_TYPE_THRESHOLD = 18432
+FIFO_TYPE_DEPTH_THRESHOLD = 1024
 
 
 class Edge:
@@ -27,8 +27,18 @@ class Edge:
   def __eq__(self, other):
     return self.name == other.name
 
+  def setDepth(self, depth):
+    self.depth = depth
+    self.addr_width = int(math.log2(self.depth)+1)
+
+  def addDepth(self, depth_delta):
+    self.setDepth(self.depth + depth_delta)
+
+  def setWidth(self, width):
+    self.width = width
+
   def getDefaultType(self) -> str:
-    if self.depth >= 128:
+    if self.depth >= FIFO_TYPE_DEPTH_THRESHOLD:
       return 'BRAM'
     else:
       return 'SRL'
@@ -212,9 +222,8 @@ class DataflowGraph:
     e = Edge(e_node.name)
 
     # extract width
-    e.width = self.top_rtl_parser.getFIFOWidthFromFIFOType(e_node.module)
-    e.depth = self.top_rtl_parser.getFIFODepthFromFIFOType(e_node.module)
-    e.addr_width = int(math.log2(e.depth)+1)
+    e.setWidth(self.top_rtl_parser.getFIFOWidthFromFIFOType(e_node.module))
+    e.setDepth(self.top_rtl_parser.getFIFODepthFromFIFOType(e_node.module))
 
     self.edges[e_node.name] = e
 
