@@ -9,6 +9,26 @@ from autobridge.Device.DeviceManager import DeviceBase
 VITIS_HIERARCHY_ADDRESS = 'pfm_top_i/dynamic_region/.*/inst'
 
 
+def get_used_slots(floorplan, global_router) -> List[Slot]:
+  """
+  (1) at least one vertex is assigned
+  or (2) at least one pipeline registers is assigned 
+  """
+  vertex_slot = list(floorplan.getSlotToVertices().keys())
+  
+  pipeline_reg_slot = []
+  for e_list in floorplan.getSlotToEdges().values():
+    for e in e_list:
+      if e.latency == 0:
+        continue
+
+      pipeline_reg_slot += global_router.e_name2path[e.name]  # exclude src and dst
+
+  all_slot_list = list(set(vertex_slot + pipeline_reg_slot))
+
+  return all_slot_list
+  
+
 def create_pblocks(slot_list: List[Slot], board: DeviceBase) -> List[str]:
   tcl = []
   for slot in slot_list:
@@ -77,7 +97,8 @@ def generate_floorplan_constraints(floorplan: Floorplanner, global_router: Globa
 
   tcl += ['write_checkpoint before_applying_floorplan_constriants.dcp']
 
-  slot_list = list(floorplan.getSlotToVertices().keys())
+  slot_list = get_used_slots(floorplan, global_router)
+  
   tcl += create_pblocks(slot_list, floorplan.board)
 
   tcl += gen_constraints_for_vertices(floorplan.getSlotToVertices())
