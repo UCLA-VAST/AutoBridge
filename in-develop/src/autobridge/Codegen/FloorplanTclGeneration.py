@@ -20,6 +20,7 @@ def create_pblocks(slot_list: List[Slot], board: DeviceBase) -> List[str]:
 def gen_constraints_for_vertices(s2v: Dict[Slot, List[Vertex]]) -> List[str]:
   tcl = []
   for slot, v_list in s2v.items():
+    assert v_list
     tcl.append(f'add_cells_to_pblock {slot.getRTLModuleName()} [ get_cells -regexp {{ ')
     for v in v_list:
       tcl.append(f'  {VITIS_HIERARCHY_ADDRESS}/{v.name}')
@@ -31,11 +32,12 @@ def gen_constraints_for_vertices(s2v: Dict[Slot, List[Vertex]]) -> List[str]:
 def gen_constraints_for_almost_full_fifos(s2e: Dict[Slot, List[Edge]]) -> List[str]:
   tcl = []
   for slot, e_list in s2e.items():
-    tcl.append(f'add_cells_to_pblock {slot.getRTLModuleName()} [ get_cells -regexp {{ ')
-    for e in e_list:
-      if e.latency == 0:
+    almost_full_fifo_edges = [e for e in e_list if e.latency == 0]
+    if almost_full_fifo_edges:
+      tcl.append(f'add_cells_to_pblock {slot.getRTLModuleName()} [ get_cells -regexp {{ ')
+      for e in almost_full_fifo_edges:
         tcl.append(f'  {VITIS_HIERARCHY_ADDRESS}/{e.name}')
-    tcl.append(f'}} ]')
+      tcl.append(f'}} ]')
 
   return tcl
 
