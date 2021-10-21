@@ -108,6 +108,9 @@ class DeviceBase:
 
   DDR_TO_CLOCK_REGIONS = {}
 
+  def getDDRPblock(self, ddr):
+    return self.DDR_TO_CLOCK_REGIONS[ddr]
+
 
 class DeviceU250(DeviceBase):
   def _getVitisRegions(self, ddr_list, is_vitis_enabled):

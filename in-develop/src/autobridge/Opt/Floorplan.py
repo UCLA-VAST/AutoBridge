@@ -125,7 +125,8 @@ class Floorplanner:
           m += v2var[v] == 1
         else:
           logging.warning(f'Potential wrong constraints from user: {v.name} -> {expect_slot.getName()}')
-
+          exit(1)
+          
   # specify which modules must be assigned to the same slot
   # note that the key of curr_v2s is Vertex instead of name string
   def __addGroupingConstraints(self, m, curr_v2s, v2var, enable_grouping_hints):

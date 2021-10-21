@@ -47,6 +47,7 @@ class Manager:
   
   def basicSetup(self):
     if "BundleToDDRMapping" in self.config:
+      # reserve area for ddrs
       ddr_list = list(set(self.config["BundleToDDRMapping"].values()))
       assert len(ddr_list) == len(self.config["BundleToDDRMapping"].values())
       self.device_manager = DeviceManager(self.config["Board"], ddr_list, True)
@@ -88,8 +89,43 @@ class Manager:
   def parseUserConstraints(self, graph, slot_manager):
     user_constraint_s2v = defaultdict(list)
     
-    # TODO: automatically generate constraints based on bundle: 
-    
+    def get_interface_module_name(bundle_name):
+      top_name = self.config["TopName"]
+      return f'{top_name}_{bundle_name}_m_axi_U'
+
+    def get_s_axi_control_name():
+      top_name = self.config["TopName"]
+      return f'{top_name}_control_s_axi_U'
+
+    # constrain the s_axi_control to SLR 0
+    CONTROL_S_AXI_LOCATION = 0
+
+    if "BundleToDDRMapping" in self.config:
+      # properly constrain the interface modules
+      board = self.device_manager.getBoard()
+      for bundle, ddr in self.config["BundleToDDRMapping"].items():
+        ddr_pblock = board.getDDRPblock(ddr)
+        slot = slot_manager.createSlot(ddr_pblock)
+        v_name = get_interface_module_name(bundle)
+        try:
+          v = graph.getVertex(v_name)
+        except:
+          logging.error(f'Naming convention of interface modules has changed!')
+          exit(1)
+
+        user_constraint_s2v[slot].append(v)
+        logging.info(f'Constrain interface module {v_name} to {ddr_pblock}')
+
+      # constrain the s_axi_control
+      s_axi_slot = slot_manager.createSlot(board.getDDRPblock(CONTROL_S_AXI_LOCATION))
+      try:
+        s_axi_vertex = graph.getVertex(get_s_axi_control_name())
+      except:
+        logging.error(f'Naming convention of s_axi_control has changed!')
+        exit(1)
+      user_constraint_s2v[s_axi_slot].append(s_axi_vertex)
+      logging.info(f'Constrain s_axi_control {v_name} to {board.getDDRPblock(CONTROL_S_AXI_LOCATION)}')
+
     if "Floorplan" in self.config:
       user_fp_json = self.config["Floorplan"]
       for region, v_name_group in user_fp_json.items():
