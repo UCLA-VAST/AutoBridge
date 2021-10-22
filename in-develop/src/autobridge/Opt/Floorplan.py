@@ -31,6 +31,10 @@ class Floorplanner:
     self.board = board
     self.graph = graph
     self.user_constraint_s2v = user_constraint_s2v
+    for slot, v_list in user_constraint_s2v.items():
+      for v in v_list:
+        logging.info(f'user constraints: {v.name} -> {slot.getRTLModuleName()}')
+
     self.slot_manager = slot_manager
     self.total_usage = total_usage
     self.max_search_time = max_search_time
@@ -38,6 +42,11 @@ class Floorplanner:
     # hints are optional, constraints are mandatory
     self.grouping_hints = grouping_hints # list of list
     self.grouping_constraints: List[List[str]] = grouping_constraints
+    if grouping_constraints:
+      for group in grouping_constraints:
+        logging.info(f'initial grouping constraints: ' + ' & '.join(group))
+    else:
+      logging.info(f'no initial grouping constraints')
 
     self.s2v = {}
     self.v2s = {}

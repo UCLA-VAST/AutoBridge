@@ -34,7 +34,7 @@ class Manager:
 
     user_constraint_s2v = self.parseUserConstraints(graph, slot_manager)
 
-    floorplan = self.runFloorplanning(graph, user_constraint_s2v, slot_manager, hls_prj_manager)
+    floorplan = self.runFloorplanning(graph, user_constraint_s2v, slot_manager, hls_prj_manager, top_rtl_parser)
 
     # grid routing of edges 
     global_router = GlobalRouting(floorplan, top_rtl_parser, slot_manager)
@@ -135,7 +135,17 @@ class Manager:
 
     return user_constraint_s2v
 
-  def runFloorplanning(self, graph, user_constraint_s2v, slot_manager, hls_prj_manager, grouping_constraints=[]):
+  def runFloorplanning(
+      self, 
+      graph, 
+      user_constraint_s2v, 
+      slot_manager, 
+      hls_prj_manager,
+      top_rtl_parser,
+      grouping_constraints=[]):
+
+    grouping_constraints += top_rtl_parser.getStrictGroupingConstraints()
+    
     floorplan = Floorplanner(
       graph, 
       user_constraint_s2v, 
