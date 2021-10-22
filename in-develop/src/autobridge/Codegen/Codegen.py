@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from pyverilog.ast_code_generator.codegen import ASTCodeGenerator
-from autobridge.Codegen.PipeliningFIFO import convert_fifo_to_relay_station, add_keep_hierarcy_pragma
+from autobridge.Codegen.PipeliningFIFO import convert_fifo, add_keep_hierarcy_pragma
 from autobridge.Codegen.PipeliningControl import (
   pipeline_ap_rst, 
   pipeline_ap_start, 
@@ -54,7 +54,7 @@ def generate_new_rtl_top(top_mod_ast, edge_name_to_object: Dict[str, Edge], outp
   slot_list = list(floorplan.s2v.keys())
 
   # first edit the signals connected to each module instance
-  level_traverse(top_mod_ast, convert_fifo_to_relay_station, edge_name_to_object)
+  level_traverse(top_mod_ast, convert_fifo, edge_name_to_object)
   level_traverse(top_mod_ast, add_keep_hierarcy_pragma)
   level_traverse(top_mod_ast, pipeline_ap_rst, v_name_to_s, e_name_to_s)
   level_traverse(top_mod_ast, pipeline_ap_start, v_name_to_s)

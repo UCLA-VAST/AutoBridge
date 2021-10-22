@@ -8,7 +8,6 @@ class LatencyBalancing:
     self.name2vertex = graph.getNameToVertexMap()
     self.floorplan = floorplan
     self.global_router = global_router
-    self.e_name2lat = {}
 
     self.__rebalance()
 
@@ -27,7 +26,7 @@ class LatencyBalancing:
       # note that additional pipelining for full_n will not lead to additional latency
       # we only need to increase the grace period of almost full FIFOs by 1
       # [update]: we skip the +1 for the orginial FIFO. We only take care of our own modifications
-      m += v2var[e.src] >= v2var[e.dst] + self.global_router.getPipelineLevelOfEdge(e)
+      m += v2var[e.src] >= v2var[e.dst] + e.pipeline_level
 
     m.objective = minimize(xsum( 
       e.width * (v2var[e.src] - v2var[e.dst]) for e in self.name2edge.values() 
@@ -38,14 +37,9 @@ class LatencyBalancing:
 
     # get result
     for e_name, e in self.name2edge.items():
-      e.latency = int(v2var[e.src].x - v2var[e.dst].x)
-      self.e_name2lat[e_name] = e.latency
+      e.added_depth_for_rebalance = int(v2var[e.src].x - v2var[e.dst].x) - e.pipeline_level
+      assert e.added_depth_for_rebalance >= 0
 
     # logging
     for e_name, e in self.name2edge.items():
-      orig_lat = self.global_router.getPipelineLevelOfEdge(e)
-      new_lat = self.e_name2lat[e_name]
-      logging.info(f'{e_name}: latency from {orig_lat} to {new_lat}, area from {orig_lat * e.width} to {new_lat * e.width} ')
-
-  def getLatencyofEdgeName(self, e_name : str):
-    return self.e_name2lat[e_name]
+      logging.info(f'{e_name}: pipeline_level: {e.pipeline_level}, added_depth_for_rebalance: {e.added_depth_for_rebalance}, width: {e.width} ')
