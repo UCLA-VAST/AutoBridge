@@ -89,6 +89,9 @@ def gen_constraints_for_relay_stations(
         tcl.append(f'add_cells_to_pblock {slot_path_with_src_and_dst[i].getRTLModuleName()} [get_cells -regexp {{ {VITIS_HIERARCHY_ADDRESS}/{e.name}/inst.*{2*i}.*unit }}]')
         tcl.append(f'add_cells_to_pblock {slot_path_with_src_and_dst[i+1].getRTLModuleName()} [get_cells -regexp {{ {VITIS_HIERARCHY_ADDRESS}/{e.name}/inst.*{2*i+1}.*unit }}]')
 
+      # always constrain that the final fifo_unit is at the same slot with the dst vertex
+      tcl.append(f'add_cells_to_pblock {slot_path_with_src_and_dst[-1].getRTLModuleName()} [get_cells -regexp {{ {VITIS_HIERARCHY_ADDRESS}/{e.name}/inst.*fifo_unit }}]')
+
   return tcl
 
 
