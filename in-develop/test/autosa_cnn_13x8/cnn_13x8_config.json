@@ -1,0 +1,17 @@
+{
+  "Board" : "U250",
+  "HLSProjectPath" : "./kernel3",
+  "HLSSolutionName" : "solution",
+  "TopName" : "kernel3",
+
+  "FloorplanMethod": "IterativeDivisionToHalfSLR",
+  "AreaUtilizationRatio" : 0.7,
+
+  "BundleToDDRMapping" : {
+    "gmem_A": 0,
+    "gmem_B": 1,
+    "gmem_C": 2
+  },
+
+  "LoggingLevel" : "DEBUG"
+}
