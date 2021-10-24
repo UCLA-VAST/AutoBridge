@@ -1,8 +1,29 @@
 # Latest
 
-- We are in transition to our new code base in the "in-develop" directory. We hope to make the tool flexible regarding the target device, the optimization methods, which front-end HLS to use, etc. Please let me know if you have any suggestions!
+- A new implementation has been ready! Check the example in AutoBridge/in-develop/test/autosa_cnn_13x8/.
+- The user interface has been significantly simplified. To invoke the new AutoBridge, just write a simple config file like this:
 
-- A useful example of integrating AutoBridge: 
+```json
+{
+  "Board" : "U250",
+  "HLSProjectPath" : "./kernel3",
+  "HLSSolutionName" : "solution",
+  "TopName" : "kernel3",
+
+  "FloorplanMethod": "IterativeDivisionToHalfSLR",
+  "AreaUtilizationRatio" : 0.7,
+
+  "BundleToDDRMapping" : {
+    "gmem_A": 0,
+    "gmem_B": 1,
+    "gmem_C": 2
+  },
+
+  "LoggingLevel" : "DEBUG"
+}
+```
+
+- For the old implementation (AutoBridge/src), here is a useful example of integrating AutoBridge: 
 https://autosa.readthedocs.io/en/latest/tutorials/auto_bridge.html
 
 # About
