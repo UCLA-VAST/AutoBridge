@@ -8,7 +8,7 @@ class DeviceBase:
   CR_NUM_VERTICAL = None
   FPGA_PART_NAME = None
   
-  def __init__(self, ddr_list=[], is_vitis_enabled=False):
+  def __init__(self, ddr_list=[], is_vitis_enabled=True):
     self.ddr_list = ddr_list
     self.pre_existing_area = self._getVitisRegions(ddr_list, is_vitis_enabled)
 
@@ -247,7 +247,7 @@ class DeviceU280(DeviceBase):
 
     # the vitis platform will take away the rightmost column
     if is_vitis_enabled:
-      pre_existing_area.append(f'CLOCKREGION_X7Y0:CLOCKREGION_X7Y11') # the area consumed by Vitis platform
+      pre_existing_area.append(f'CLOCKREGION_X7Y1:CLOCKREGION_X7Y11') # the area consumed by Vitis platform
     
     return pre_existing_area
 

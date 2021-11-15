@@ -52,7 +52,7 @@ class Manager:
       assert len(ddr_list) == len(self.config["BundleToDDRMapping"].values())
       self.device_manager = DeviceManager(self.config["Board"], ddr_list, True)
     else:
-      self.device_manager = DeviceManager(self.config["Board"], [], False)
+      self.device_manager = DeviceManager(self.config["Board"], [], True)
     
     self.board = self.device_manager.getBoard()
 
