@@ -37,6 +37,7 @@ class TopRTLParser:
     self.io_name_to_dir = {}
     self.all_decl_except_io = []
     self.codegen = ASTCodeGenerator()
+    self.ap_done_v_name_to_wire = {} # ap_done module name -> wire name
     self.ap_ready_v_name_to_wire = {}
     self.param_to_value_str = {}
     self.e_name_to_ast_node = {}
@@ -50,8 +51,11 @@ class TopRTLParser:
     self.__initRTLOfAllInsts()
     self.__initParamToValueStr()
     self.__initDeclList()
+    self.__initApDoneSources()
     self.__initApReadySources()
-
+    
+    # for mod, ap_done in self.ap_done_v_name_to_wire.items():
+    #   print(f'{ap_done} -> {mod}')
 
   # 1. no start_for FIFOs
   # 2. each inst has different name
@@ -217,6 +221,18 @@ class TopRTLParser:
         self.wire_to_v_name[wire_name] = v_node.name
         self.v_name_to_wires[v_node.name].append(wire_name)
 
+  # only some modules will be used to check if the whole design has finished
+  # we only collect the ap_done names of those modules
+  def __initApDoneSources(self):
+    f = open(self.top_rtl_path, 'r')
+    for line in f:
+      if re.search(r'assign[ ]*ap_sync_done', line):
+        line = re.sub(r'assign[ ]*ap_sync_done[ ]*=[ ]*', '', line)
+        line = re.sub(r'[() ;\n]', '', line)
+        ap_dones = line.split('&'); assert len(ap_dones)
+        self.ap_done_v_name_to_wire = {self.wire_to_v_name[ap_done] : ap_done for ap_done in ap_dones}
+        return
+    assert False, 'ap_done signal in unexpected format'
 
   # extract which ap_ready signals will be used for the final ap_ready signal
   # [FIXME] some situations cannot be handled yet (multiple levels of intermediate wires)
@@ -378,6 +394,10 @@ class TopRTLParser:
   def getFIFONameFromInstanceList(self, node):
     assert(len(node.instances) == 1)
     return node.instances[0].name
+
+  # only contains the ap_done signals that are part of the final ap_done
+  def getApDoneVNameToWire(self):
+    return self.ap_done_v_name_to_wire
 
   # only contains the ap_ready signals that are part of the final ap_ready
   def getApReadyVNameToWire(self):
