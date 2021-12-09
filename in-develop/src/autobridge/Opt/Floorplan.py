@@ -1,5 +1,7 @@
 #! /usr/bin/python3.6
 import logging
+import statistics
+
 from collections import defaultdict
 from typing import Dict, List
 from autobridge.Device.DeviceManager import *
@@ -10,7 +12,6 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.HLSParser.vivado_hls.HLSProjectManager import HLSProjectManager
 from mip import *
-import statistics
 
 _logger = logging.getLogger().getChild(__name__)
 
@@ -18,14 +19,14 @@ _logger = logging.getLogger().getChild(__name__)
 class Floorplanner:
 
   def __init__(
-      self, 
-      graph : DataflowGraph, 
-      user_constraint_s2v : Dict, 
+      self,
+      graph : DataflowGraph,
+      user_constraint_s2v : Dict,
       slot_manager : SlotManager,
-      total_usage : dict, 
-      board, 
+      total_usage : dict,
+      board,
       user_max_usage_ratio = 0.7,
-      max_search_time=600, 
+      max_search_time=600,
       grouping_hints=[],
       grouping_constraints=[]):
     self.board = board
@@ -33,7 +34,7 @@ class Floorplanner:
     self.user_constraint_s2v = user_constraint_s2v
     for slot, v_list in user_constraint_s2v.items():
       for v in v_list:
-        logging.info(f'user constraints: {v.name} -> {slot.getRTLModuleName()}')
+        _logger.info(f'user constraints: {v.name} -> {slot.getRTLModuleName()}')
 
     self.slot_manager = slot_manager
     self.total_usage = total_usage
@@ -44,9 +45,9 @@ class Floorplanner:
     self.grouping_constraints: List[List[str]] = grouping_constraints
     if grouping_constraints:
       for group in grouping_constraints:
-        logging.info(f'initial grouping constraints: ' + ' & '.join(group))
+        _logger.info(f'initial grouping constraints: ' + ' & '.join(group))
     else:
-      logging.info(f'no initial grouping constraints')
+      _logger.info(f'no initial grouping constraints')
 
     self.s2v = {}
     self.v2s = {}
@@ -72,7 +73,7 @@ class Floorplanner:
       usage = self.total_usage[item] / total_avail[item] + 0.05
       ratio = max(usage, user_max_usage_ratio)
 
-    logging.info(f'Maximum resource usage ratio set as: {ratio}')
+    _logger.info(f'Maximum resource usage ratio set as: {ratio}')
     return ratio
 
   def __initSlotToEdges(self):
@@ -89,7 +90,7 @@ class Floorplanner:
       for e in inter_edges:
         if e.dst in v_set:
           self.s2e[s].append(e)
-          logging.debug(f'{e.name} is assigned with {e.dst.name}')
+          _logger.debug(f'{e.name} is assigned with {e.dst.name}')
 
   # map all vertices to the initial slot (the whole device)
   def __getInitialSlotToVerticesMapping(self):
@@ -102,7 +103,7 @@ class Floorplanner:
     for s, v_group in curr_s2v.items():
       bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(s, dir)
       assert up_or_right.up_right_x >= bottom_or_left.down_left_x
-  
+
       for r in RESOURCE_TYPES:
         v_var_list = [v2var[v] for v in v_group]
         area_list = [v.area[r] for v in v_group]
@@ -110,8 +111,8 @@ class Floorplanner:
 
         # for the up/right child slot (if mod_x is assigned 1)
         m += xsum( v_var_list[i] * area_list[i] for i in I ) <= up_or_right.getArea()[r] * (self.max_usage_ratio + delta)
-        
-        # for the down/left child slot (if mod_x is assigned 0)        
+
+        # for the down/left child slot (if mod_x is assigned 0)
         m += xsum( (1-v_var_list[i]) * area_list[i] for i in I ) <= bottom_or_left.getArea()[r] * (self.max_usage_ratio + delta)
 
   def __addUserConstraints(self, m, curr_v2s, v2var, dir, check_user_constraints = True):
@@ -123,23 +124,23 @@ class Floorplanner:
             continue
 
         assert v in curr_v2s, f'ERROR: user has forced the location of a non-existing module {v.name}'
-        
+
         curr_slot = curr_v2s[v]
         bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(curr_slot, dir)
         if bottom_or_left.containsChildSlot(expect_slot):
-          logging.debug(f'[user constraint] {v.name} assigned to bottom/left')
+          _logger.debug(f'[user constraint] {v.name} assigned to bottom/left')
           m += v2var[v] == 0
         elif up_or_right.containsChildSlot(expect_slot):
-          logging.debug(f'[user constraint] {v.name} assigned to up/right')
+          _logger.debug(f'[user constraint] {v.name} assigned to up/right')
           m += v2var[v] == 1
         else:
-          logging.warning(f'Potential wrong constraints from user: {v.name} -> {expect_slot.getName()}')
+          _logger.warning(f'Potential wrong constraints from user: {v.name} -> {expect_slot.getName()}')
           exit(1)
-          
+
   # specify which modules must be assigned to the same slot
   # note that the key of curr_v2s is Vertex instead of name string
   def __addGroupingConstraints(self, m, curr_v2s, v2var, enable_grouping_hints):
-    logging.info(f'apply grouping constraints')
+    _logger.info(f'apply grouping constraints')
     v_name_to_v = {v.name : v for v in curr_v2s.keys()}
 
     if enable_grouping_hints:
@@ -153,7 +154,7 @@ class Floorplanner:
         # assert grouping[i] in v_name_to_v, f'unknown vertex: {grouping[i]}'
 
         if grouping[0] in v_name_to_v and grouping[i] in v_name_to_v:
-          logging.info(f'[grouping] {grouping[0]} is grouped with {grouping[i]}')
+          _logger.info(f'[grouping] {grouping[0]} is grouped with {grouping[i]}')
           m += v2var[v_name_to_v[grouping[0]]] == v2var[v_name_to_v[grouping[i]]]
 
   def __addOptGoal(self, m, curr_v2s, external_v2s, v2var, dir):
@@ -167,7 +168,7 @@ class Floorplanner:
       def getChildSlotPositionY(v):
         if v in external_v2s:
           return external_v2s[v].getPositionY() # const
-        else:        
+        else:
           return curr_v2s[v].getQuarterPositionY() + v2var[v] * curr_v2s[v].getHalfLenY() # expr
 
       if dir == 'VERTICAL':
@@ -208,7 +209,7 @@ class Floorplanner:
           if round(v2var[v].xi(i)) == 0:
             next_s2v[bottom_or_left].append(v)
             next_v2s[v] = bottom_or_left
-          
+
           # if v is assigned to 1-half in the i-th solution
           elif round(v2var[v].xi(i)) == 1:
             next_s2v[up_or_right].append(v)
@@ -226,10 +227,10 @@ class Floorplanner:
         if not next_s2v[up_or_right]:
           next_s2v.pop(up_or_right)
           self.slot_manager.removeSlotNonBlocking(up_or_right.getName())
-      
+
       return next_s2v, next_v2s
 
-    logging.info(f'there are {num_solutions} solutions available')
+    _logger.info(f'there are {num_solutions} solutions available')
 
     best_next_s2v = {}
     best_next_v2s = {}
@@ -251,13 +252,13 @@ class Floorplanner:
 
         # corner case: if next_s2v only has one slot
         expect_slot_num = len(curr_s2v) * 2
-        empty_slot_num = expect_slot_num - len(s2area)                    
+        empty_slot_num = expect_slot_num - len(s2area)
         slots_usage_list = list(s2area.values()) + [0] * empty_slot_num
 
         var += statistics.variance(slots_usage_list)
 
 
-      logging.info(f'the {i}-th solution has variance: {var}')
+      _logger.info(f'the {i}-th solution has variance: {var}')
 
       # track the best solution
       if var < best_var:
@@ -275,30 +276,30 @@ class Floorplanner:
   def __createILPVariables(self, m, curr_v2s):
     v2var = {} # str -> [mip_var]
     for v in curr_v2s.keys():
-      v2var[v] = m.add_var(var_type=BINARY, name=f'{v.name}_x') 
-    
+      v2var[v] = m.add_var(var_type=BINARY, name=f'{v.name}_x')
+
     return v2var
 
   # could only be invoked at the beginning when there is only one slot
   def eightWayPartition(self):
-    logging.info('Start 8-way partitioning routine')
+    _logger.info('Start 8-way partitioning routine')
 
     curr_s2v, curr_v2s = self.__getInitialSlotToVerticesMapping()
 
     m = Model()
     if not _logger.isEnabledFor(logging.DEBUG):
-      m.verbose = 0    
+      m.verbose = 0
 
     # three variables could determine the location of a module
     # y = y1 *2 + y2  (four slots)
-    # x = x           (each SLR is divided by half) 
-    v2var_x = {} 
+    # x = x           (each SLR is divided by half)
+    v2var_x = {}
     v2var_y1 = {}
     v2var_y2 = {}
     for v in curr_v2s.keys():
-      v2var_x[v] = m.add_var(var_type=BINARY, name=f'{v.name}_x') 
-      v2var_y1[v] = m.add_var(var_type=BINARY, name=f'{v.name}_y1') 
-      v2var_y2[v] = m.add_var(var_type=BINARY, name=f'{v.name}_y2') 
+      v2var_x[v] = m.add_var(var_type=BINARY, name=f'{v.name}_x')
+      v2var_y1[v] = m.add_var(var_type=BINARY, name=f'{v.name}_y1')
+      v2var_y2[v] = m.add_var(var_type=BINARY, name=f'{v.name}_y2')
 
     # get the target slots
     # for U280, slot_11x will have empty area
@@ -312,7 +313,7 @@ class Floorplanner:
     slot_010, slot_011 = self.slot_manager.getLeftAndRightSplit(slot_01)
     slot_100, slot_101 = self.slot_manager.getLeftAndRightSplit(slot_10)
     slot_110, slot_111 = self.slot_manager.getLeftAndRightSplit(slot_11)
-    
+
     # must not change order!
     slot_group = [slot_000, slot_001, \
                   slot_010, slot_011, \
@@ -323,7 +324,7 @@ class Floorplanner:
 
     # area constraint
     for r in RESOURCE_TYPES:
-      choose = lambda x, num: x if num == 1 else (1-x)     
+      choose = lambda x, num: x if num == 1 else (1-x)
 
       for y1 in range(2):
         for y2 in range(2):
@@ -351,21 +352,21 @@ class Floorplanner:
               if slot_group[slot_idx(y1, y2, x)].containsChildSlot(expect_slot):
                 m += v2var_y1[v] == y1
                 m += v2var_y2[v] == y2
-                m += v2var_x[v] == x    
+                m += v2var_x[v] == x
 
     # grouping constraints
     for v2var in [v2var_x, v2var_y1, v2var_y2]:
-      self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var, enable_grouping_hints=True)                      
+      self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var, enable_grouping_hints=True)
 
     # add optimization goal
     intra_edges, interface_edges = self.getIntraAndInterEdges(curr_v2s.keys())
     edge_costs = [m.add_var(var_type=INTEGER, name=f'intra_{e.name}') for e in intra_edges] \
         + [m.add_var(var_type=INTEGER, name=f'inter_{e.name}') for e in interface_edges]
     all_edges = intra_edges + interface_edges
-    
+
     # note pos is different from slot_idx, becasue the x dimension is different from the y dimention
     # we will use |(y1 * 2 + y1) - (y2 * 2 + y2)| + |x1 - x2| to express the hamming distance
-    pos_y = lambda v : v2var_y1[v] * 2 + v2var_y2[v] 
+    pos_y = lambda v : v2var_y1[v] * 2 + v2var_y2[v]
     pos_x = lambda v : v2var_x[v]
     cost_y = lambda e : pos_y(e.src) - pos_y(e.dst)
     cost_x = lambda e : pos_x(e.src) - pos_x(e.dst)
@@ -378,7 +379,7 @@ class Floorplanner:
 
     m.objective = minimize(xsum(edge_costs[i] * edge.width for i, edge in enumerate(all_edges) ) )
 
-    logging.info('Start ILP solver')
+    _logger.info('Start ILP solver')
     # m.write('Coarse-Grained-Floorplan.lp')
     status = m.optimize(max_seconds=self.max_search_time)
     assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, '8-way partioning failed!'
@@ -386,7 +387,7 @@ class Floorplanner:
     # extract results
     next_s2v = {}
     next_v2s = {}
-    
+
     for v in curr_v2s.keys():
       idx = int(slot_idx(v2var_y1[v].x,  v2var_y2[v].x, v2var_x[v].x))
       if slot_group[idx] not in next_s2v:
@@ -407,12 +408,12 @@ class Floorplanner:
     return
 
   # partition each slot separately. Used when the slots are already small
-  def __separateTwoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {}, 
+  def __separateTwoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {},
                                 enable_grouping_hints = False,
                                 exit_on_failure = True):
     next_s2v = defaultdict(list)
     next_v2s = {}
-    
+
     # TODO: do we need to parallelize the loop?
     for slot, vertices in curr_s2v.items():
       individual_s2v = {slot : vertices}
@@ -429,8 +430,8 @@ class Floorplanner:
       # disable user constraints checkpoint in separate partition mode
       # because we only operate on a subset of the design, which may not cover
       # some of the user-specified modules. Just apply the constraints on available modules
-      indi_next_s2v, indi_next_v2s = self.__twoWayPartitionWrapper(individual_s2v, individual_v2s, dir, external_v2s, 
-                                                                  enable_grouping_hints = enable_grouping_hints, 
+      indi_next_s2v, indi_next_v2s = self.__twoWayPartitionWrapper(individual_s2v, individual_v2s, dir, external_v2s,
+                                                                  enable_grouping_hints = enable_grouping_hints,
                                                                   check_user_constraints = False,
                                                                   exit_on_failure = exit_on_failure)
 
@@ -443,7 +444,7 @@ class Floorplanner:
 
   # automatically adjust the max usage ratio to get a valid solution
   def __twoWayPartitionWrapper(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict = {},
-                                enable_grouping_hints = True, 
+                                enable_grouping_hints = True,
                                 check_user_constraints=True,
                                 exit_on_failure=True):
     init_delta = 0
@@ -451,24 +452,24 @@ class Floorplanner:
       next_s2v, next_v2s = self.__twoWayPartition(curr_s2v, curr_v2s, dir, external_v2s, init_delta, enable_grouping_hints, check_user_constraints)
       if not next_s2v and not next_v2s:
         init_delta += self.step
-        logging.warning(f'use delta of {init_delta} to find valid solution')
+        _logger.warning(f'use delta of {init_delta} to find valid solution')
         if self.max_usage_ratio + init_delta > self.MAX_USAGE_ALLOWED:
-          logging.critical('not likely there is a reasonable solution')
+          _logger.critical('not likely there is a reasonable solution')
           if exit_on_failure:
             exit(1)
           else:
-            logging.critical('partition failed, returning unpartitioned mapping')
+            _logger.critical('partition failed, returning unpartitioned mapping')
             return curr_s2v, curr_v2s
       else:
         return next_s2v, next_v2s
 
   # use iterative 2-way partitioning when there are lots of small functions
   # check_user_constraints: whether to check the modules in user-given constraints exist
-  # set check_user_constraints to false in seperate partition of small slots 
+  # set check_user_constraints to false in seperate partition of small slots
   def __twoWayPartition(self, curr_s2v : Dict, curr_v2s : Dict, dir : str, external_v2s : Dict, delta, enable_grouping_hints, check_user_constraints):
     assert set(map(type, curr_s2v.keys())) == {Slot}
     assert set(map(type, curr_v2s.keys())) == {Vertex}
-    logging.info(f'Start 2-way partitioning routine, pattern-based optimzation is {enable_grouping_hints}')
+    _logger.info(f'Start 2-way partitioning routine, pattern-based optimzation is {enable_grouping_hints}')
 
     m = Model()
     if not _logger.isEnabledFor(logging.DEBUG):
@@ -477,19 +478,19 @@ class Floorplanner:
     v2var = self.__createILPVariables(m, curr_v2s=curr_v2s)
 
     self.__addOptGoal(m, curr_v2s=curr_v2s, external_v2s=external_v2s, v2var=v2var, dir=dir)
-    
+
     # area constraints for each child slot
     self.__addAreaConstraints(m, curr_s2v=curr_s2v, v2var=v2var, dir=dir, delta=delta)
 
     self.__addUserConstraints(m, curr_v2s=curr_v2s, v2var=v2var, dir=dir, check_user_constraints=check_user_constraints)
 
     self.__addGroupingConstraints(m, curr_v2s=curr_v2s, v2var=v2var, enable_grouping_hints=enable_grouping_hints)
-    
-    logging.info('Start ILP solver')
+
+    _logger.info('Start ILP solver')
     # m.write('Coarse-Grained-Floorplan.lp')
     status = m.optimize(max_seconds=self.max_search_time)
     if status != OptimizationStatus.OPTIMAL and status != OptimizationStatus.FEASIBLE:
-      logging.warning('2-way partioning failed!')
+      _logger.warning('2-way partioning failed!')
       return {}, {}
 
     next_s2v, next_v2s = self.__getPartitionResult(m.num_solutions, curr_s2v=curr_s2v, v2var=v2var, dir=dir)
@@ -497,21 +498,21 @@ class Floorplanner:
     return next_s2v, next_v2s
 
   def printFloorplan(self):
-    logging.info('Show current floorplan result:')
+    _logger.info('Show current floorplan result:')
 
     for s, v_group in self.s2v.items():
-      logging.info(f'{s.getName()}:')
+      _logger.info(f'{s.getName()}:')
       for r in RESOURCE_TYPES:
         used = sum([v.area[r] for v in v_group])
         avail = s.getArea()[r]
         if avail:
-          logging.info(f'[{r}]: {used} / {avail} = {used/avail}')
+          _logger.info(f'[{r}]: {used} / {avail} = {used/avail}')
         else:
-          logging.info(f'[{r}]: {used} used, 0 exists')
+          _logger.info(f'[{r}]: {used} used, 0 exists')
       for v in v_group:
-        logging.info(f'  Kernel: {v.name}')
+        _logger.info(f'  Kernel: {v.name}')
       for e in self.s2e[s]:
-        logging.info(f'  FIFO: {e.name}')
+        _logger.info(f'  FIFO: {e.name}')
 
     # wire information
     wire_length_list = []
@@ -523,9 +524,9 @@ class Floorplanner:
                  abs(src_slot.getPositionX() - dst_slot.getPositionX())
         wire_length_list.append(length)
 
-    logging.info(f'total wire length: {sum(wire_length_list)}')
+    _logger.info(f'total wire length: {sum(wire_length_list)}')
     if len(wire_length_list) > 1:
-      logging.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
+      _logger.info(f'variance of wire length: {statistics.variance(wire_length_list)}')
 
     # SLR crossing information
     slr_crossing = [0] * (self.board.SLR_NUM-1)
@@ -537,9 +538,9 @@ class Floorplanner:
         idx_large = max(src_slr, dst_slr)
         for i in range(idx_small, idx_large):
           slr_crossing[i] += e.width
-    
+
     for i in range(self.board.SLR_NUM-1):
-      logging.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
+      _logger.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
 
   def getUtilization(self) -> Dict[Slot, Dict[str, float]]:
     util = {}
@@ -569,7 +570,7 @@ class Floorplanner:
           first_visited_edges.remove(e)
         else:
           first_visited_edges.add(e)
-          
+
           # double check that an edge will not be visited a 3rd time
           assert e not in second_visited_edges
 
@@ -666,7 +667,7 @@ class Floorplanner:
     # in the last partition, go as small as possible but do not enforce
     # allow heterogeneous slot sizes
     self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False, exit_on_failure=False) # 4 CR
-    
+
     self.__initSlotToEdges()
     self.printFloorplan()
 
@@ -684,7 +685,7 @@ class Floorplanner:
 
     self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter5_s2v, iter5_v2s, 'VERTICAL') # based on ddr ctrl in the middle
 
-    self.__initSlotToEdges()    
+    self.__initSlotToEdges()
     self.printFloorplan()
 
   def getSlotToVertices(self):
@@ -701,7 +702,7 @@ class Floorplanner:
     for slot, v_group in self.s2v.items():
       s_name_2_v_names[slot.getName()] = {v.type : v.name for v in v_group}
     return s_name_2_v_names
-  
+
   def getVertexNameToSlot(self):
     return {v.name: s for v, s in self.v2s.items()}
 
@@ -712,7 +713,7 @@ class Floorplanner:
         e_name_to_s[e.name] = slot
 
     return e_name_to_s
-    
+
   def getSlotNameToEdgeNames(self):
     s_name_2_e_names = {}
     for slot, e_group in self.s2e.items():
