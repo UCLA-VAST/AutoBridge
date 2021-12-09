@@ -1,6 +1,9 @@
+import re
+
+from typing import List
 from collections import defaultdict
 from autobridge.Opt.Slot import Slot
-import re
+
 
 class DeviceBase:
   NAME = 'Base'
@@ -81,7 +84,7 @@ class DeviceBase:
           slot_user_area[item] -= overlap_area[item]
     return slot_user_area
 
-  def getSlotPblockTcl(self, slot: Slot):
+  def getSlotPblockTcl(self, slot: Slot) -> List[str]:
     """
     remove the overlaps with vitis IPs
     """
