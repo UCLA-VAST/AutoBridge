@@ -7,6 +7,8 @@ from autobridge.Opt.Common import RESOURCE_TYPES
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 
+_logger = logging.getLogger().getChild(__name__)
+
 
 def _createILPVars(
     m: Model, v_list: List[Vertex], s_list: List[Slot]
@@ -14,7 +16,7 @@ def _createILPVars(
   """
   for each vertex, for each slot, create a binary var if the vertex is assigned to the slot
   """
-  logging.info('Creating ILP variables...')
+  _logger.info('Creating ILP variables...')
   v_to_s_to_var = defaultdict(dict)
   s_to_v_to_var = defaultdict(dict)
   for v in v_list:
@@ -33,7 +35,7 @@ def _addAreaConstrains(
   """
   limit the capacity of each slot
   """
-  logging.info('Adding area constraints...')
+  _logger.info('Adding area constraints...')
   for r in RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
       capacity = s.area[r] * resource_usage_limit
@@ -44,7 +46,7 @@ def _addUniqueConstrains(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]])
   """
   each vertex is assigned to one slot
   """
-  logging.info('Adding constraints that each Vertex is assigned to one slot...')
+  _logger.info('Adding constraints that each Vertex is assigned to one slot...')
   for v, s_to_var in v_to_s_to_var.items():
     m += xsum(var for var in s_to_var.values()) == 1
 
@@ -56,7 +58,7 @@ def _getVToSToCost(
   cost for assigning a vertex to a slot
   Define the cost as the distance from the original location * the total wire length
   """
-  logging.info('Generating cost...')
+  _logger.info('Generating cost...')
   v_to_s_to_cost = defaultdict(dict)
   for v in v_list:
     for s in s_list:
@@ -74,7 +76,7 @@ def _addObjective(
   """
   minimize the cost
   """
-  logging.info('Adding objective...')
+  _logger.info('Adding objective...')
   cost_var_pair_list: List[Tuple[int, Var]] = []
   for v, s_to_var in v_to_s_to_var.items():
     for s, var in s_to_var.items():
@@ -90,13 +92,13 @@ def _addGroupingConstraints(
     v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]],
     s_list: List[Slot]
 ) -> None:
-  logging.info('Add grouping constraints...')
+  _logger.info('Add grouping constraints...')
 
   for grouping in grouping_list:
     for i in range(1, len(grouping)):
       v1 = grouping[0]
       v2 = grouping[i]
-      logging.info(f'Grouping {v1.name} and {v2.name}')
+      _logger.info(f'Grouping {v1.name} and {v2.name}')
       for s in s_list:
         m += v_to_s_to_var[v1][s] == v_to_s_to_var[v2][s]
 
@@ -107,7 +109,7 @@ def _getILPResults(
   """
   extract which modules is assigned to which slots
   """
-  logging.info('Extracting ILP results...')
+  _logger.info('Extracting ILP results...')
   # get v2s
   new_v2s = {}
   for v, s_to_var in v_to_s_to_var.items():
@@ -135,17 +137,17 @@ def _logResults(
   analyze and log the new floorplan results
   """
   for s, v_list in new_s2v.items():
-    logging.info(f'Slot {s.getRTLModuleName()}:')
+    _logger.info(f'Slot {s.getRTLModuleName()}:')
     for r in RESOURCE_TYPES:
       capacity = s.area[r]
       usage = sum(v.area[r] for v in v_list)
-      logging.info(f'  [{r}]: {usage} / {capacity} = {round(usage/capacity, 5)} ')
+      _logger.info(f'  [{r}]: {usage} / {capacity} = {round(usage/capacity, 5)} ')
 
   # log which vertices are re-placed
   for v, s in new_v2s.items():
     orig_s = orig_v2s[v]
     if s != orig_s:
-      logging.info(f'Vertex {v.name} is moved {orig_s.getDistance(s)} units from {orig_s.getRTLModuleName()} to {s.getRTLModuleName()}')
+      _logger.info(f'Vertex {v.name} is moved {orig_s.getDistance(s)} units from {orig_s.getRTLModuleName()} to {s.getRTLModuleName()}')
 
 
 def legalizeFloorplanResults(
@@ -157,8 +159,8 @@ def legalizeFloorplanResults(
   """
   adjust the floorplanning to satisfy the area requirement
   """
-  logging.info('Begin legalizing the floorplan results...')
-  logging.info(f'Target resource usage limit: {resource_usage_limit}')
+  _logger.info('Begin legalizing the floorplan results...')
+  _logger.info(f'Target resource usage limit: {resource_usage_limit}')
 
   m = Model()
 
@@ -176,18 +178,17 @@ def legalizeFloorplanResults(
 
   _addObjective(m, v_to_s_to_cost, v_to_s_to_var)
 
-  m.write('floorplan_legalization.lp')
-
   status = m.optimize()
   if status != OptimizationStatus.OPTIMAL:
-    logging.warning(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
+    _logger.warning(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
+    m.write('floorplan_legalization.lp')
     return None, None
 
   new_v2s, new_s2v = _getILPResults(v_to_s_to_var)
 
   _logResults(new_s2v, new_v2s, orig_v2s)
 
-  logging.info('Finish legalizing the floorplan results.')
+  _logger.info('Finish legalizing the floorplan results.')
 
   return new_s2v, new_v2s
 
@@ -204,12 +205,12 @@ def AutoLegalizer(
   curr_limit = init_resource_usage_limit
   while 1:
     if curr_limit > resource_usage_cut_threshold:
-      logging.error(f'Fail to legalize under the cut threhold {resource_usage_cut_threshold}')
+      _logger.error(f'Fail to legalize under the cut threhold {resource_usage_cut_threshold}')
       exit()
 
     new_s2v, new_v2s = legalizeFloorplanResults(orig_v2s, grouping_list, all_slot_list, curr_limit)
     if new_s2v:
-      logging.info(f'Legalization succeeded with target usage limit {curr_limit}')
+      _logger.info(f'Legalization succeeded with target usage limit {curr_limit}')
       return new_s2v, new_v2s
     else:
       curr_limit += limit_increase_step
