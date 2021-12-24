@@ -1,9 +1,16 @@
 from collections import defaultdict
+import enum
 from typing import Dict, List, Literal
 from autobridge.Opt.DataflowGraph import Vertex, Edge
 from autobridge.Opt.Slot import Slot
 
 RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']
+
+
+# partition directions
+class Dir(enum.Enum):
+  horizontal = 1
+  vertical = 2
 
 
 def invert_v2s(curr_v2s: Dict[Vertex, Slot]) -> Dict[Slot, List[Vertex]]:

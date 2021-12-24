@@ -1,26 +1,21 @@
-import enum
 import logging
 import autobridge.Floorplan.Utilities as util
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
+from autobridge.Floorplan.Utilities import Dir
 
 _logger = logging.getLogger().getChild(__name__)
-
-
-class Dir(enum.Enum):
-  horizontal = 1
-  vertical = 2
 
 
 class Bipartition:
   def __init__(
     self,
     curr_v2s: Dict[Vertex, Slot],
-    grouping_constraints: List[List[str]],
+    grouping_constraints: List[List[Vertex]],
     pre_assignments: Dict[Vertex, Slot],
     slot_manager: SlotManager,
   ):
@@ -32,11 +27,64 @@ class Bipartition:
     self.pre_assignment = pre_assignments
     self.slot_manager = slot_manager
 
-    self._set_curr_v2s(curr_v2s)
+    self.set_curr_v2s(curr_v2s)
 
-  def _set_curr_v2s(self, curr_v2s: Dict[Vertex, Slot]):
+  def set_curr_v2s(self, curr_v2s: Dict[Vertex, Slot]):
     self.curr_v2s = curr_v2s
     self.curr_s2v = util.invert_v2s(curr_v2s)
+
+  def get_bipartition(
+      self, 
+      direction: Dir,
+      max_usage_ratio: float,
+  ) -> Optional[Dict[Vertex, Slot]]:
+    """
+    bi-partition all the current slots
+    """
+    m = Model()
+    if not _logger.isEnabledFor(logging.DEBUG):
+      m.verbose = 0
+
+    v2var = self._create_ilp_vars(m)
+
+    self._add_opt_goal(m, v2var, direction)
+
+    # area constraints for each child slot
+    self._add_area_constraints(m, v2var, direction, max_usage_ratio)
+
+    self._add_pre_assignment(m, v2var, direction)
+
+    self._add_grouping_constraints(m, v2var)
+
+    _logger.info('Start the solver for bi-partitioning')
+    m.optimize(max_seconds=self.max_search_time)
+
+    next_v2s = self._get_partition_result(m, v2var, direction)
+    if not next_v2s:
+      _logger.info('bi-partioning failed with usage ratio ')
+
+    return next_v2s
+
+  def get_bipartition_adjust_ratio(
+      self,
+      direction: Dir,
+      ref_usage_ratio: float,
+      usage_ratio_delta: float = 0.02,
+  ) -> Dict[Vertex, Slot]:
+    """
+    increase the ref_usage_ratio until succeed. Each time increment usage_ratio_delta
+    and retry.
+    """
+    curr_usage_ratio = ref_usage_ratio
+    next_v2s = self.get_bipartition(direction, curr_usage_ratio)
+    while not next_v2s:
+      curr_usage_ratio += usage_ratio_delta
+      next_v2s = self.get_bipartition(direction, curr_usage_ratio)
+    _logger.info(f'finish bipartition with a usage ratio of {curr_usage_ratio}')
+
+    return next_v2s
+
+  ############################################################################
 
   def _create_ilp_vars(self, m: Model):
     """
@@ -103,6 +151,9 @@ class Bipartition:
       v2var: Dict[str, Var], 
       direction: Dir,
   ) -> None:
+    """
+    user specifies that certain Vertices must be assigned to certain slots
+    """
     for v, expect_slot in self.pre_assignment.items():
       curr_slot = self.curr_v2s[v]
       bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(curr_slot, direction)
@@ -121,24 +172,25 @@ class Bipartition:
       m: Model,
       v2var: Dict[str, Var], 
   ) -> None:
-    v_name_to_v = {v.name : v for v in self.curr_v2s.keys()}
-
+    """
+    user specifies that certain Vertices must be assigned to the same slot
+    """
     for grouping in self.grouping_constraints:
       for i in range(1, len(grouping)):
-        _logger.info(f'[grouping] {grouping[0]} is grouped with {grouping[i]}')
-        m += v2var[v_name_to_v[grouping[0]]] == v2var[v_name_to_v[grouping[i]]]
+        _logger.info(f'[grouping] {grouping[0].name} is grouped with {grouping[i].name}')
+        m += v2var[grouping[0]] == v2var[grouping[i]]
 
   def _get_partition_result(
       self,
       m: Model,
       v2var: Dict[str, Var], 
       direction: Dir,
-  ) -> Dict[Vertex, Slot]:
+  ) -> Optional[Dict[Vertex, Slot]]:
     """
+    extract the results from the ILP solver
     """
     if m.status != OptimizationStatus.OPTIMAL and m.status != OptimizationStatus.FEASIBLE:
-      _logger.warning('2-way partioning failed!')
-      return {}, {}
+      return {}
 
     # create new mapping
     next_v2s = {}
@@ -155,35 +207,5 @@ class Bipartition:
 
         else:
           assert False, v2var[v].x
-
-    return next_v2s
-
-  def get_bipartition(
-      self, 
-      direction: Dir,
-      max_usage_ratio: float,
-  ) -> Dict[Vertex, Slot]:
-    """
-    bi-partition all the current slots
-    """
-    m = Model()
-    if not _logger.isEnabledFor(logging.DEBUG):
-      m.verbose = 0
-
-    v2var = self._create_ilp_vars(m)
-
-    self._add_opt_goal(m, v2var, direction)
-
-    # area constraints for each child slot
-    self._add_area_constraints(m, v2var, direction, max_usage_ratio)
-
-    self._add_pre_assignment(m, v2var, direction)
-
-    self._add_grouping_constraints(m, v2var)
-
-    _logger.info('Start the ILP solver')
-    m.optimize(max_seconds=self.max_search_time)
-
-    next_v2s = self._get_partition_result(m, v2var, direction)
 
     return next_v2s
