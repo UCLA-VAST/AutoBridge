@@ -1,5 +1,8 @@
 # Latest
 
+- **[12/20/2021]** We just open-sourced [RapidStream](https://github.com/Licheng-Guo/RapidStream), a follow-up work of AutoBridge. This time we parallelize the placement and routing of each slot based on the floorplanning by AutoBridge. Check out how we achieve 5-7X speedup over Vivado!
+
+
 - A new implementation has been ready! Check the example in AutoBridge/in-develop/test/autosa_cnn_13x8/.
 - The user interface has been significantly simplified. To invoke the new AutoBridge, just write a simple config file like this:
 
