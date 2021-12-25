@@ -5,8 +5,7 @@ from typing import Dict, List, Optional
 from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
-from autobridge.Opt.SlotManager import SlotManager
-from autobridge.Floorplan.Utilities import Dir
+from autobridge.Opt.SlotManager import SlotManager, Dir
 
 _logger = logging.getLogger().getChild(__name__)
 
@@ -37,6 +36,7 @@ class Bipartition:
       self, 
       direction: Dir,
       max_usage_ratio: float,
+      max_search_time: int = 120,
   ) -> Optional[Dict[Vertex, Slot]]:
     """
     bi-partition all the current slots
@@ -57,7 +57,7 @@ class Bipartition:
     self._add_grouping_constraints(m, v2var)
 
     _logger.info('Start the solver for bi-partitioning')
-    m.optimize(max_seconds=self.max_search_time)
+    m.optimize(max_seconds=max_search_time)
 
     next_v2s = self._get_partition_result(m, v2var, direction)
     if not next_v2s:

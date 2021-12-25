@@ -1,14 +1,11 @@
 import logging
 
-from collections import defaultdict
 from typing import Dict, List, Optional
-from mip import Model
 from autobridge.Opt.DataflowGraph import Vertex, Edge, DataflowGraph
 from autobridge.Opt.Slot import Slot
-from autobridge.Opt.SlotManager import SlotManager
+from autobridge.Opt.SlotManager import SlotManager, Dir
 from autobridge.Floorplan.Bipartition import Bipartition
-from autobridge.Floorplan.Utilities import Dir
-
+from autobridge.Floorplan.LegalizeFloorplan import legalize_floorplan
 _logger = logging.getLogger().getChild(__name__)
 
 
@@ -49,7 +46,9 @@ def iterative_bipartition(
 
   partition_order = [_get_dir(dir_in_str) for dir_in_str in partition_order_in_str]
 
-  return _iterative_bipartition(
+  # --------------------------------------
+
+  post_partition_v2s = _iterative_bipartition(
     init_v2s,
     slot_manager,
     grouping_constraints,
@@ -57,6 +56,16 @@ def iterative_bipartition(
     partition_order,
     ref_usage_ratio
   )
+
+  legalized_v2s = legalize_floorplan(
+    post_partition_v2s, 
+    slot_manager, 
+    grouping_constraints, 
+    pre_assignments, 
+    partition_order
+  )
+
+  return legalized_v2s
 
 
 def _iterative_bipartition(
@@ -77,6 +86,7 @@ def _iterative_bipartition(
     slot_manager,
   )
 
+  # performs multiple iteration of partitioning
   for split_dir in partition_order:
     next_v2s = floorplaner.get_bipartition_adjust_ratio(split_dir, ref_usage_ratio)
     floorplaner.set_curr_v2s(next_v2s)
