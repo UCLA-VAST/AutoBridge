@@ -9,7 +9,7 @@ from autobridge.Opt.Common import RESOURCE_TYPES
 from autobridge.Opt.FloorplanLegalize import AutoLegalizer
 from autobridge.Opt.DataflowGraph import *
 from autobridge.Opt.Slot import Slot
-from autobridge.Opt.SlotManager import SlotManager
+from autobridge.Opt.SlotManager import SlotManager, Dir
 from autobridge.HLSParser.vivado_hls.HLSProjectManager import HLSProjectManager
 from mip import *
 
@@ -171,9 +171,9 @@ class Floorplanner:
         else:
           return curr_v2s[v].getQuarterPositionY() + v2var[v] * curr_v2s[v].getHalfLenY() # expr
 
-      if dir == 'VERTICAL':
+      if dir == Dir.vertical:
         return getChildSlotPositionX(v)
-      elif dir == 'HORIZONTAL':
+      elif dir == Dir.horizontal:
         return getChildSlotPositionY(v)
       else:
         assert False
@@ -581,11 +581,11 @@ class Floorplanner:
 
   def coarseGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.horizontal) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal) # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.vertical) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
@@ -593,15 +593,15 @@ class Floorplanner:
   # do not use pattern-based clustering
   def naiveFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL', enable_grouping_hints=False) # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.horizontal, enable_grouping_hints=False) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL', enable_grouping_hints=False) # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal, enable_grouping_hints=False) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL', enable_grouping_hints=False) # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.vertical, enable_grouping_hints=False) # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping_hints=False) # based on die boundary
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, Dir.horizontal, enable_grouping_hints=False) # based on die boundary
 
-    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping_hints=False) # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, Dir.vertical, enable_grouping_hints=False) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()
@@ -611,15 +611,15 @@ class Floorplanner:
     switch the order of partitioning. Seems that this one is much faster than other order.
     """
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'VERTICAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.vertical) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'HORIZONTAL') # based on ddr ctrl in the middle
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.horizontal) # based on ddr ctrl in the middle
 
-    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL', enable_grouping_hints=False) # 4 CR
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, Dir.vertical, enable_grouping_hints=False) # 4 CR
 
-    iter5_s2v, iter5_v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False) # 8 CR
+    iter5_s2v, iter5_v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, Dir.horizontal, enable_grouping_hints=False) # 8 CR
 
     v_list = self.graph.getAllVertices()
     v_name_to_v = {v.name : v for v in v_list}
@@ -641,49 +641,49 @@ class Floorplanner:
 
   def patternBasedFineGrainedFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.horizontal) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.vertical) # based on ddr ctrl in the middle
 
-    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'HORIZONTAL', enable_grouping_hints=False) # 8 CR
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, Dir.horizontal, enable_grouping_hints=False) # 8 CR
 
-    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'VERTICAL', enable_grouping_hints=False) # 4 CR
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, Dir.vertical, enable_grouping_hints=False) # 4 CR
 
     self.__initSlotToEdges()
     self.printFloorplan()
 
   def hetero4CRFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.horizontal) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.vertical) # based on ddr ctrl in the middle
 
-    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, 'VERTICAL', enable_grouping_hints=False) # 8 CR
+    iter4_s2v, iter4_v2s = self.__separateTwoWayPartition(iter3_s2v, iter3_v2s, Dir.vertical, enable_grouping_hints=False) # 8 CR
 
     # in the last partition, go as small as possible but do not enforce
     # allow heterogeneous slot sizes
-    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, 'HORIZONTAL', enable_grouping_hints=False, exit_on_failure=False) # 4 CR
+    self.s2v, self.v2s = self.__separateTwoWayPartition(iter4_s2v, iter4_v2s, Dir.horizontal, enable_grouping_hints=False, exit_on_failure=False) # 4 CR
 
     self.__initSlotToEdges()
     self.printFloorplan()
 
   def naiveTwoCRGranularityFloorplan(self):
     init_s2v, init_v2s = self.__getInitialSlotToVerticesMapping()
-    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, 'HORIZONTAL') # based on die boundary
+    iter1_s2v, iter1_v2s = self.__twoWayPartitionWrapper(init_s2v, init_v2s, Dir.horizontal) # based on die boundary
 
-    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, 'HORIZONTAL') # based on die boundary
+    iter2_s2v, iter2_v2s = self.__twoWayPartitionWrapper(iter1_s2v, iter1_v2s, Dir.horizontal) # based on die boundary
 
-    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, 'HORIZONTAL') # based on die boundary
+    iter3_s2v, iter3_v2s = self.__twoWayPartitionWrapper(iter2_s2v, iter2_v2s, Dir.horizontal) # based on die boundary
 
-    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, 'VERTICAL') # based on die boundary
+    iter4_s2v, iter4_v2s = self.__twoWayPartitionWrapper(iter3_s2v, iter3_v2s, Dir.vertical) # based on die boundary
 
-    iter5_s2v, iter5_v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, 'VERTICAL') # based on die boundary
+    iter5_s2v, iter5_v2s = self.__twoWayPartitionWrapper(iter4_s2v, iter4_v2s, Dir.vertical) # based on die boundary
 
-    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter5_s2v, iter5_v2s, 'VERTICAL') # based on ddr ctrl in the middle
+    self.s2v, self.v2s = self.__twoWayPartitionWrapper(iter5_s2v, iter5_v2s, Dir.vertical) # based on ddr ctrl in the middle
 
     self.__initSlotToEdges()
     self.printFloorplan()

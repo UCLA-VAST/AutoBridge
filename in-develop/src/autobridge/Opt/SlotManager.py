@@ -113,10 +113,10 @@ class SlotManager:
 
     return left, right
 
-  def partitionSlotByHalf(self, slot : Slot, dir : str):
-    if dir == 'HORIZONTAL':
+  def partitionSlotByHalf(self, slot : Slot, dir : Dir):
+    if dir == Dir.horizontal:
       return self.getBottomAndUpSplit(slot)
-    elif dir == 'VERTICAL':
+    elif dir == Dir.vertical:
       return self.getLeftAndRightSplit(slot)
     else:
       assert False, f'unrecognized partition direction: {dir}'
