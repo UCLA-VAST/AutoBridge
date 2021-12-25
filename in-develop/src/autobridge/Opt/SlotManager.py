@@ -10,8 +10,8 @@ class SlotManager:
     self.pblock_to_slot = {}
     self.pblock_to_routing_slot = {}
 
-  def __preprocessPblock(self, pblock : str) -> str:
-    def __convertCoarseRegionToClockRegion(coarse_loc):
+  def _preprocessPblock(self, pblock : str) -> str:
+    def _convertCoarseRegionToClockRegion(coarse_loc):
       match = re.search(r'COARSE_X(\d+)Y(\d+)', coarse_loc)
       assert match
 
@@ -27,7 +27,7 @@ class SlotManager:
       return f'CLOCKREGION_X{left_bottom_x}Y{left_bottom_y}:CLOCKREGION_X{right_up_x}Y{right_up_y}'
 
     if 'COARSE' in pblock:
-      return __convertCoarseRegionToClockRegion(pblock)
+      return _convertCoarseRegionToClockRegion(pblock)
     else:
       match = re.search(r'^CLOCKREGION_X(\d+)Y(\d+)[ ]*:[ ]*CLOCKREGION_X(\d+)Y(\d+)$', pblock)
       assert match, f'incorrect pblock {pblock}'
@@ -45,14 +45,14 @@ class SlotManager:
 
   def createSlotForRouting(self, pblock : str):
     """create a Slot object for global routing purpose"""
-    pblock = self.__preprocessPblock(pblock)
+    pblock = self._preprocessPblock(pblock)
     if pblock not in self.pblock_to_routing_slot:
       self.pblock_to_routing_slot[pblock] = Slot(self.board, pblock)
     return self.pblock_to_routing_slot[pblock]
 
   def createSlot(self, pblock : str):
     """create a Slot for floorplanning purpose and track the existing Slot objects"""
-    pblock = self.__preprocessPblock(pblock)
+    pblock = self._preprocessPblock(pblock)
     if pblock not in self.pblock_to_slot:
       self.pblock_to_slot[pblock] = Slot(self.board, pblock)
     return self.pblock_to_slot[pblock]
@@ -105,17 +105,17 @@ class SlotManager:
     UR_Y = ceil_to_power_of_2(self.board.CR_NUM_VERTICAL) - 1
     return self.createSlot(f'CLOCKREGION_X0Y0:CLOCKREGION_X{UR_X}Y{UR_Y}')
 
-  def __haveOverlappedYRange(self, a : Slot, b : Slot):
+  def _haveOverlappedYRange(self, a : Slot, b : Slot):
     return min(a.getOrigUpRightY(), b.getOrigUpRightY()) > max(a.getOrigDownLeftY(), b.getOrigDownLeftY())
   
-  def __haveOverlappedXRange(self, a : Slot, b : Slot):
+  def _haveOverlappedXRange(self, a : Slot, b : Slot):
     return min(a.getOrigUpRightX(), b.getOrigUpRightX()) > max(a.getOrigDownLeftX(), b.getOrigDownLeftX())
   
   def getLeftNeighborSlots(self, slot, potential_target_slots):
     neighbors = []
     for candidate in potential_target_slots.values():
       if candidate.getOrigUpRightX()+1 == slot.getOrigDownLeftX():
-        if self.__haveOverlappedYRange(candidate, slot):
+        if self._haveOverlappedYRange(candidate, slot):
           neighbors.append(candidate)
     return neighbors
   
@@ -123,7 +123,7 @@ class SlotManager:
     neighbors = []
     for candidate in potential_target_slots.values():
       if slot.getOrigUpRightX()+1 == candidate.getOrigDownLeftX():
-        if self.__haveOverlappedYRange(candidate, slot):
+        if self._haveOverlappedYRange(candidate, slot):
           neighbors.append(candidate)
     return neighbors
   
@@ -131,7 +131,7 @@ class SlotManager:
     neighbors = []
     for candidate in potential_target_slots.values():
       if slot.getOrigUpRightY()+1 == candidate.getOrigDownLeftY():
-        if self.__haveOverlappedXRange(candidate, slot):
+        if self._haveOverlappedXRange(candidate, slot):
           neighbors.append(candidate)
     return neighbors
   
@@ -139,7 +139,7 @@ class SlotManager:
     neighbors = []
     for candidate in potential_target_slots.values():
       if candidate.getOrigUpRightY()+1 == slot.getOrigDownLeftY():
-        if self.__haveOverlappedXRange(candidate, slot):
+        if self._haveOverlappedXRange(candidate, slot):
           neighbors.append(candidate)
     return neighbors
 
