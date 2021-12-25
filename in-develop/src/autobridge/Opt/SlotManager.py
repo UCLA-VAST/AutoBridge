@@ -1,8 +1,16 @@
-from collections import defaultdict
-from typing import Dict
-from autobridge.Opt.Slot import Slot
+import enum
 import re
 import math
+
+from typing import List
+from autobridge.Opt.Slot import Slot
+
+
+# partition directions
+class Dir(enum.Enum):
+  horizontal = 1
+  vertical = 2
+
 
 class SlotManager:
   def __init__(self, board):
@@ -42,6 +50,26 @@ class SlotManager:
       for y in range(0, 16, 2):
         slot_list.append(Slot(self.board, f'CLOCKREGION_X{x}Y{y}:CLOCKREGION_X{x+1}Y{y+1}'))
     return slot_list
+
+  def getLeafSlotsAfterPartition(
+    self,
+    partition_order: List[Dir],
+  ):
+    """
+    generate all the final slots after a set of partition operations
+    """
+    init_slot = self.getInitialSlot()
+    queue = [init_slot]
+    for part_dir in partition_order:
+      next_queue = []
+      for slot in queue:
+        if part_dir == Dir.horizontal:
+          next_queue += self.getBottomAndUpSplit(slot)
+        else:
+          next_queue += self.getLeftAndRightSplit(slot)
+      queue = next_queue
+
+    return queue
 
   def createSlotForRouting(self, pblock : str):
     """create a Slot object for global routing purpose"""
