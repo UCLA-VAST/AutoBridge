@@ -51,6 +51,14 @@ def _add_unique_assign_constraints(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Sl
   for v, s_to_var in v_to_s_to_var.items():
     m += xsum(var for var in s_to_var.values()) == 1
 
+def _add_pre_assignments(
+    m: Model, 
+    v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]],
+    pre_assignments: Dict[Vertex, Slot],
+) -> None:
+  for v, s in pre_assignments.items():
+    m += v_to_s_to_var[v][s] == 1
+    print(f'{v.name} -> {s.getRTLModuleName()}')
 
 def _get_v_to_s_to_cost(
     v_list: List[Vertex], s_list: List[Slot], orig_v2s: Dict[Vertex, Slot]
@@ -155,6 +163,7 @@ def get_legalized_v2s(
     orig_v2s: Dict[Vertex, Slot],
     grouping_list: List[ List[Vertex] ],
     all_slot_list: List[Slot],
+    pre_assignments: Dict[Vertex, Slot],
     resource_usage_limit: int
 ) -> Dict[Vertex, Slot]:
   """
@@ -172,6 +181,8 @@ def get_legalized_v2s(
   v_to_s_to_cost = _get_v_to_s_to_cost(v_list, s_list, orig_v2s)
 
   _add_area_constraints(m, s_to_v_to_var, resource_usage_limit)
+
+  _add_pre_assignments(m, v_to_s_to_var, pre_assignments)
 
   _add_unique_assign_constraints(m, v_to_s_to_var)
 
@@ -217,7 +228,7 @@ def legalize_floorplan(
       _logger.error(f'Fail to legalize under the cut threhold {max_usage_ratio}')
       assert False
 
-    new_v2s = get_legalized_v2s(curr_v2s, grouping_constraints, all_leaf_slots, curr_limit)
+    new_v2s = get_legalized_v2s(curr_v2s, grouping_constraints, all_leaf_slots, pre_assignments, curr_limit)
     if new_v2s:
       _logger.info(f'Legalization succeeded with target usage limit {curr_limit}')
       return new_v2s
