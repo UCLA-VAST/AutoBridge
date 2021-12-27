@@ -1,8 +1,9 @@
 import logging
 import autobridge.Floorplan.Utilities as util
 
-from typing import Dict, List, Callable, Optional
+from typing import Dict, List, Callable, Optional, Tuple
 from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
+from itertools import product
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -33,12 +34,12 @@ def eight_way_partition(
     v2var_y2[v] = m.add_var(var_type=BINARY, name=f'{v.name}_y2')
 
   func_get_slot_by_idx = _get_slot_by_idx_closure(slot_manager)
+  slot_to_idx = _get_slot_to_idx(func_get_slot_by_idx)
 
   _add_area_constraints(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
-  _add_pre_assignment(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
-    func_get_slot_by_idx=func_get_slot_by_idx, pre_assignments=pre_assignments)
+  _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _add_grouping_constraints(m, grouping_constraints, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
@@ -71,6 +72,18 @@ def _get_slot_by_idx_closure(
   return func_get_slot_by_idx
 
 
+def _get_slot_to_idx(
+  func_get_slot_by_idx: Callable[[int, int, int], Slot],
+) -> Dict[Slot, Tuple[int, int, int]]:
+  """
+  given a slot, get (y2, y1, x) in a tuple
+  """
+  slot_to_idx = {}
+  for y1, y2, x in product(range(2), range(2), range(2)):
+    slot_to_idx[func_get_slot_by_idx(y1, y2, x)] = (y1, y2, x)
+  return slot_to_idx
+
+
 def _add_area_constraints(
   m: Model,
   v_list: List[Vertex],
@@ -85,20 +98,18 @@ def _add_area_constraints(
   for r in util.RESOURCE_TYPES:
     choose = lambda x, num: x if num == 1 else (1-x)
 
-    for y1 in range(2):
-      for y2 in range(2):
-        for x in range(2):
-          # convert logic AND to linear constraints
-          # prods[v] = choose_y1 AND choose_y2 AND choose_x
-          prods = { v : m.add_var(var_type=BINARY, name=f'{v.name}_choose{y1}{y2}{x}') for v in v_list }
-          for v in v_list:
-            m +=  choose(v2var_y1[v], y1) + choose(v2var_y2[v], y2) + \
-                  choose(v2var_x[v], x) - 3 * prods[v] >= 0
-            m +=  choose(v2var_y1[v], y1) + choose(v2var_y2[v], y2) + \
-                  choose(v2var_x[v], x) - 3 * prods[v] <= 2
+    for y1, y2, x in product(range(2), range(2), range(2)):
+      # convert logic AND to linear constraints
+      # prods[v] = choose_y1 AND choose_y2 AND choose_x
+      prods = { v : m.add_var(var_type=BINARY, name=f'{v.name}_choose{y1}{y2}{x}') for v in v_list }
+      for v in v_list:
+        m +=  choose(v2var_y1[v], y1) + choose(v2var_y2[v], y2) + \
+              choose(v2var_x[v], x) - 3 * prods[v] >= 0
+        m +=  choose(v2var_y1[v], y1) + choose(v2var_y2[v], y2) + \
+              choose(v2var_x[v], x) - 3 * prods[v] <= 2
 
-          m += xsum(  prods[v] * v.getVertexAndInboundFIFOArea()[r] for v in v_list ) \
-                      <= func_get_slot_by_idx(y1, y2, x).getArea()[r] * max_usage_ratio
+      m += xsum(  prods[v] * v.getVertexAndInboundFIFOArea()[r] for v in v_list ) \
+                  <= func_get_slot_by_idx(y1, y2, x).getArea()[r] * max_usage_ratio
 
 
 def _add_grouping_constraints(
@@ -121,23 +132,19 @@ def _add_grouping_constraints(
 def _add_pre_assignment(
   m: Model,
   v_list: List[Vertex],
+  slot_to_idx: Dict[Slot, Tuple[int, int, int]],
+  pre_assignments: Dict[Vertex, Slot],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
   v2var_y2: Dict[Vertex, Var],  
-  func_get_slot_by_idx: Callable[[int, int, int], Slot],
-  pre_assignments: Dict[Vertex, Slot],
 ) -> None:
   v_set = set(v_list)
   for v, expect_slot in pre_assignments.items():
     assert v in v_set, f'ERROR: user has forced the location of a non-existing module {v.name}'
-
-    for y1 in range(2):
-      for y2 in range(2):
-        for x in range(2):
-          if func_get_slot_by_idx(y1, y2, x).containsChildSlot(expect_slot):
-            m += v2var_y1[v] == y1
-            m += v2var_y2[v] == y2
-            m += v2var_x[v] == x
+    y1, y2, x = slot_to_idx[expect_slot]
+    m += v2var_y1[v] == y1
+    m += v2var_y2[v] == y2
+    m += v2var_x[v] == x
 
 
 def _add_opt_goal(
