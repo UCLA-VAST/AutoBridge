@@ -61,7 +61,7 @@ class Bipartition:
 
     next_v2s = self._get_partition_result(m, v2var, direction)
     if not next_v2s:
-      _logger.info('bi-partioning failed with usage ratio ')
+      _logger.info(f'bi-partioning failed with usage ratio {max_usage_ratio}')
 
     return next_v2s
 

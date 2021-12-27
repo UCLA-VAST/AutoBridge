@@ -10,7 +10,7 @@ from autobridge.Opt.SlotManager import SlotManager, Dir
 _logger = logging.getLogger().getChild(__name__)
 
 
-def eightWayPartition(
+def eight_way_partition(
   v_list: List[Vertex],
   grouping_constraints: List[List[Vertex]],
   pre_assignments: Dict[Vertex, Slot],
@@ -34,7 +34,7 @@ def eightWayPartition(
 
   func_get_slot_by_idx = _get_slot_by_idx_closure(slot_manager)
 
-  _add_area_constraints(v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
+  _add_area_constraints(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
   _add_pre_assignment(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
@@ -72,6 +72,7 @@ def _get_slot_by_idx_closure(
 
 
 def _add_area_constraints(
+  m: Model,
   v_list: List[Vertex],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
