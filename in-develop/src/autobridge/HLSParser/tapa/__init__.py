@@ -3,7 +3,10 @@ import collections
 import json
 import logging
 import sys
+from typing import List
 
+import autobridge.Floorplan.Utilities as util
+import autobridge.Floorplan as autobridge_floorplan
 from autobridge.Device.DeviceManager import DeviceManager
 from autobridge.HLSParser.tapa.DataflowGraphTapa import DataflowGraphTapa
 from autobridge.HLSParser.tapa.ProgramJsonManager import ProgramJsonManager
@@ -36,36 +39,26 @@ def generate_constraints(config):
   )
   graph = DataflowGraphTapa(program_json_manager)
   slot_manager = SlotManager(board)
-  user_constraint_s2v = collections.defaultdict(list)
 
-  # process optional module constraints
+  # which modules must be assigned to the same slot
+  grouping_constraints: List[List[str]] = config.get('GroupingConstraints', [])
+
+  # process optional module pre-assignment constraints
   module_floorplan = config['OptionalFloorplan']
+  pre_assignment = {}
   for region, module_group in module_floorplan.items():
-    slot = slot_manager.createSlot(region)
     for mod_name in module_group:
-      user_constraint_s2v[slot].append(graph.getVertex(mod_name))
+      pre_assignment[mod_name] = region
+
+  kwargs = {}
+  ref_usage_ratio = config.get('MaxUsage')
+  if ref_usage_ratio is not None:
+    kwargs['ref_usage_ratio'] = ref_usage_ratio
 
   # generate floorplan
-  kwargs = {}
-  user_max_usage_ratio = config.get('MaxUsage')
-  if user_max_usage_ratio is not None:
-    kwargs['user_max_usage_ratio'] = user_max_usage_ratio
-  floorplan = Floorplanner(
-      graph,
-      user_constraint_s2v,
-      slot_manager=slot_manager,
-      total_usage=program_json_manager.getVertexTotalArea(),
-      board=board,
-      **kwargs,
-  )
-  floorplan.eightWayPartition()
-  # floorplan.coarseGrainedFloorplan()
-
-  if _logger.isEnabledFor(logging.INFO):
-    floorplan.printFloorplan()
-
-  # generate topology
-  s2v = floorplan.getSlotToVertices()
+  v2s = autobridge_floorplan.get_floorplan(graph, slot_manager, grouping_constraints, pre_assignment, **kwargs)
+  
+  s2v = util.invert_v2s(v2s)
   topology = Topology(s2v)
   return {
       slot.pblock_name:
