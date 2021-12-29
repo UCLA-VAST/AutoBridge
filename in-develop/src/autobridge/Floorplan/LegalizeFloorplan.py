@@ -17,7 +17,7 @@ def _create_ilp_vars(
   """
   for each vertex, for each slot, create a binary var if the vertex is assigned to the slot
   """
-  _logger.info('Creating ILP variables...')
+  _logger.debug('Creating ILP variables...')
   v_to_s_to_var = defaultdict(dict)
   s_to_v_to_var = defaultdict(dict)
   for v in v_list:
@@ -36,7 +36,7 @@ def _add_area_constraints(
   """
   limit the capacity of each slot
   """
-  _logger.info('Adding area constraints...')
+  _logger.debug('Adding area constraints...')
   for r in util.RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
       capacity = s.area[r] * resource_usage_limit
@@ -47,7 +47,7 @@ def _add_unique_assign_constraints(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Sl
   """
   each vertex is assigned to one slot
   """
-  _logger.info('Adding constraints that each Vertex is assigned to one slot...')
+  _logger.debug('Adding constraints that each Vertex is assigned to one slot...')
   for v, s_to_var in v_to_s_to_var.items():
     m += xsum(var for var in s_to_var.values()) == 1
 
@@ -67,7 +67,7 @@ def _get_v_to_s_to_cost(
   cost for assigning a vertex to a slot
   Define the cost as the distance from the original location * the total wire length
   """
-  _logger.info('Generating cost...')
+  _logger.debug('Generating cost...')
   v_to_s_to_cost = defaultdict(dict)
   for v in v_list:
     for s in s_list:
@@ -85,7 +85,7 @@ def _add_opt_goal(
   """
   minimize the cost
   """
-  _logger.info('Adding objective...')
+  _logger.debug('Adding objective...')
   cost_var_pair_list: List[Tuple[int, Var]] = []
   for v, s_to_var in v_to_s_to_var.items():
     for s, var in s_to_var.items():
@@ -101,13 +101,13 @@ def _add_grouping_constraints(
     v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]],
     s_list: List[Slot]
 ) -> None:
-  _logger.info('Add grouping constraints...')
+  _logger.debug('Add grouping constraints...')
 
   for grouping in grouping_list:
     for i in range(1, len(grouping)):
       v1 = grouping[0]
       v2 = grouping[i]
-      _logger.info(f'Grouping {v1.name} and {v2.name}')
+      _logger.debug(f'Grouping {v1.name} and {v2.name}')
       for s in s_list:
         m += v_to_s_to_var[v1][s] == v_to_s_to_var[v2][s]
 
@@ -118,7 +118,7 @@ def _get_ilp_results(
   """
   extract which modules is assigned to which slots
   """
-  _logger.info('Extracting ILP results...')
+  _logger.debug('Extracting ILP results...')
   # get v2s
   new_v2s = {}
   for v, s_to_var in v_to_s_to_var.items():
@@ -138,25 +138,17 @@ def _get_ilp_results(
 
 
 def _log_results(
-    new_s2v: Dict[Slot, List[Vertex]], 
     new_v2s: Dict[Vertex, Slot], 
     orig_v2s: Dict[Vertex, Slot]
 ) -> None:
   """
   analyze and log the new floorplan results
   """
-  for s, v_list in new_s2v.items():
-    _logger.info(f'Slot {s.getRTLModuleName()}:')
-    for r in util.RESOURCE_TYPES:
-      capacity = s.area[r]
-      usage = sum(v.area[r] for v in v_list)
-      _logger.info(f'  [{r}]: {usage} / {capacity} = {round(usage/capacity, 5)} ')
-
   # log which vertices are re-placed
   for v, s in new_v2s.items():
     orig_s = orig_v2s[v]
     if s != orig_s:
-      _logger.info(f'Vertex {v.name} is moved {orig_s.getDistance(s)} units from {orig_s.getRTLModuleName()} to {s.getRTLModuleName()}')
+      _logger.debug(f'Vertex {v.name} is moved {orig_s.getDistance(s)} units from {orig_s.getRTLModuleName()} to {s.getRTLModuleName()}')
 
 
 def get_legalized_v2s(
@@ -169,10 +161,11 @@ def get_legalized_v2s(
   """
   adjust the floorplanning to satisfy the area requirement
   """
-  _logger.info('Begin legalizing the floorplan results...')
-  _logger.info(f'Target resource usage limit: {resource_usage_limit}')
+  _logger.info(f'Begin legalizing the floorplan results, target resource usage limit: {resource_usage_limit}')
 
   m = Model()
+  if not _logger.isEnabledFor(logging.DEBUG):
+    m.verbose = 0
 
   v_list = list(orig_v2s.keys())
   s_list = all_slot_list
@@ -198,7 +191,7 @@ def get_legalized_v2s(
 
   new_v2s, new_s2v = _get_ilp_results(v_to_s_to_var)
 
-  _log_results(new_s2v, new_v2s, orig_v2s)
+  _log_results(new_v2s, orig_v2s)
 
   _logger.info('Finish legalizing the floorplan results.')
 

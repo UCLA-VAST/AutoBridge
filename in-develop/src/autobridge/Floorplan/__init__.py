@@ -3,6 +3,7 @@ import logging
 from typing import Dict, List
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
+from autobridge.Floorplan.Utilities import log_resource_utilization
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -58,4 +59,6 @@ def get_floorplan(
     _logger.info(f'There are {num_vertices} vertices in the design, use eight way partition')
     v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
 
+  log_resource_utilization(v2s)
+  
   return v2s

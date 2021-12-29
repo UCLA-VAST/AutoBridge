@@ -36,7 +36,7 @@ class Bipartition:
       self, 
       direction: Dir,
       max_usage_ratio: float,
-      max_search_time: int = 120,
+      max_search_time: int,
   ) -> Optional[Dict[Vertex, Slot]]:
     """
     bi-partition all the current slots
@@ -56,7 +56,6 @@ class Bipartition:
 
     self._add_grouping_constraints(m, v2var)
 
-    _logger.info('Start the solver for bi-partitioning')
     m.optimize(max_seconds=max_search_time)
 
     next_v2s = self._get_partition_result(m, v2var, direction)
@@ -70,17 +69,22 @@ class Bipartition:
       direction: Dir,
       ref_usage_ratio: float,
       usage_ratio_delta: float = 0.02,
+      max_search_time: int = 120
   ) -> Dict[Vertex, Slot]:
     """
     increase the ref_usage_ratio until succeed. Each time increment usage_ratio_delta
     and retry.
     """
     curr_usage_ratio = ref_usage_ratio
-    next_v2s = self.get_bipartition(direction, curr_usage_ratio)
-    while not next_v2s:
-      curr_usage_ratio += usage_ratio_delta
-      next_v2s = self.get_bipartition(direction, curr_usage_ratio)
-    _logger.info(f'finish bipartition with a usage ratio of {curr_usage_ratio}')
+
+    while 1:
+      _logger.info(f'Attempt bipartition with a usage ratio of {curr_usage_ratio} and max search time {max_search_time}s')
+      next_v2s = self.get_bipartition(direction, curr_usage_ratio, max_search_time)
+      if not next_v2s:
+        curr_usage_ratio += usage_ratio_delta
+      else:
+        break
+    _logger.info(f'Finish bipartition with a usage ratio of {curr_usage_ratio}')
 
     return next_v2s
 

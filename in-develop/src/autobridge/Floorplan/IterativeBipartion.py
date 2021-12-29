@@ -29,7 +29,8 @@ def iterative_bipartition(
   )
 
   # performs multiple iteration of partitioning
-  for split_dir in partition_order:
+  for idx, split_dir in enumerate(partition_order):
+    _logger.info(f'partition #{idx+1} in the direction: {split_dir}')
     post_partition_v2s = floorplaner.get_bipartition_adjust_ratio(split_dir, ref_usage_ratio)
     floorplaner.set_curr_v2s(post_partition_v2s)
 
