@@ -17,7 +17,8 @@ def eight_way_partition(
   pre_assignments: Dict[Vertex, Slot],
   slot_manager: SlotManager,
   max_usage_ratio: float,
-  max_search_time: int = 180,
+  max_search_time: int = 600,
+  warm_start_assignments: Dict[Vertex, Slot] = {},
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
@@ -44,6 +45,9 @@ def eight_way_partition(
   _add_grouping_constraints(m, grouping_constraints, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _add_opt_goal(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
+
+  if warm_start_assignments:
+    _add_warm_start_assignment(m, v_list, slot_to_idx, warm_start_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _logger.info(f'Start ILP solver with max usage ratio {max_usage_ratio} and max search time {max_search_time}s')
   m.optimize(max_seconds=max_search_time)
@@ -145,6 +149,33 @@ def _add_pre_assignment(
     m += v2var_y1[v] == y1
     m += v2var_y2[v] == y2
     m += v2var_x[v] == x
+
+
+def _add_warm_start_assignment(
+  m: Model,
+  v_list: List[Vertex],
+  slot_to_idx: Dict[Slot, Tuple[int, int, int]],
+  warm_start_assignment: Dict[Vertex, Slot],
+  v2var_x: Dict[Vertex, Var],
+  v2var_y1: Dict[Vertex, Var],
+  v2var_y2: Dict[Vertex, Var],  
+) -> None:
+  """
+  provide an existing solution as a warm start to the ILP solver
+  WARNING: not useful at the moment
+  """
+  assert all(v in warm_start_assignment for v in v_list), 'ERROR: incomplete initial solution'
+  
+  warm_start: List[Tuple[Var, int]] = []
+  for v, init_sol_slot in warm_start_assignment.items():
+    y1, y2, x = slot_to_idx[init_sol_slot]
+    warm_start += [(v2var_y1[v], y1), (v2var_y2[v], y2), (v2var_x[v], x)]
+  m.start = warm_start
+
+  m.verbose = 1
+  # m.validate_mip_start()
+  # if not _logger.isEnabledFor(logging.DEBUG):
+  #   m.verbose = 0
 
 
 def _add_opt_goal(
