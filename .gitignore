@@ -2,7 +2,7 @@
 *.lp
 *.v
 parse*
-__*
+__pycache__/
 *temp*
 *trash*
 /python/autoparallel.egg-info
