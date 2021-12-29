@@ -12,18 +12,46 @@ _logger = logging.getLogger().getChild(__name__)
 
 
 def eight_way_partition(
-  v_list: List[Vertex],
+  init_v2s: Dict[Vertex, Slot],
+  slot_manager: SlotManager,
+  grouping_constraints: List[List[Vertex]],
+  pre_assignments: Dict[Vertex, Slot],
+  ref_usage_ratio: float,
+  max_search_time: int = 600,
+  warm_start_assignments: Dict[Vertex, Slot] = {},
+  max_usage_ratio_delta: float = 0.02
+) -> Dict[Vertex, Slot]:
+  """
+  adjust the max_usage_ratio if failed
+  """
+  curr_max_usage = ref_usage_ratio
+  while 1:
+    v2s = _eight_way_partition(init_v2s, grouping_constraints, pre_assignments, slot_manager, curr_max_usage, max_search_time, warm_start_assignments)
+    if not v2s:
+      _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
+      curr_max_usage += max_usage_ratio_delta
+    else:
+      break
+
+  _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
+  return v2s
+
+
+def _eight_way_partition(
+  init_v2s: Dict[Vertex, Slot],
   grouping_constraints: List[List[Vertex]],
   pre_assignments: Dict[Vertex, Slot],
   slot_manager: SlotManager,
   max_usage_ratio: float,
-  max_search_time: int = 600,
-  warm_start_assignments: Dict[Vertex, Slot] = {},
+  max_search_time: int,
+  warm_start_assignments: Dict[Vertex, Slot],
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
   if not _logger.isEnabledFor(logging.DEBUG):
     m.verbose = 0
+
+  v_list = list(init_v2s.keys())
 
   # three variables could determine the location of a module
   # y = y1 *2 + y2  (four slots)
@@ -37,7 +65,7 @@ def eight_way_partition(
   func_get_slot_by_idx = _get_slot_by_idx_closure(slot_manager)
   slot_to_idx = _get_slot_to_idx(func_get_slot_by_idx)
 
-  _add_area_constraints(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2, 
+  _add_area_constraints(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2,
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
@@ -121,7 +149,7 @@ def _add_grouping_constraints(
   grouping_constraints: List[List[Vertex]],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
-  v2var_y2: Dict[Vertex, Var],  
+  v2var_y2: Dict[Vertex, Var],
 ) -> None:
   """
   user specifies that certain Vertices must be assigned to the same slot
@@ -140,7 +168,7 @@ def _add_pre_assignment(
   pre_assignments: Dict[Vertex, Slot],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
-  v2var_y2: Dict[Vertex, Var],  
+  v2var_y2: Dict[Vertex, Var],
 ) -> None:
   v_set = set(v_list)
   for v, expect_slot in pre_assignments.items():
@@ -158,14 +186,14 @@ def _add_warm_start_assignment(
   warm_start_assignment: Dict[Vertex, Slot],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
-  v2var_y2: Dict[Vertex, Var],  
+  v2var_y2: Dict[Vertex, Var],
 ) -> None:
   """
   provide an existing solution as a warm start to the ILP solver
   WARNING: not useful at the moment
   """
   assert all(v in warm_start_assignment for v in v_list), 'ERROR: incomplete initial solution'
-  
+
   warm_start: List[Tuple[Var, int]] = []
   for v, init_sol_slot in warm_start_assignment.items():
     y1, y2, x = slot_to_idx[init_sol_slot]
@@ -183,7 +211,7 @@ def _add_opt_goal(
   v_list: List[Vertex],
   v2var_x: Dict[Vertex, Var],
   v2var_y1: Dict[Vertex, Var],
-  v2var_y2: Dict[Vertex, Var],  
+  v2var_y2: Dict[Vertex, Var],
 ) -> None:
   # add optimization goal
   all_edges = util.get_all_edges(v_list)
