@@ -63,7 +63,8 @@ def _getVToSToCost(
   for v in v_list:
     for s in s_list:
       orig_s = orig_v2s[v]
-      v_to_s_to_cost[v][s] = orig_s.getDistance(s) * v.getTotalWireWidth()
+      # +1 to handle the case where a module has 0 wire length
+      v_to_s_to_cost[v][s] = orig_s.getDistance(s) * (v.getTotalWireWidth() + 1)
 
   return v_to_s_to_cost
 
