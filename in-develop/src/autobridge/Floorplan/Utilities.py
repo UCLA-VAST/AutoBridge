@@ -83,18 +83,21 @@ def log_resource_utilization(
   _logger.info(f'total wire length: {get_total_wirelength(v2s)}')
 
   # SLR crossing information
-  slr_crossing = [0] * (_get_slr_count(list(s2v.keys())) - 1)
-  e_list = get_all_edges(list(v2s.keys()))
-  for e in e_list:
-    src_slr = v2s[e.src].getSLR()
-    dst_slr = v2s[e.dst].getSLR()
-    idx_small = min(src_slr, dst_slr)
-    idx_large = max(src_slr, dst_slr)
-    for i in range(idx_small, idx_large):
-      slr_crossing[i] += e.width
+  try:
+    slr_crossing = [0] * (_get_slr_count(list(s2v.keys())) - 1)
+    e_list = get_all_edges(list(v2s.keys()))
+    for e in e_list:
+      src_slr = v2s[e.src].getSLR()
+      dst_slr = v2s[e.dst].getSLR()
+      idx_small = min(src_slr, dst_slr)
+      idx_large = max(src_slr, dst_slr)
+      for i in range(idx_small, idx_large):
+        slr_crossing[i] += e.width
 
-  for i, count in enumerate(slr_crossing):
-    _logger.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
+    for i, count in enumerate(slr_crossing):
+      _logger.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
+  except:
+    _logger.info(f'Skip logging SLR crossing because current slots include multiple SLRs')
 
 
 def _get_slr_count(slot_list: List[Slot]) -> int:
