@@ -191,7 +191,6 @@ def get_legalized_v2s(
   status = m.optimize()
   if status != OptimizationStatus.OPTIMAL:
     _logger.warning(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
-    m.write('floorplan_legalization.lp')
     return {}
 
   new_v2s, new_s2v = _get_ilp_results(v_to_s_to_var)
