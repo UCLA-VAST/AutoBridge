@@ -222,8 +222,11 @@ class Slot:
 
   @property
   def pblock_tcl(self) -> str:
-    """ remove the overlaps with vitis IPs """
-    return '\n' + '\n'.join(self.board.getSlotPblockTcl(self))
+    """ 
+    remove the overlaps with vitis IPs 
+    must start with a leading '\n', or the tapa side will error
+    """
+    return '\n' + f'# begin defining a slot\n' + '\n'.join(self.board.getSlotPblockTcl(self)) + '\n'
   #------------------------------------ #
 
 # For TAPA. To be replaced by GlobalRouting

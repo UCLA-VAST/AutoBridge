@@ -94,6 +94,7 @@ class DeviceBase:
 
     tcl.append(f'create_pblock {pblock_name}')
     tcl.append(f'resize_pblock {pblock_name} -add {pblock_def}')
+    tcl.append(f'# remove the reserved clock regions for DDRs and the Vitis infra')
     tcl.append(f'resize_pblock {pblock_name} -remove {{')
     tcl.append('  ' + '\n  '.join(self.pre_existing_area))
     tcl.append(f'}}')
@@ -102,6 +103,7 @@ class DeviceBase:
     for ddr, ddr_pblock in self.DDR_TO_CLOCK_REGIONS.items():
       if slot.containsChildSlot(Slot(slot.board, ddr_pblock)):
         if self.getDDRSlolenRegion(ddr):
+          tcl.append(f'# steal some columns from the DDR {ddr} clock regions')
           tcl.append(f'resize_pblock {pblock_name} -add {{ {self.getDDRSlolenRegion(ddr)} }}')
 
     return tcl
