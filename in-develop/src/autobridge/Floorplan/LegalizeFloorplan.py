@@ -51,14 +51,18 @@ def _add_unique_assign_constraints(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Sl
   for v, s_to_var in v_to_s_to_var.items():
     m += xsum(var for var in s_to_var.values()) == 1
 
+
 def _add_pre_assignments(
     m: Model, 
     v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]],
     pre_assignments: Dict[Vertex, Slot],
+    all_slot_list: List[Slot],
 ) -> None:
-  for v, s in pre_assignments.items():
-    m += v_to_s_to_var[v][s] == 1
-    print(f'{v.name} -> {s.getRTLModuleName()}')
+  for v, target_slot in pre_assignments.items():
+    for candidate in all_slot_list:
+      if not candidate.containsChildSlot(target_slot):
+        m += v_to_s_to_var[v][candidate] == 0
+
 
 def _get_v_to_s_to_cost(
     v_list: List[Vertex], s_list: List[Slot], orig_v2s: Dict[Vertex, Slot]
@@ -176,7 +180,7 @@ def get_legalized_v2s(
 
   _add_area_constraints(m, s_to_v_to_var, resource_usage_limit)
 
-  _add_pre_assignments(m, v_to_s_to_var, pre_assignments)
+  _add_pre_assignments(m, v_to_s_to_var, pre_assignments, all_slot_list)
 
   _add_unique_assign_constraints(m, v_to_s_to_var)
 
