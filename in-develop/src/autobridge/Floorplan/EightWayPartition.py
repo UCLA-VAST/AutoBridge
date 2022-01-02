@@ -19,8 +19,9 @@ def eight_way_partition(
   ref_usage_ratio: float,
   max_search_time: int = 600,
   warm_start_assignments: Dict[Vertex, Slot] = {},
-  max_usage_ratio_delta: float = 0.02
-) -> Dict[Vertex, Slot]:
+  max_usage_ratio_delta: float = 0.02,
+  hard_limit_max_usage: float = 0.85,
+) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
   """
@@ -30,10 +31,17 @@ def eight_way_partition(
     if not v2s:
       _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
       curr_max_usage += max_usage_ratio_delta
+      curr_max_usage = round(curr_max_usage, 2)
+
+      # failed within the hard limit
+      if curr_max_usage >= hard_limit_max_usage:
+        return {}
+
     else:
       break
 
   _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
+  util.log_resource_utilization(v2s)
   return v2s
 
 

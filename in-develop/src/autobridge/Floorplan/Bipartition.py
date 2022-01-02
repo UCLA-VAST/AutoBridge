@@ -82,6 +82,7 @@ class Bipartition:
       next_v2s = self.get_bipartition(direction, curr_usage_ratio, max_search_time)
       if not next_v2s:
         curr_usage_ratio += usage_ratio_delta
+        curr_usage_ratio = round(curr_usage_ratio, 2)
       else:
         break
     _logger.info(f'Finish bipartition with a usage ratio of {curr_usage_ratio}')
