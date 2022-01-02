@@ -52,13 +52,13 @@ def get_floorplan(
   # choose floorplan method
   num_vertices = len(graph.getAllVertices())
   v2s: Dict[Vertex, Slot] = {}
-  if num_vertices > threshold_for_iterative:
-    _logger.info(f'There are {num_vertices} vertices in the design, use iterative bi-partition')
-    v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
-  else:
+  if num_vertices < threshold_for_iterative:
     _logger.info(f'There are {num_vertices} vertices in the design, use eight way partition')
     v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
-
-  log_resource_utilization(v2s)
+    if v2s:
+      return v2s
+  
+  _logger.info(f'Use iterative bi-partition because eight-way partition failed or there are too many vertices ({num_vertices})')
+  v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
   
   return v2s
