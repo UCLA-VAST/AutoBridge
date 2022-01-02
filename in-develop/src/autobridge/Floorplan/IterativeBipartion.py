@@ -6,6 +6,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 from autobridge.Floorplan.Bipartition import Bipartition
 from autobridge.Floorplan.LegalizeFloorplan import legalize_floorplan
+from autobridge.Floorplan.Utilities import log_resource_utilization
 _logger = logging.getLogger().getChild(__name__)
 
 
@@ -32,15 +33,18 @@ def iterative_bipartition(
   for idx, split_dir in enumerate(partition_order):
     _logger.info(f'partition #{idx+1} in the direction: {split_dir}')
     post_partition_v2s = floorplaner.get_bipartition_adjust_ratio(split_dir, ref_usage_ratio)
-    floorplaner.set_curr_v2s(post_partition_v2s)
 
-  # globally adjust the floorplan
-  legalized_v2s = legalize_floorplan(
-    post_partition_v2s, 
-    slot_manager, 
-    grouping_constraints, 
-    pre_assignments, 
-    partition_order
-  )
+    # globally adjust the floorplan
+    legalized_v2s = legalize_floorplan(
+      post_partition_v2s, 
+      slot_manager, 
+      grouping_constraints, 
+      pre_assignments, 
+      partition_order[:idx+1]
+    )
+
+    floorplaner.set_curr_v2s(legalized_v2s)
+
+    log_resource_utilization(legalized_v2s)
 
   return legalized_v2s
