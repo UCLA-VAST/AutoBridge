@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from mip import Model, minimize, BINARY, xsum, OptimizationStatus, Var
 
 import autobridge.Floorplan.Utilities as util
@@ -211,7 +211,7 @@ def legalize_floorplan(
   init_usage_ratio: float = 0.7,
   limit_increase_step: float = 0.01,
   max_usage_ratio: float = 0.8,
-):
+) -> Optional[Dict[Vertex, Slot]]:
   """
   the iterative partitioning process may result in some slots being overused
   Re-assign some of the Vertices from the overused slots to the under-used slots
@@ -222,8 +222,8 @@ def legalize_floorplan(
   curr_limit = init_usage_ratio
   while 1:
     if curr_limit > max_usage_ratio:
-      _logger.error(f'Fail to legalize under the cut threhold {max_usage_ratio}')
-      assert False
+      _logger.info(f'Fail to legalize under the cut threhold {max_usage_ratio}')
+      return {}
 
     new_v2s = get_legalized_v2s(curr_v2s, grouping_constraints, all_leaf_slots, pre_assignments, curr_limit)
     if new_v2s:

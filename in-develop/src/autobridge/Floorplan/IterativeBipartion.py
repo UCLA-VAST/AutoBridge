@@ -30,6 +30,7 @@ def iterative_bipartition(
   )
 
   # performs multiple iteration of partitioning
+  curr_v2s = {}
   for idx, split_dir in enumerate(partition_order):
     _logger.info(f'partition #{idx+1} in the direction: {split_dir}')
     post_partition_v2s = floorplaner.get_bipartition_adjust_ratio(split_dir, ref_usage_ratio)
@@ -43,8 +44,15 @@ def iterative_bipartition(
       partition_order[:idx+1]
     )
 
-    floorplaner.set_curr_v2s(legalized_v2s)
+    if not legalized_v2s:
+      _logger.info(f'The current bi-partition iteration failed. Skip the remaining partition iterations.')
+      _logger.info(f'WARNING: some functions in the design are too large. Try to break them into smaller functions.')
+      return curr_v2s
+    else:
+      curr_v2s = legalized_v2s
 
-    log_resource_utilization(legalized_v2s)
+    floorplaner.set_curr_v2s(curr_v2s)
 
-  return legalized_v2s
+    log_resource_utilization(curr_v2s)
+
+  return curr_v2s
