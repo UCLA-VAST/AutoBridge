@@ -87,6 +87,7 @@ class DeviceBase:
   def getSlotPblockTcl(self, slot: Slot) -> List[str]:
     """
     remove the overlaps with vitis IPs
+    If the slot is an SLR-level slot, then do not remove the DDR region in the middle
     """
     tcl = []
     pblock_name = slot.getRTLModuleName()
@@ -94,17 +95,19 @@ class DeviceBase:
 
     tcl.append(f'create_pblock {pblock_name}')
     tcl.append(f'resize_pblock {pblock_name} -add {pblock_def}')
-    tcl.append(f'# remove the reserved clock regions for DDRs and the Vitis infra')
-    tcl.append(f'resize_pblock {pblock_name} -remove {{')
-    tcl.append('  ' + '\n  '.join(self.pre_existing_area))
-    tcl.append(f'}}')
+    tcl.append(f'# remove the reserved clock regions for the Vitis infra')
+    tcl.append(f'resize_pblock {pblock_name} -remove {self.VITIS_REGION}')
 
-    # stole a few columns from the clock regions assigned to ddrs
-    for ddr, ddr_pblock in self.DDR_TO_CLOCK_REGIONS.items():
-      if slot.containsChildSlot(Slot(slot.board, ddr_pblock)):
-        if self.getDDRSlolenRegion(ddr):
-          tcl.append(f'# steal some columns from the DDR {ddr} clock regions')
-          tcl.append(f'resize_pblock {pblock_name} -add {{ {self.getDDRSlolenRegion(ddr)} }}')
+    # exclude the DDR region if the DDR region is at the boundary of the slot
+    for ddr in self.ddr_list:
+      ddr_pblock = self.DDR_TO_CLOCK_REGIONS[ddr]
+      ddr_slot = Slot(slot.board, ddr_pblock)
+      if slot.down_left_x == ddr_slot.down_left_x or slot.up_right_x == ddr_slot.up_right_x:
+        if slot.containsChildSlot(ddr_slot):
+          if self.getDDRSlolenRegion(ddr):
+            tcl.append(f'# exclude the area for DDR {ddr}')
+            tcl.append(f'resize_pblock {pblock_name} -remove {self.DDR_TO_CLOCK_REGIONS[ddr]}')
+            tcl.append(f'resize_pblock {pblock_name} -add {{ {self.getDDRSlolenRegion(ddr)} }}')
 
     return tcl
 
@@ -241,6 +244,7 @@ class DeviceU250(DeviceBase):
   # the rightmost column
   VITIS_REGION = 'CLOCKREGION_X7Y0:CLOCKREGION_X7Y15'
 
+
 class DeviceU280(DeviceBase):
   def _getVitisRegions(self, ddr_list, is_vitis_enabled):
     assert all(ddr in [0, 1] for ddr in ddr_list) # u280 only has 2 ddrs on SLR0 and SLR1
@@ -252,7 +256,7 @@ class DeviceU280(DeviceBase):
 
     # the vitis platform will take away the rightmost column
     if is_vitis_enabled:
-      pre_existing_area.append(f'CLOCKREGION_X7Y1:CLOCKREGION_X7Y11') # the area consumed by Vitis platform
+      pre_existing_area.append(self.VITIS_REGION) # the area consumed by Vitis platform
     
     return pre_existing_area
 
@@ -320,6 +324,8 @@ class DeviceU280(DeviceBase):
   CR_AREA[7]['FF']   = 25920
   CR_AREA[7]['LUT']  = 12960
   CR_AREA[7]['URAM'] = 0
+
+  VITIS_REGION = f'CLOCKREGION_X7Y1:CLOCKREGION_X7Y11'
 
 
 class DeviceManager:
