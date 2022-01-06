@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
-from autobridge.Floorplan.Utilities import log_resource_utilization
+from autobridge.Floorplan.Utilities import print_pre_assignment, print_vertex_areas
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -49,6 +49,8 @@ def get_floorplan(
 
   partition_order = [_get_dir(dir_in_str) for dir_in_str in partition_order_in_str]
 
+  print_pre_assignment(pre_assignments)
+
   # choose floorplan method
   num_vertices = len(graph.getAllVertices())
   v2s: Dict[Vertex, Slot] = {}
@@ -57,6 +59,9 @@ def get_floorplan(
     v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
     if v2s:
       return v2s
+    else:
+      _logger.warning(f'Please check if any function in the design is too large:')
+      print_vertex_areas(list(init_v2s.keys()))
   
   _logger.info(f'Use iterative bi-partition because eight-way partition failed or there are too many vertices ({num_vertices})')
   v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)

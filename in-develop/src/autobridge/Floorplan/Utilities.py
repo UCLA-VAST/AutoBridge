@@ -107,3 +107,15 @@ def _get_slr_count(slot_list: List[Slot]) -> int:
   slr_count_list = [slot.board.SLR_NUM for slot in slot_list]
   assert all(slr_count_list[i] == slr_count_list[0] for i in range(len(slr_count_list)))
   return slr_count_list[0]
+
+
+def print_vertex_areas(v_list: List[Vertex]) -> None:
+  _logger.info('The area of each vertex is listed as below:')
+  for v in v_list:
+    _logger.info(f'{v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
+
+
+def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
+  _logger.info('The pre-determined floorplanning is shown as below:')
+  for v, s in v2s.items():
+    _logger.info(f'{v.name} is assigned to {s.getRTLModuleName()}')
