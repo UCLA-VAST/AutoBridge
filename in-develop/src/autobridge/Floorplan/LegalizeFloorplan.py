@@ -166,7 +166,7 @@ def get_legalized_v2s(
   """
   adjust the floorplanning to satisfy the area requirement
   """
-  _logger.info(f'Begin legalizing the floorplan results, target resource usage limit: {resource_usage_limit}')
+  _logger.debug(f'Begin legalizing the floorplan results, target resource usage limit: {resource_usage_limit}')
 
   m = Model()
   if not _logger.isEnabledFor(logging.DEBUG):
@@ -190,7 +190,7 @@ def get_legalized_v2s(
 
   status = m.optimize()
   if status != OptimizationStatus.OPTIMAL:
-    _logger.warning(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
+    _logger.debug(f'Fail to legalize the floorplan under target ratio {resource_usage_limit}')
     return {}
 
   new_v2s, new_s2v = _get_ilp_results(v_to_s_to_var)

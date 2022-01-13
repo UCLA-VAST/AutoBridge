@@ -29,12 +29,13 @@ def eight_way_partition(
   while 1:
     v2s = _eight_way_partition(init_v2s, grouping_constraints, pre_assignments, slot_manager, curr_max_usage, max_search_time, warm_start_assignments)
     if not v2s:
-      _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
+      _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
       curr_max_usage += max_usage_ratio_delta
       curr_max_usage = round(curr_max_usage, 2)
 
       # failed within the hard limit
       if curr_max_usage >= hard_limit_max_usage:
+        _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
         return {}
 
     else:
@@ -85,7 +86,7 @@ def _eight_way_partition(
   if warm_start_assignments:
     _add_warm_start_assignment(m, v_list, slot_to_idx, warm_start_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
-  _logger.info(f'Start ILP solver with max usage ratio {max_usage_ratio} and max search time {max_search_time}s')
+  _logger.debug(f'Start ILP solver with max usage ratio {max_usage_ratio} and max search time {max_search_time}s')
   m.optimize(max_seconds=max_search_time)
 
   next_v2s = _get_results(m, v_list, func_get_slot_by_idx, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
@@ -254,7 +255,7 @@ def _get_results(
   elif m.status == OptimizationStatus.FEASIBLE:
     _logger.info(f'finish with non-optimal solution')
   else:
-    _logger.info(f'failed')
+    _logger.debug(f'failed')
     return {}
 
   # extract results

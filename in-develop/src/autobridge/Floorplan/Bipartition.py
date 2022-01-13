@@ -60,7 +60,7 @@ class Bipartition:
 
     next_v2s = self._get_partition_result(m, v2var, direction)
     if not next_v2s:
-      _logger.info(f'bi-partioning failed with usage ratio {max_usage_ratio}')
+      _logger.debug(f'bi-partioning failed with usage ratio {max_usage_ratio}')
 
     return next_v2s
 
@@ -78,7 +78,7 @@ class Bipartition:
     curr_usage_ratio = ref_usage_ratio
 
     while 1:
-      _logger.info(f'Attempt bipartition with a usage ratio of {curr_usage_ratio} and max search time {max_search_time}s')
+      _logger.debug(f'Attempt bipartition with a usage ratio of {curr_usage_ratio} and max search time {max_search_time}s')
       next_v2s = self.get_bipartition(direction, curr_usage_ratio, max_search_time)
       if not next_v2s:
         curr_usage_ratio += usage_ratio_delta
