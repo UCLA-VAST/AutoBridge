@@ -327,6 +327,16 @@ class DeviceU280(DeviceBase):
 
   VITIS_REGION = f'CLOCKREGION_X7Y1:CLOCKREGION_X7Y11'
 
+  DDR_TO_CLOCK_REGIONS = {
+    0: 'CLOCKREGION_X4Y1:CLOCKREGION_X4Y3',
+    1: 'CLOCKREGION_X4Y5:CLOCKREGION_X4Y7',
+  }
+
+  def getDDRSlolenRegion(self, ddr: int) -> str:
+    assert 0 <= ddr <= 3, ddr
+    # entire sloten region is {SLICE_X144Y0:SLICE_X145Y959 DSP48E2_X19Y0:DSP48E2_X19Y383 RAMB18_X9Y0:RAMB18_X9Y383 RAMB36_X9Y0:RAMB36_X9Y191}
+    return f'SLICE_X144Y{240 * ddr}:SLICE_X145Y{240 * (ddr+1) - 1} DSP48E2_X19Y{96 * ddr}:DSP48E2_X19Y{96 * (ddr+1) - 1} RAMB18_X9Y{96 * ddr}:RAMB18_X9Y{96 * (ddr+1) - 1} RAMB36_X9Y{48 * ddr}:RAMB36_X9Y{48 * (ddr+1) - 1}'
+
 
 class DeviceManager:
   def __init__(self, board_name, ddr_list = [], is_vitis_enabled = False):
