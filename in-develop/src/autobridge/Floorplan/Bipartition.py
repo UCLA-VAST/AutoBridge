@@ -1,8 +1,9 @@
 import logging
-import autobridge.Floorplan.Utilities as util
 
 from typing import Dict, List, Optional
 from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
+
+from autobridge.Floorplan.Utilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -30,7 +31,7 @@ class Bipartition:
 
   def set_curr_v2s(self, curr_v2s: Dict[Vertex, Slot]):
     self.curr_v2s = curr_v2s
-    self.curr_s2v = util.invert_v2s(curr_v2s)
+    self.curr_s2v = invert_v2s(curr_v2s)
 
   def get_bipartition(
       self, 
@@ -110,7 +111,7 @@ class Bipartition:
     """
     minimize the weighted sum over all edges
     """
-    edge_list = util.get_all_edges(list(self.curr_v2s.keys()))
+    edge_list = get_all_edges(list(self.curr_v2s.keys()))
     e2cost_var = {
       e: m.add_var(var_type=INTEGER, name=f'e_cost_{e.name}') for e in edge_list
     }
@@ -139,7 +140,7 @@ class Bipartition:
     for s, v_group in self.curr_s2v.items():
       bottom_or_left, up_or_right = self.slot_manager.partitionSlotByHalf(s, direction)
 
-      for r in util.RESOURCE_TYPES:
+      for r in RESOURCE_TYPES:
         v_var_list = [v2var[v] for v in v_group]
         area_list = [v.area[r] for v in v_group]
         I = range(len(v_group))

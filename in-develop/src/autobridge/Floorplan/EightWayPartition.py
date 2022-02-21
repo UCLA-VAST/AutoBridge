@@ -1,9 +1,10 @@
 import logging
-import autobridge.Floorplan.Utilities as util
 
 from typing import Dict, List, Callable, Optional, Tuple
 from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
 from itertools import product
+
+from autobridge.Floorplan.Utilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -42,7 +43,7 @@ def eight_way_partition(
       break
 
   _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
-  util.log_resource_utilization(v2s)
+  log_resource_utilization(v2s)
   return v2s
 
 
@@ -136,7 +137,7 @@ def _add_area_constraints(
 ) -> None:
 
   # area constraint
-  for r in util.RESOURCE_TYPES:
+  for r in RESOURCE_TYPES:
     choose = lambda x, num: x if num == 1 else (1-x)
 
     for y1, y2, x in product(range(2), range(2), range(2)):
@@ -223,7 +224,7 @@ def _add_opt_goal(
   v2var_y2: Dict[Vertex, Var],
 ) -> None:
   # add optimization goal
-  all_edges = util.get_all_edges(v_list)
+  all_edges = get_all_edges(v_list)
   e2cost_var = {e: m.add_var(var_type=INTEGER, name=f'intra_{e.name}') for e in all_edges}
 
   # note pos is different from slot_idx, becasue the x dimension is different from the y dimention

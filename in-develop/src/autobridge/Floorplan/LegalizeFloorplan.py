@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
 from mip import Model, minimize, BINARY, xsum, OptimizationStatus, Var
 
-import autobridge.Floorplan.Utilities as util
+from autobridge.Floorplan.Utilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -37,7 +37,7 @@ def _add_area_constraints(
   limit the capacity of each slot
   """
   _logger.debug('Adding area constraints...')
-  for r in util.RESOURCE_TYPES:
+  for r in RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
       capacity = s.area[r] * resource_usage_limit
       m += xsum(v.area[r] * var for v, var in v_to_var.items()) <= capacity
