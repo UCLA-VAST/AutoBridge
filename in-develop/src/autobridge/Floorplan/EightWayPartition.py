@@ -58,8 +58,7 @@ def _eight_way_partition(
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
-  if not _logger.isEnabledFor(logging.DEBUG):
-    m.verbose = 0
+  m.verbose = 0
 
   v_list = list(init_v2s.keys())
 
@@ -209,11 +208,6 @@ def _add_warm_start_assignment(
     y1, y2, x = slot_to_idx[init_sol_slot]
     warm_start += [(v2var_y1[v], y1), (v2var_y2[v], y2), (v2var_x[v], x)]
   m.start = warm_start
-
-  m.verbose = 1
-  # m.validate_mip_start()
-  # if not _logger.isEnabledFor(logging.DEBUG):
-  #   m.verbose = 0
 
 
 def _add_opt_goal(

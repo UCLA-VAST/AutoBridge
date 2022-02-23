@@ -41,7 +41,7 @@ def iterative_bipartition(
       slot_manager, 
       grouping_constraints, 
       pre_assignments, 
-      partition_order[:idx+1]
+      partition_order[:idx+1],
     )
 
     if not legalized_v2s:

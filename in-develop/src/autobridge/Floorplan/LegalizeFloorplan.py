@@ -17,7 +17,6 @@ def _create_ilp_vars(
   """
   for each vertex, for each slot, create a binary var if the vertex is assigned to the slot
   """
-  _logger.debug('Creating ILP variables...')
   v_to_s_to_var = defaultdict(dict)
   s_to_v_to_var = defaultdict(dict)
   for v in v_list:
@@ -36,7 +35,6 @@ def _add_area_constraints(
   """
   limit the capacity of each slot
   """
-  _logger.debug('Adding area constraints...')
   for r in RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
       capacity = s.area[r] * resource_usage_limit
@@ -47,7 +45,6 @@ def _add_unique_assign_constraints(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Sl
   """
   each vertex is assigned to one slot
   """
-  _logger.debug('Adding constraints that each Vertex is assigned to one slot...')
   for v, s_to_var in v_to_s_to_var.items():
     m += xsum(var for var in s_to_var.values()) == 1
 
@@ -71,7 +68,6 @@ def _get_v_to_s_to_cost(
   cost for assigning a vertex to a slot
   Define the cost as the distance from the original location * the total wire length
   """
-  _logger.debug('Generating cost...')
   v_to_s_to_cost = defaultdict(dict)
   for v in v_list:
     for s in s_list:
@@ -90,7 +86,6 @@ def _add_opt_goal(
   """
   minimize the cost
   """
-  _logger.debug('Adding objective...')
   cost_var_pair_list: List[Tuple[int, Var]] = []
   for v, s_to_var in v_to_s_to_var.items():
     for s, var in s_to_var.items():
@@ -106,7 +101,6 @@ def _add_grouping_constraints(
     v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]],
     s_list: List[Slot]
 ) -> None:
-  _logger.debug('Add grouping constraints...')
 
   for grouping in grouping_list:
     for i in range(1, len(grouping)):
@@ -123,7 +117,6 @@ def _get_ilp_results(
   """
   extract which modules is assigned to which slots
   """
-  _logger.debug('Extracting ILP results...')
   # get v2s
   new_v2s = {}
   for v, s_to_var in v_to_s_to_var.items():
@@ -169,8 +162,7 @@ def get_legalized_v2s(
   _logger.debug(f'Begin legalizing the floorplan results, target resource usage limit: {resource_usage_limit}')
 
   m = Model()
-  if not _logger.isEnabledFor(logging.DEBUG):
-    m.verbose = 0
+  m.verbose = 0
 
   v_list = list(orig_v2s.keys())
   s_list = all_slot_list

@@ -43,8 +43,7 @@ class Bipartition:
     bi-partition all the current slots
     """
     m = Model()
-    if not _logger.isEnabledFor(logging.DEBUG):
-      m.verbose = 0
+    m.verbose = 0
 
     v2var = self._create_ilp_vars(m)
 

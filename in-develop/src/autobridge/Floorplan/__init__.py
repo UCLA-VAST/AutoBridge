@@ -8,6 +8,7 @@ from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
+logging.disable(logging.DEBUG)
 _logger = logging.getLogger().getChild(__name__)
 
 
