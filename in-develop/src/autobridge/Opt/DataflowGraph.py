@@ -20,8 +20,6 @@ class Edge:
     self.added_depth_for_rebalance = 0
     self.fifo_type = ""
 
-    logging.debug(f'create edge {self.name} of width {self.width} and depth {self.depth}')
-
   def __hash__(self):
     return hash(self.name)
 
@@ -94,8 +92,6 @@ class Vertex():
     self.name = name
     self.id = self.type + self.name
     self.area = {} # str_name -> count
-
-    logging.debug(f'create vertix {self.name} of type {self.type}')
 
   def __hash__(self):
     return hash(self.id)

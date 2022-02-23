@@ -29,9 +29,6 @@ class Slot:
     assert self.up_right_y < 100
 
     self.area = self.board.getArea(f'CLOCKREGION_X{self.down_left_x}Y{self.down_left_y}:CLOCKREGION_X{self.up_right_x}Y{self.up_right_y}')
-    logging.debug(f'Slot {pblock} has area: ')
-    logging.debug(json.dumps(self.area, indent=2))
-    logging.debug(f'Using customized hash function for Slot ({self.down_left_x}, {self.down_left_y}, {self.up_right_x}, {self.up_right_y}) with id {id}')
 
   def getName(self):
     # need to convert back to CR coordinates
