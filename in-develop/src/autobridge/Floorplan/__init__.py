@@ -8,7 +8,8 @@ from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
-logging.disable(logging.DEBUG)
+handlers = [logging.FileHandler('tapa-autobridge.log', 'w'), logging.StreamHandler()]
+logging.basicConfig(level = logging.INFO, handlers = handlers)
 _logger = logging.getLogger().getChild(__name__)
 
 
