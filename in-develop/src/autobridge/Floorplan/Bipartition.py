@@ -182,7 +182,6 @@ class Bipartition:
     """
     for grouping in self.grouping_constraints:
       for i in range(1, len(grouping)):
-        _logger.info(f'[grouping] {grouping[0].name} is grouped with {grouping[i].name}')
         m += v2var[grouping[0]] == v2var[grouping[i]]
 
   def _get_partition_result(

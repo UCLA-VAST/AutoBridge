@@ -122,6 +122,6 @@ def print_vertex_areas(v_list: List[Vertex]) -> None:
 
 
 def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
-  _logger.debug('The pre-determined floorplanning is shown as below:')
+  _logger.info('The pre-determined floorplanning is shown as below:')
   for v, s in v2s.items():
-    _logger.debug(f'{v.name} is assigned to {s.getRTLModuleName()}')
+    _logger.info(f'{v.name} is assigned to {s.getRTLModuleName()}')

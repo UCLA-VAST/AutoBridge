@@ -42,6 +42,10 @@ def get_floorplan(
       for v_name_group in grouping_constraints_in_str
   ]
 
+  _logger.info(f'The following modules are grouped to the same location:')
+  for grouping in grouping_constraints_in_str:
+    _logger.info(grouping)
+
   # get pre_assignment in Vertex
   pre_assignments = { graph.getVertex(v_name) : slot_manager.createSlot(pblock) 
     for v_name, pblock in pre_assignments_in_str.items() 

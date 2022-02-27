@@ -165,7 +165,6 @@ def _add_grouping_constraints(
   """
   for grouping in grouping_constraints:
     for i in range(1, len(grouping)):
-      _logger.info(f'[grouping] {grouping[0].name} is grouped with {grouping[i].name}')
       for v2var in [v2var_x, v2var_y1, v2var_y2]:
         m += v2var[grouping[0]] == v2var[grouping[i]]
 
