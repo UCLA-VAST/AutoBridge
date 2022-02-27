@@ -27,7 +27,7 @@ def get_floorplan(
   pre_assignments_in_str: Dict[str, str],
   partition_order_in_str: List[str] = ['HORIZONTAL', 'HORIZONTAL', 'VERTICAL'],
   ref_usage_ratio: float = 0.7,
-  threshold_for_iterative: int = 100,
+  threshold_for_iterative: int = 400,
 ) -> Dict[Vertex, Slot]:
   """
   main entrance of the floorplan part
@@ -69,6 +69,10 @@ def get_floorplan(
   v2s: Dict[Vertex, Slot] = {}
   if num_vertices < threshold_for_iterative:
     _logger.info(f'There are {num_vertices} vertices in the design, use eight way partition')
+
+    if num_vertices > 100:
+      _logger.warning('Over 100 vertices. May have a long solving time. Reduce threshold_for_iterative to skip to iterative bi-partitioning.')
+
     v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
     if v2s:
       return v2s
