@@ -21,7 +21,7 @@ def eight_way_partition(
   max_search_time: int = 600,
   warm_start_assignments: Dict[Vertex, Slot] = {},
   max_usage_ratio_delta: float = 0.02,
-  hard_limit_max_usage: float = 0.85,
+  hard_limit_max_usage: float = 0.8,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed

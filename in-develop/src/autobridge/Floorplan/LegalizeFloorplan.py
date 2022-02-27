@@ -202,7 +202,7 @@ def legalize_floorplan(
   partition_order: List[Dir],
   init_usage_ratio: float = 0.7,
   limit_increase_step: float = 0.01,
-  max_usage_ratio: float = 0.8,
+  max_usage_ratio: float = 0.85,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   the iterative partitioning process may result in some slots being overused

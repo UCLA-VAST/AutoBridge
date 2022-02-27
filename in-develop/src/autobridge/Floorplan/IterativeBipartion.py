@@ -42,6 +42,7 @@ def iterative_bipartition(
       grouping_constraints, 
       pre_assignments, 
       partition_order[:idx+1],
+      max_usage_ratio=0.85,
     )
 
     if not legalized_v2s:
