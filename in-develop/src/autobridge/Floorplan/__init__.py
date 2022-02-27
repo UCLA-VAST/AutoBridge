@@ -1,4 +1,6 @@
 import logging
+import logging.handlers
+import os
 
 from typing import Dict, List
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
@@ -8,7 +10,12 @@ from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
-handlers = [logging.FileHandler('tapa-autobridge.log', 'w'), logging.StreamHandler()]
+log_file = 'tapa-autobridge.log'
+handler = logging.handlers.RotatingFileHandler(log_file, mode='w', backupCount=5)
+if os.path.exists(log_file):
+  handler.doRollover()
+
+handlers = [handler, logging.StreamHandler()]
 logging.basicConfig(level = logging.INFO, handlers = handlers)
 _logger = logging.getLogger().getChild(__name__)
 
