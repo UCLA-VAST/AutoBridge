@@ -21,7 +21,7 @@ def four_way_partition(
   ref_usage_ratio: float,
   max_search_time: int = 600,
   max_usage_ratio_delta: float = 0.02,
-  hard_limit_max_usage: float = 0.8,
+  hard_limit_max_usage: float = 2,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
@@ -163,16 +163,16 @@ def _add_slr_0_1_crossing_constraint(
   def is_edge_cross_slr_0_1(e: Edge) -> Var:
     src_in_slr0 = get_var_of_logic_and(
       m, 
-      get_var_of_equal_zero(v2var_y1[e.src]),
-      get_var_of_equal_zero(v2var_y2[e.src])
+      get_var_of_equal_zero(m, v2var_y1[e.src]),
+      get_var_of_equal_zero(m, v2var_y2[e.src])
     )
     dst_in_slr0 = get_var_of_logic_and(
       m, 
-      get_var_of_equal_zero(v2var_y1[e.dst]),
-      get_var_of_equal_zero(v2var_y2[e.dst])
+      get_var_of_equal_zero(m, v2var_y1[e.dst]),
+      get_var_of_equal_zero(m, v2var_y2[e.dst])
     )
-    src_not_in_slr0 = get_var_of_logic_not(src_in_slr0)
-    dst_not_in_slr0 = get_var_of_logic_not(dst_in_slr0)
+    src_not_in_slr0 = get_var_of_logic_not(m, src_in_slr0)
+    dst_not_in_slr0 = get_var_of_logic_not(m, dst_in_slr0)
 
     return get_var_of_logic_or(
       m,
@@ -180,7 +180,7 @@ def _add_slr_0_1_crossing_constraint(
       get_var_of_logic_and(m, dst_in_slr0, src_not_in_slr0)
     )
 
-  m += xsum(e.width * is_edge_cross_slr_0_1(e) <= width_limit for e in all_edges)
+  m += xsum(e.width * is_edge_cross_slr_0_1(e) for e in all_edges) <= width_limit 
 
 
 def _add_slr_1_2_crossing_constraint(
@@ -193,9 +193,9 @@ def _add_slr_1_2_crossing_constraint(
   all_edges = get_all_edges(v_list)
 
   def is_edge_cross_slr_1_2(e: Edge) -> Var:
-    return get_var_of_logic_xor(v2var_y1[e.src], v2var_y1[e.dst])
+    return get_var_of_logic_xor(m, v2var_y1[e.src], v2var_y1[e.dst])
   
-  m += xsum(e.width * is_edge_cross_slr_1_2(e) <= width_limit for e in all_edges)
+  m += xsum(e.width * is_edge_cross_slr_1_2(e) for e in all_edges) <= width_limit 
 
 
 def _add_slr_2_3_crossing_constraint(
@@ -211,16 +211,16 @@ def _add_slr_2_3_crossing_constraint(
   def is_edge_cross_slr_2_3(e: Edge) -> Var:
     src_in_slr3 = get_var_of_logic_and(
       m, 
-      get_var_of_equal_one(v2var_y1[e.src]),
-      get_var_of_equal_one(v2var_y2[e.src])
+      get_var_of_equal_one(m, v2var_y1[e.src]),
+      get_var_of_equal_one(m, v2var_y2[e.src])
     )
     dst_in_slr3 = get_var_of_logic_and(
       m, 
-      get_var_of_equal_one(v2var_y1[e.dst]),
-      get_var_of_equal_one(v2var_y2[e.dst])
+      get_var_of_equal_one(m, v2var_y1[e.dst]),
+      get_var_of_equal_one(m, v2var_y2[e.dst])
     )
-    src_not_in_slr3 = get_var_of_logic_not(src_in_slr3)
-    dst_not_in_slr3 = get_var_of_logic_not(dst_in_slr3)
+    src_not_in_slr3 = get_var_of_logic_not(m, src_in_slr3)
+    dst_not_in_slr3 = get_var_of_logic_not(m, dst_in_slr3)
 
     return get_var_of_logic_or(
       m,
@@ -228,7 +228,7 @@ def _add_slr_2_3_crossing_constraint(
       get_var_of_logic_and(m, dst_in_slr3, src_not_in_slr3)
     )
 
-  m += xsum(e.width * is_edge_cross_slr_2_3(e) <= width_limit for e in all_edges)
+  m += xsum(e.width * is_edge_cross_slr_2_3(e) for e in all_edges) <= width_limit
 
 
 def _add_grouping_constraints(
