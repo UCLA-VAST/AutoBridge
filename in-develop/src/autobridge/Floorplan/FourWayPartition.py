@@ -5,7 +5,8 @@ from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
 from itertools import product
 
 from autobridge.Floorplan.Utilities import *
-from autobridge.Opt.DataflowGraph import Vertex
+from autobridge.Floorplan.ILPUtilities import *
+from autobridge.Opt.DataflowGraph import Vertex, Edge
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
@@ -53,6 +54,9 @@ def _four_way_partition(
   slot_manager: SlotManager,
   max_usage_ratio: float,
   max_search_time: int,
+  slr_0_1_width_limit: int = 12000,
+  slr_1_2_width_limit: int = 12000,
+  slr_2_3_width_limit: int = 12000,
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
@@ -72,6 +76,10 @@ def _four_way_partition(
 
   _add_area_constraints(m, v_list, v2var_y1=v2var_y1, v2var_y2=v2var_y2,
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
+
+  _add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_0_1_width_limit)
+  _add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_1_2_width_limit)
+  _add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_2_3_width_limit)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
@@ -140,6 +148,87 @@ def _add_area_constraints(
 
       m += xsum(  prods[v] * v.getVertexAndInboundFIFOArea()[r] for v in v_list ) \
                   <= func_get_slot_by_idx(y1, y2).getArea()[r] * max_usage_ratio
+
+
+def _add_slr_0_1_crossing_constraint(
+  m: Model,
+  v_list: List[Vertex],
+  v2var_y1: Dict[Vertex, Var],
+  v2var_y2: Dict[Vertex, Var],
+  width_limit: int,
+) -> None:
+  """ restrict the SLR crossing between 0 and 1 """
+  all_edges = get_all_edges(v_list)
+
+  def is_edge_cross_slr_0_1(e: Edge) -> Var:
+    src_in_slr0 = get_var_of_logic_and(
+      m, 
+      get_var_of_equal_zero(v2var_y1[e.src]),
+      get_var_of_equal_zero(v2var_y2[e.src])
+    )
+    dst_in_slr0 = get_var_of_logic_and(
+      m, 
+      get_var_of_equal_zero(v2var_y1[e.dst]),
+      get_var_of_equal_zero(v2var_y2[e.dst])
+    )
+    src_not_in_slr0 = get_var_of_logic_not(src_in_slr0)
+    dst_not_in_slr0 = get_var_of_logic_not(dst_in_slr0)
+
+    return get_var_of_logic_or(
+      m,
+      get_var_of_logic_and(m, src_in_slr0, dst_not_in_slr0),
+      get_var_of_logic_and(m, dst_in_slr0, src_not_in_slr0)
+    )
+
+  m += xsum(e.width * is_edge_cross_slr_0_1(e) <= width_limit for e in all_edges)
+
+
+def _add_slr_1_2_crossing_constraint(
+  m: Model,
+  v_list: List[Vertex],
+  v2var_y1: Dict[Vertex, Var],
+  width_limit: int,
+) -> None:
+  """ restrict the SLR crossing between 1 and 2 """
+  all_edges = get_all_edges(v_list)
+
+  def is_edge_cross_slr_1_2(e: Edge) -> Var:
+    return get_var_of_logic_xor(v2var_y1[e.src], v2var_y1[e.dst])
+  
+  m += xsum(e.width * is_edge_cross_slr_1_2(e) <= width_limit for e in all_edges)
+
+
+def _add_slr_2_3_crossing_constraint(
+  m: Model,
+  v_list: List[Vertex],
+  v2var_y1: Dict[Vertex, Var],
+  v2var_y2: Dict[Vertex, Var],
+  width_limit: int,
+) -> None:
+  """ restrict the SLR crossing between 2 and 3 """
+  all_edges = get_all_edges(v_list)
+
+  def is_edge_cross_slr_2_3(e: Edge) -> Var:
+    src_in_slr3 = get_var_of_logic_and(
+      m, 
+      get_var_of_equal_one(v2var_y1[e.src]),
+      get_var_of_equal_one(v2var_y2[e.src])
+    )
+    dst_in_slr3 = get_var_of_logic_and(
+      m, 
+      get_var_of_equal_one(v2var_y1[e.dst]),
+      get_var_of_equal_one(v2var_y2[e.dst])
+    )
+    src_not_in_slr3 = get_var_of_logic_not(src_in_slr3)
+    dst_not_in_slr3 = get_var_of_logic_not(dst_in_slr3)
+
+    return get_var_of_logic_or(
+      m,
+      get_var_of_logic_and(m, src_in_slr3, dst_not_in_slr3),
+      get_var_of_logic_and(m, dst_in_slr3, src_not_in_slr3)
+    )
+
+  m += xsum(e.width * is_edge_cross_slr_2_3(e) <= width_limit for e in all_edges)
 
 
 def _add_grouping_constraints(
