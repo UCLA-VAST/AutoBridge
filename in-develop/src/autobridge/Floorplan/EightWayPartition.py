@@ -5,6 +5,7 @@ from mip import Model, Var, minimize, xsum, BINARY, INTEGER, OptimizationStatus
 from itertools import product
 
 from autobridge.Floorplan.Utilities import *
+from autobridge.Floorplan.ILPUtilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -22,13 +23,27 @@ def eight_way_partition(
   warm_start_assignments: Dict[Vertex, Slot] = {},
   max_usage_ratio_delta: float = 0.02,
   hard_limit_max_usage: float = 0.8,
+  slr_0_1_width_limit: int = 12000,
+  slr_1_2_width_limit: int = 12000,
+  slr_2_3_width_limit: int = 12000,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
   """
   curr_max_usage = ref_usage_ratio
   while 1:
-    v2s = _eight_way_partition(init_v2s, grouping_constraints, pre_assignments, slot_manager, curr_max_usage, max_search_time, warm_start_assignments)
+    v2s = _eight_way_partition(
+      init_v2s, 
+      grouping_constraints, 
+      pre_assignments, 
+      slot_manager, 
+      curr_max_usage, 
+      max_search_time, 
+      warm_start_assignments,
+      slr_0_1_width_limit,
+      slr_1_2_width_limit,
+      slr_2_3_width_limit,
+    )
     if not v2s:
       _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
       curr_max_usage += max_usage_ratio_delta
@@ -55,6 +70,9 @@ def _eight_way_partition(
   max_usage_ratio: float,
   max_search_time: int,
   warm_start_assignments: Dict[Vertex, Slot],
+  slr_0_1_width_limit: int,
+  slr_1_2_width_limit: int,
+  slr_2_3_width_limit: int,
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
@@ -78,6 +96,10 @@ def _eight_way_partition(
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
+
+  add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_0_1_width_limit)
+  add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_1_2_width_limit)
+  add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_2_3_width_limit)
 
   _add_grouping_constraints(m, grouping_constraints, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
