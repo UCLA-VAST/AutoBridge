@@ -4,6 +4,7 @@ import os
 
 from typing import Dict, List
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
+from autobridge.Floorplan.FourWayPartition import four_way_partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
 from autobridge.Floorplan.Utilities import print_pre_assignment, print_vertex_areas
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
@@ -80,7 +81,12 @@ def get_floorplan(
       _logger.warning(f'Please check if any function in the design is too large:')
       print_vertex_areas(list(init_v2s.keys()))
   
-  _logger.info(f'Use iterative bi-partition because eight-way partition failed or there are too many vertices ({num_vertices})')
-  v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
+  _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
+  v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+  if v2s:
+    return v2s
+
+  # v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
   
-  return v2s
+  _logger.error(f'AutoBridge fails to partition the design at the SLR level. Either the design is too large, or the functions/modules are too large.')
+  return None
