@@ -127,7 +127,10 @@ def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
     _logger.info(f'{v.name} is assigned to {s.getRTLModuleName()}')
 
 
-def float_range(start, stop, step):
+def float_range(start, stop, step) -> List[float]:
+  range = []
   while start <= stop:
-    yield float(start)
+    range.append(start)
     start = round(start + step, 2)
+  
+  return range

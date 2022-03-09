@@ -29,6 +29,7 @@ def eight_way_partition(
   adjust the max_usage_ratio if failed
   """
   # try if the least restricted case has solution
+  logging.info(f'Pre-check solvability...')
   v2s = _eight_way_partition(
     init_v2s, 
     grouping_constraints, 
@@ -45,8 +46,11 @@ def eight_way_partition(
   else:
     logging.info(f'Eight way partition succeeds under the least requirement. Start the optimization process')
 
+  # start from the smallest allowed slr crossing and search upwards.
   for curr_slr_limit in range(ref_slr_width_limit, max_slr_width_limit, 500):
-    for curr_max_usage in float_range(ref_usage_ratio, max_usage_ratio, 0.02):
+    # start from the largest allowed ratio and search downwards. Prune if fail.
+    curr_best_v2s = {}
+    for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
       _logger.info(f'Attempt eight way partition with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
 
       v2s = _eight_way_partition(
@@ -59,14 +63,21 @@ def eight_way_partition(
         warm_start_assignments,
         curr_slr_limit,
       )
+
       if v2s:
         _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
+        curr_best_v2s = v2s
         log_resource_utilization(v2s)
         return v2s
 
       else:
-        _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
-        
+        if curr_best_v2s:
+          log_resource_utilization(curr_best_v2s)
+          return curr_best_v2s
+        else:
+          _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
+          break
+
   _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
   return {}
 

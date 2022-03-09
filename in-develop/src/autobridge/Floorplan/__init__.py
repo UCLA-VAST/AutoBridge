@@ -64,6 +64,9 @@ def get_floorplan(
 
   print_pre_assignment(pre_assignments)
 
+  _logger.info('The post-synthesis area of each task is as follows:')
+  print_vertex_areas(init_v2s.keys())
+
   # choose floorplan method
   num_vertices = len(graph.getAllVertices())
   v2s: Dict[Vertex, Slot] = {}
@@ -77,8 +80,7 @@ def get_floorplan(
     if v2s:
       return v2s
     else:
-      _logger.warning(f'Please check if any function in the design is too large:')
-      print_vertex_areas(list(init_v2s.keys()))
+      _logger.warning(f'Please check if any function in the design is too large')
   
   _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
   v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
