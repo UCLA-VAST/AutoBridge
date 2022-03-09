@@ -20,31 +20,53 @@ def four_way_partition(
   pre_assignments: Dict[Vertex, Slot],
   ref_usage_ratio: float,
   max_search_time: int = 600,
-  max_usage_ratio_delta: float = 0.02,
-  hard_limit_max_usage: float = 2,
+  max_usage_ratio: float = 0.85,
+  ref_slr_width_limit: int = 10000,
+  max_slr_width_limit: int = 14000,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
   """
-  curr_max_usage = ref_usage_ratio
-  while 1:
-    v2s = _four_way_partition(init_v2s, grouping_constraints, pre_assignments, slot_manager, curr_max_usage, max_search_time)
-    if not v2s:
-      _logger.debug(f'four way partition failed with max_usage_ratio {curr_max_usage}')
-      curr_max_usage += max_usage_ratio_delta
-      curr_max_usage = round(curr_max_usage, 2)
+  # try if the least restricted case has solution
+  v2s = _four_way_partition(
+    init_v2s, 
+    grouping_constraints, 
+    pre_assignments, 
+    slot_manager, 
+    max_usage_ratio, 
+    max_search_time, 
+    max_slr_width_limit,
+  )
+  if not v2s:
+    logging.info(f'Four way partition failed under the least requirement: max_usage_ratio {max_usage_ratio} and slr_width_limit {max_slr_width_limit}')
+    return {}
+  else:
+    logging.info(f'Four way partition succeeds under the least requirement. Start the optimization process')
 
-      # failed within the hard limit
-      if curr_max_usage >= hard_limit_max_usage:
-        _logger.info(f'four way partition failed with max_usage_ratio {curr_max_usage}')
-        return {}
 
-    else:
-      break
+  for curr_slr_limit in range(ref_slr_width_limit, max_slr_width_limit, 500):
+    for curr_max_usage in float_range(ref_usage_ratio, max_usage_ratio, 0.02):
+      _logger.info(f'Attempt four way partition with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
 
-  _logger.info(f'four way partition succeeded with max_usage_ratio {curr_max_usage}')
-  log_resource_utilization(v2s)
-  return v2s
+      v2s = _four_way_partition(
+        init_v2s, 
+        grouping_constraints, 
+        pre_assignments, 
+        slot_manager, 
+        curr_max_usage, 
+        max_search_time, 
+        curr_slr_limit,
+      )
+      if v2s:
+        _logger.info(f'four way partition succeeded with max_usage_ratio {curr_max_usage}')
+        log_resource_utilization(v2s)
+        return v2s
+
+      else:
+        _logger.debug(f'four way partition failed with max_usage_ratio {curr_max_usage}')
+        
+  _logger.info(f'four way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
+  return {}
 
 
 def _four_way_partition(

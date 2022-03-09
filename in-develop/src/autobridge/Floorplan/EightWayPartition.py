@@ -21,45 +21,54 @@ def eight_way_partition(
   ref_usage_ratio: float,
   max_search_time: int = 600,
   warm_start_assignments: Dict[Vertex, Slot] = {},
-  max_usage_ratio_delta: float = 0.02,
-  hard_limit_max_usage: float = 0.8,
-  slr_0_1_width_limit: int = 12000,
-  slr_1_2_width_limit: int = 12000,
-  slr_2_3_width_limit: int = 12000,
+  max_usage_ratio: float = 0.8,
+  ref_slr_width_limit: int = 10000,
+  max_slr_width_limit: int = 14000,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
   """
-  curr_max_usage = ref_usage_ratio
-  while 1:
-    v2s = _eight_way_partition(
-      init_v2s, 
-      grouping_constraints, 
-      pre_assignments, 
-      slot_manager, 
-      curr_max_usage, 
-      max_search_time, 
-      warm_start_assignments,
-      slr_0_1_width_limit,
-      slr_1_2_width_limit,
-      slr_2_3_width_limit,
-    )
-    if not v2s:
-      _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
-      curr_max_usage += max_usage_ratio_delta
-      curr_max_usage = round(curr_max_usage, 2)
+  # try if the least restricted case has solution
+  v2s = _eight_way_partition(
+    init_v2s, 
+    grouping_constraints, 
+    pre_assignments, 
+    slot_manager, 
+    max_usage_ratio, 
+    max_search_time, 
+    warm_start_assignments,
+    max_slr_width_limit,
+  )
+  if not v2s:
+    logging.info(f'Eight way partition failed under the least requirement: max_usage_ratio {max_usage_ratio} and slr_width_limit {max_slr_width_limit}')
+    return {}
+  else:
+    logging.info(f'Eight way partition succeeds under the least requirement. Start the optimization process')
 
-      # failed within the hard limit
-      if curr_max_usage >= hard_limit_max_usage:
-        _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
-        return {}
+  for curr_slr_limit in range(ref_slr_width_limit, max_slr_width_limit, 500):
+    for curr_max_usage in float_range(ref_usage_ratio, max_usage_ratio, 0.02):
+      _logger.info(f'Attempt eight way partition with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
 
-    else:
-      break
+      v2s = _eight_way_partition(
+        init_v2s, 
+        grouping_constraints, 
+        pre_assignments, 
+        slot_manager, 
+        curr_max_usage, 
+        max_search_time, 
+        warm_start_assignments,
+        curr_slr_limit,
+      )
+      if v2s:
+        _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
+        log_resource_utilization(v2s)
+        return v2s
 
-  _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
-  log_resource_utilization(v2s)
-  return v2s
+      else:
+        _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
+        
+  _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
+  return {}
 
 
 def _eight_way_partition(
@@ -70,9 +79,7 @@ def _eight_way_partition(
   max_usage_ratio: float,
   max_search_time: int,
   warm_start_assignments: Dict[Vertex, Slot],
-  slr_0_1_width_limit: int,
-  slr_1_2_width_limit: int,
-  slr_2_3_width_limit: int,
+  slr_width_limit: int,
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
@@ -97,9 +104,9 @@ def _eight_way_partition(
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
-  add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_0_1_width_limit)
-  add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_1_2_width_limit)
-  add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_2_3_width_limit)
+  add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
+  add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_width_limit)
+  add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
 
   _add_grouping_constraints(m, grouping_constraints, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 

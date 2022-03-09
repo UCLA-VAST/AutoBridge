@@ -125,3 +125,9 @@ def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
   _logger.info('The pre-determined floorplanning is shown as below:')
   for v, s in v2s.items():
     _logger.info(f'{v.name} is assigned to {s.getRTLModuleName()}')
+
+
+def float_range(start, stop, step):
+  while start <= stop:
+    yield float(start)
+    start = round(start + step, 2)
