@@ -16,6 +16,8 @@ log_file = f'tapa-autobridge-{datetime.now().strftime("%d-%m-%Y-%H-%M")}.log'
 handler = logging.FileHandler(log_file)
 
 handlers = [handler, logging.StreamHandler()]
+for h in handlers:
+  h.setFormatter(logging.Formatter('%(message)s'))
 logging.basicConfig(level = logging.INFO, handlers = handlers)
 _logger = logging.getLogger().getChild(__name__)
 
@@ -44,7 +46,7 @@ def get_floorplan(
 
   _logger.info(f'The following modules are grouped to the same location:')
   for grouping in grouping_constraints_in_str:
-    _logger.info(grouping)
+    _logger.info('    ' + ', '.join(grouping))
 
   # get pre_assignment in Vertex
   pre_assignments = { graph.getVertex(v_name) : slot_manager.createSlot(pblock) 
@@ -64,7 +66,6 @@ def get_floorplan(
 
   print_pre_assignment(pre_assignments)
 
-  _logger.info('The post-synthesis area of each task is as follows:')
   print_vertex_areas(init_v2s.keys())
 
   # choose floorplan method

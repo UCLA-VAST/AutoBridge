@@ -289,7 +289,7 @@ def _get_results(
   elif m.status == OptimizationStatus.FEASIBLE:
     _logger.info(f'finish with non-optimal solution')
   else:
-    _logger.debug(f'failed')
+    _logger.info(f'failed')
     return {}
 
   # extract results

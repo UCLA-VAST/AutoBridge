@@ -118,19 +118,19 @@ def _get_slr_count(slot_list: List[Slot]) -> int:
 def print_vertex_areas(v_list: List[Vertex]) -> None:
   _logger.info('The area of each vertex is listed as below:')
   for v in v_list:
-    _logger.info(f'{v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
+    _logger.info(f'    {v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
 
 
 def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
   _logger.info('The pre-determined floorplanning is shown as below:')
   for v, s in v2s.items():
-    _logger.info(f'{v.name} is assigned to {s.getRTLModuleName()}')
+    _logger.info(f'    {v.name}  =>  {s.getRTLModuleName()}')
 
 
 def float_range(start, stop, step) -> List[float]:
   range = []
   while start <= stop:
     range.append(start)
-    start = round(start + step, 2)
-  
+    start = round(start + step, 2)  
+  range.append(start)
   return range
