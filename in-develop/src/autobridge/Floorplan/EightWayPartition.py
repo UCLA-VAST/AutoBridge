@@ -21,37 +21,26 @@ def eight_way_partition(
   ref_usage_ratio: float,
   max_search_time: int = 600,
   warm_start_assignments: Dict[Vertex, Slot] = {},
-  max_usage_ratio: float = 0.8,
+  max_usage_ratio: float = 0.84,
   ref_slr_width_limit: int = 10000,
-  max_slr_width_limit: int = 14000,
+  max_slr_width_limit: int = 15000,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   adjust the max_usage_ratio if failed
   """
-  # try if the least restricted case has solution
-  logging.info(f'Pre-check solvability...')
-  v2s = _eight_way_partition(
-    init_v2s, 
-    grouping_constraints, 
-    pre_assignments, 
-    slot_manager, 
-    max_usage_ratio, 
-    max_search_time, 
-    warm_start_assignments,
-    max_slr_width_limit,
-  )
-  if not v2s:
-    logging.info(f'Eight way partition failed under the least requirement: max_usage_ratio {max_usage_ratio} and slr_width_limit {max_slr_width_limit}')
-    return {}
-  else:
-    logging.info(f'Eight way partition succeeds under the least requirement. Start the optimization process')
+  best_v2s = {}
 
-  # start from the smallest allowed slr crossing and search upwards.
-  for curr_slr_limit in range(ref_slr_width_limit, max_slr_width_limit, 500):
-    # start from the largest allowed ratio and search downwards. Prune if fail.
+  # start from the largest allowed ratio and search downwards. Prune if fail.
+  for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
+    _logger.info(f'Attempt eight way partition with max_usage_ratio {curr_max_usage}')
+
     curr_best_v2s = {}
-    for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
-      _logger.info(f'Attempt eight way partition with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
+
+    # start from the largest allowed slr crossing and search downwards.
+    # if one iteration has solution, update the current solution and keep reducing the slr_limit
+    # if one iteration does not have solution, then break and return the current solution
+    for curr_slr_limit in reversed(range(ref_slr_width_limit, max_slr_width_limit, 500)):
+      _logger.info(f'Try slr_width_limit {curr_slr_limit}')
 
       v2s = _eight_way_partition(
         init_v2s, 
@@ -65,21 +54,22 @@ def eight_way_partition(
       )
 
       if v2s:
-        _logger.info(f'eight way partition succeeded with max_usage_ratio {curr_max_usage}')
         curr_best_v2s = v2s
-        log_resource_utilization(v2s)
-        return v2s
-
       else:
-        if curr_best_v2s:
-          log_resource_utilization(curr_best_v2s)
-          return curr_best_v2s
-        else:
-          _logger.debug(f'eight way partition failed with max_usage_ratio {curr_max_usage}')
-          break
+        break
 
-  _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
-  return {}
+    if curr_best_v2s:
+      _logger.info(f'Found solution with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
+      best_v2s = curr_best_v2s
+    else:
+      break
+
+  if not best_v2s:
+    _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
+    return {}
+
+  log_resource_utilization(best_v2s)
+  return best_v2s
 
 
 def _eight_way_partition(
