@@ -38,6 +38,10 @@ class SlotManager:
       return _convertCoarseRegionToClockRegion(pblock)
     else:
       match = re.search(r'^CLOCKREGION_X(\d+)Y(\d+)[ ]*:[ ]*CLOCKREGION_X(\d+)Y(\d+)$', pblock)
+
+      if not match:
+        match = re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock)
+
       assert match, f'incorrect pblock {pblock}'
       return pblock
 
