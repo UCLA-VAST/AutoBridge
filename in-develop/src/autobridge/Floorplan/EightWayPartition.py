@@ -135,10 +135,16 @@ def _get_slot_by_idx_closure(
   # must not change order!
   partition_order = [Dir.horizontal, Dir.horizontal, Dir.vertical]
   all_leaf_slots = slot_manager.getLeafSlotsAfterPartition(partition_order)
+  slr_slots = slot_manager.getLeafSlotsAfterPartition([Dir.horizontal, Dir.horizontal])
 
+  # include both whole-slr slots and half-slr slots
   def func_get_slot_by_idx(y1, y2, x):
-    idx = y1 * 4 + y2 * 2 + x
-    return all_leaf_slots[idx]
+    if x != -1:
+      idx = y1 * 4 + y2 * 2 + x
+      return all_leaf_slots[idx]
+    else:
+      idx = y1 * 2 + y2
+      return slr_slots[idx]
 
   return func_get_slot_by_idx
 
@@ -148,10 +154,15 @@ def _get_slot_to_idx(
 ) -> Dict[Slot, Tuple[int, int, int]]:
   """
   given a slot, get (y2, y1, x) in a tuple
+  if x == -1, the slot is a whole-slr slot
   """
   slot_to_idx = {}
   for y1, y2, x in product(range(2), range(2), range(2)):
     slot_to_idx[func_get_slot_by_idx(y1, y2, x)] = (y1, y2, x)
+
+  for y1, y2 in product(range(2), range(2)):
+    slot_to_idx[func_get_slot_by_idx(y1, y2, -1)] = (y1, y2, -1)
+
   return slot_to_idx
 
 
