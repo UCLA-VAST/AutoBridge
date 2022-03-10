@@ -219,13 +219,22 @@ def _add_pre_assignment(
   v2var_y1: Dict[Vertex, Var],
   v2var_y2: Dict[Vertex, Var],
 ) -> None:
+  # check if the pre assignment is correct
   v_set = set(v_list)
   for v, expect_slot in pre_assignments.items():
     assert v in v_set, f'ERROR: user has forced the location of a non-existing module {v.name}'
+
+  # consider two types of pre-assignment
+  # if x == 0 or 1, that means a half-SLR slot
+  # if x == -1, that means a whole-SLR slot
+  for v, expect_slot in pre_assignments.items():
     y1, y2, x = slot_to_idx[expect_slot]
     m += v2var_y1[v] == y1
     m += v2var_y2[v] == y2
-    m += v2var_x[v] == x
+
+    # only add constraints for x if the slot is half-slr
+    if x != -1:
+      m += v2var_x[v] == x
 
 
 def _add_warm_start_assignment(
