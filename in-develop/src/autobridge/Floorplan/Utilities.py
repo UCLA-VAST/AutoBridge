@@ -132,5 +132,4 @@ def float_range(start, stop, step) -> List[float]:
   while start <= stop:
     range.append(start)
     start = round(start + step, 2)  
-  range.append(start)
   return range
