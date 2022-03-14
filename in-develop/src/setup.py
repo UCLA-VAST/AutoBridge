@@ -2,14 +2,14 @@
 
 from setuptools import find_packages, setup
 
-with open('../README.md', encoding='utf-8') as f:
-  long_description = f.read()
+# with open('../README.md', encoding='utf-8') as f:
+#   long_description = f.read()
 
 setup(
     name='autobridge',
-    version='0.0.1',
+    version='0.0.20220314.dev',
     description='AutoBridge',
-    long_description=long_description,
+    long_description='',
     long_description_content_type='text/markdown',
     url='https://github.com/Licheng-Guo/AutoBridge',
     author='Licheng Guo',
