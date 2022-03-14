@@ -88,7 +88,9 @@ def get_floorplan(
   if v2s:
     return v2s
 
-  # v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
-  
+  v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
+  if v2s:
+    return v2s
+
   _logger.error(f'AutoBridge fails to partition the design at the SLR level. Either the design is too large, or the functions/modules are too large.')
   return None
