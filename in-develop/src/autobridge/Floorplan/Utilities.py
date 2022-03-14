@@ -116,7 +116,8 @@ def _get_slr_count(slot_list: List[Slot]) -> int:
 
 
 def print_vertex_areas(v_list: List[Vertex]) -> None:
-  _logger.info('The area of each vertex is listed as below:')
+  _logger.info('The area of each vertex is listed as below.')
+  _logger.info('Note that the area of each vertex includes the area of all its in-bound FIFOs.')
   for v in v_list:
     _logger.info(f'    {v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
 
