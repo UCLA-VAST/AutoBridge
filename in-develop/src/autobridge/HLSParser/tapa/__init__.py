@@ -24,7 +24,7 @@ logging.basicConfig(
 _logger = logging.getLogger().getChild(__name__)
 
 
-def get_floorplan(config):
+def get_floorplan_output_bundle(config):
   assert config['CompiledBy'] == 'TAPA'
 
   board = DeviceManager(
@@ -64,15 +64,16 @@ def get_floorplan(config):
   return v2s, s2v, topology
 
 def generate_constraints(config):
-  v2s, s2v, topology = get_floorplan(config)
+  """ [obsolete] """
+  v2s, s2v, topology = get_floorplan_output_bundle(config)
   return {
       slot.pblock_name:
       [v.name for v in v_group] + [topology.getTopologyOf(slot)]
       for slot, v_group in s2v.items()
   }
 
-def generate_separate_constraints(config):
-  v2s, s2v, topology = get_floorplan(config)
+def generate_constraints_bundle(config):
+  v2s, s2v, topology = get_floorplan_output_bundle(config)
   v_name_to_s_name = {v.name: s.pblock_name for v, s in v2s.items()}
   s_name_to_v_name = {s.pblock_name: [v.name for v in v_list] for s, v_list in s2v.items()}
   topology = {slot.pblock_name: topology.getTopologyOf(slot) for slot in s2v.keys()}
