@@ -44,6 +44,16 @@ class Edge:
 
   def getSRLFIFOArea(self, skip_balance_part: bool) -> Dict[str, int]:
     fifo_depth = self.depth
+
+    if fifo_depth == 0:
+      return {
+        'BRAM': 0,
+        'DSP': 0,
+        'URAM': 0,
+        'FF': 0,
+        'LUT': 0
+      }      
+
     if not skip_balance_part:
       fifo_depth += self.added_depth_for_rebalance
 
