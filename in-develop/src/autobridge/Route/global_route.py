@@ -31,10 +31,10 @@ class RoutingVertex:
   def __hash__(self):
     return hash(self.slot_name)
 
-  def getDownLeftX(self):
+  def get_down_left_x(self):
     return self.slot.down_left_x
 
-  def getDownLeftY(self):
+  def get_down_left_y(self):
     return self.slot.down_left_y
 
 
@@ -93,7 +93,7 @@ class RoutingPath:
   def __eq__(self, other):
     return self._name == other._name
 
-  def initEdges(self):
+  def init_edges(self):
     """
     find all edges belong to this path based on the vertices
     """
@@ -104,20 +104,20 @@ class RoutingPath:
       assert len(e_common) == 1
       self.edges.append(e_common[0])
 
-  def _isBend(self, prev, curr, next) -> bool:
+  def is_bend(self, prev, curr, next) -> bool:
     """
     check if three vertices are aligned either vertically or horizontally
     """
-    if prev.getDownLeftX() == curr.getDownLeftX() and \
-       next.getDownLeftX() == curr.getDownLeftX():
+    if prev.get_down_left_x() == curr.get_down_left_x() and \
+       next.get_down_left_x() == curr.get_down_left_x():
       return False
-    elif prev.getDownLeftY() == curr.getDownLeftY() and \
-         next.getDownLeftY() == curr.getDownLeftY():
+    elif prev.get_down_left_y() == curr.get_down_left_y() and \
+         next.get_down_left_y() == curr.get_down_left_y():
       return False
     else:
       return True
 
-  def getChildPaths(self) -> List['RoutingPath']:
+  def get_child_paths(self) -> List['RoutingPath']:
     """
     extend the current path for one more vertex.
     Filter out candidates if the bend count is over the limit
@@ -137,7 +137,7 @@ class RoutingPath:
     child_paths = []
     for next in curr.neighbors:
       if next != prev: # disable u turn at the site
-        new_bend_count = self.bend_count + int(self._isBend(prev, curr, next))
+        new_bend_count = self.bend_count + int(self.is_bend(prev, curr, next))
 
         # limit on bend count
         if new_bend_count > BEND_COUNT_LIMIT:
@@ -155,41 +155,41 @@ class RoutingPath:
         )
     return child_paths
 
-  def getDest(self) -> RoutingVertex:
+  def get_dest(self) -> RoutingVertex:
     """
     get the current tail vertex of the path
     """
     return self.vertices[-1]
 
-  def printPath(self):
+  def print_paths(self):
     logging.debug(f'path from {self.vertices[0].slot_name} to {self.vertices[-1].slot_name} ')
     for v in self.vertices:
       logging.debug(f' => {v.slot_name}')
 
-  def getLength(self) -> int:
+  def get_length(self) -> int:
     """
     number of vertices in this path
     """
     return len(self.vertices)
 
-  def getSlotsOfPath(self) -> List[Slot]:
+  def get_slots_in_path(self) -> List[Slot]:
     """
     get all the Slot objects corresponding to the path
     """
     return [v.slot for v in self.vertices]
 
-  def getTheoreticalShortestLength(self):
+  def get_shortest_path_length(self):
     """
     get the manhatten distance beween the source and destination slots
     the distance is the number of slots
     """
     src = self.vertices[0]
     dst = self.vertices[-1]
-    dist_x = abs(src.getDownLeftX() - dst.getDownLeftX() ) / 2
-    dist_y = abs(src.getDownLeftY() - dst.getDownLeftY() ) / 2
+    dist_x = abs(src.get_down_left_x() - dst.get_down_left_x() ) / 2
+    dist_y = abs(src.get_down_left_y() - dst.get_down_left_y() ) / 2
     return dist_x + dist_y + 1
 
-  def getCost(self) -> float:
+  def get_cost(self) -> float:
     """
     calculate a cost if this slot is selected. 
     We want to pass through less utilized slots as much as possible
@@ -208,10 +208,10 @@ class RoutingPath:
 
     return round(cost, 4)
 
-  def getSrcSlotName(self) -> str:
+  def get_src_slot_name(self) -> str:
     return self.vertices[0].slot_name
 
-  def getDstSlotName(self) -> str:
+  def get_dst_slot_name(self) -> str:
     return self.vertices[-1].slot_name
 
 
@@ -274,16 +274,16 @@ class RoutingGraph:
         e = RoutingEdge(v_lower, v_upper, int(NON_SLR_CROSSING_HORIZONTAL_BOUNDARY*self.routing_usage_limit))
         self.edges.append(e)
 
-  def _getShortestDist(self, src: RoutingVertex, dst: RoutingVertex):
+  def get_shortest_dist(self, src: RoutingVertex, dst: RoutingVertex):
     """
     number of slots in the path. Include source and sink
     assume 2x2 slots
     """
-    dist_x = abs(src.getDownLeftX() - dst.getDownLeftX() ) / 2
-    dist_y = abs(src.getDownLeftY() - dst.getDownLeftY() ) / 2
+    dist_x = abs(src.get_down_left_x() - dst.get_down_left_x() ) / 2
+    dist_y = abs(src.get_down_left_y() - dst.get_down_left_y() ) / 2
     return dist_x + dist_y + 1
 
-  def findAllPaths(
+  def get_all_paths(
       self,
       src_slot: str, 
       dst_slot: str, 
@@ -296,7 +296,7 @@ class RoutingGraph:
     """
     src = self.slot_name_to_vertex[src_slot]
     dst = self.slot_name_to_vertex[dst_slot]
-    shortest_dist = self._getShortestDist(src, dst)
+    shortest_dist = self.get_shortest_dist(src, dst)
 
     init_path = RoutingPath(
       vertices = [src],
@@ -313,10 +313,10 @@ class RoutingGraph:
     while queue:
       curr_path = queue.pop(0)
 
-      if curr_path.getDest() != dst:
-        queue += curr_path.getChildPaths()
+      if curr_path.get_dest() != dst:
+        queue += curr_path.get_child_paths()
       else:
-        curr_path.initEdges()
+        curr_path.init_edges()
         paths.append(curr_path)
 
     assert len(set(paths)) == len(paths)
@@ -326,7 +326,7 @@ class RoutingGraph:
 class ILPRouter:
   def __init__(
       self, 
-      bridge_list: List[Edge], 
+      fifo_list: List[Edge], 
       v2s: Dict[Vertex, Slot], 
       util: Dict[Slot, Dict[str, float]]
   ) -> None:
@@ -334,11 +334,11 @@ class ILPRouter:
     to avoid confusion, here we call the data transfer path betwee two slots a "bridge"
     we need to map each bridge to a set of routing edges in the routing graph
     """
-    self.bridge_list = bridge_list
+    self.fifo_list = fifo_list
     self.v2s = v2s
     self.util = util
 
-  def _getBridgeToCandidatePaths(
+  def get_fifo_to_candidate_paths(
       self, 
       routing_usage_limit: float, 
       detour_path_limit: int
@@ -349,22 +349,22 @@ class ILPRouter:
     routing_graph = RoutingGraph(self.util, routing_usage_limit, detour_path_limit)
 
     bridge_to_paths = {}
-    for bridge in self.bridge_list:
+    for bridge in self.fifo_list:
       src_slot_name = self.v2s[bridge.src].getRTLModuleName()
       dst_slot_name = self.v2s[bridge.dst].getRTLModuleName()
-      path_candidates = routing_graph.findAllPaths(
+      path_candidates = routing_graph.get_all_paths(
         src_slot_name, dst_slot_name, bridge.width, bridge.name
       )
 
       logging.debug(f'bridge {bridge.name} has candidate paths:')
       for path in path_candidates:
-        path.printPath()
+        path.print_paths()
 
       bridge_to_paths[bridge] = path_candidates
 
     return bridge_to_paths
 
-  def _getRoutingEdgeToPassingPaths(
+  def get_routing_edge_to_passing_paths(
       self, bridge_to_paths: Dict[Edge, List[RoutingPath]]
   ) -> Dict[RoutingEdge, List[RoutingPath]]:
     """
@@ -378,7 +378,7 @@ class ILPRouter:
 
     return routing_edge_to_paths
 
-  def _getPathToVar(self, m: Model, bridge_to_paths: Dict[Edge, List[RoutingPath]]):
+  def get_path_to_var(self, m: Model, bridge_to_paths: Dict[Edge, List[RoutingPath]]):
     """
     for each bridge, for each candidate path, 
     create a variable to represent if this candidate path is selected
@@ -392,7 +392,7 @@ class ILPRouter:
 
     return path_to_var
 
-  def _constrOnePathForOneBridge(
+  def constrain_fifo_to_one_path(
       self, 
       m: Model, 
       bridge_to_paths: Dict[Edge, List[RoutingPath]], 
@@ -404,7 +404,7 @@ class ILPRouter:
     for paths in bridge_to_paths.values():
       m += xsum([path_to_var[path] for path in paths]) == 1
 
-  def _constrRoutingEdgeCapacity(
+  def constrain_routing_edge_capacity(
       self, 
       m: Model, 
       path_to_var: Dict[RoutingPath, Var], 
@@ -416,7 +416,7 @@ class ILPRouter:
     for routing_edge, paths in routing_edge_to_paths.items():
       m += xsum(path_to_var[path] * path.data_width for path in paths) <= routing_edge.capacity
 
-  def _minimizeTotalPathArea(
+  def add_opt_goal(
       self, 
       m: Model, 
       bridge_to_paths: Dict[Edge, List[RoutingPath]], 
@@ -428,10 +428,10 @@ class ILPRouter:
     # concatenate to get all paths
     all_paths: List[RoutingPath] = sum(bridge_to_paths.values(), [])
     m.objective = minimize(
-      xsum(path_to_var[path] * path.getCost() for path in all_paths)
+      xsum(path_to_var[path] * path.get_cost() for path in all_paths)
     )
 
-  def _analyzeILPResults(
+  def analyze_routing_results(
     self,
     bridge_to_paths,
     bridge_to_selected_path,
@@ -440,13 +440,13 @@ class ILPRouter:
     # log the quality of the selected path
     for bridge, paths in bridge_to_paths.items():
       if len(paths) > 1:
-        all_costs = [p.getCost() for p in paths]
+        all_costs = [p.get_cost() for p in paths]
         all_costs.sort()
         selected_path = bridge_to_selected_path[bridge]
-        rank = bisect(all_costs, selected_path.getCost())
+        rank = bisect(all_costs, selected_path.get_cost())
 
-        rank_info = f'{bridge.name} from {selected_path.getSrcSlotName()} to {selected_path.getDstSlotName()} is routed with the rank {rank} / {len(all_costs)} path. '
-        overall_info = f'Path cost: {selected_path.getCost()}. All costs: {all_costs}'
+        rank_info = f'{bridge.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
+        overall_info = f'Path cost: {selected_path.get_cost()}. All costs: {all_costs}'
         logging.info(rank_info + overall_info)
           
     # log the utilization ratio of each boundary
@@ -456,7 +456,7 @@ class ILPRouter:
       for path in paths:
         logging.debug(f'  {path.bridge_name}')
 
-  def _getILPResults(
+  def get_routing_results(
     self,
     bridge_to_paths,
     path_to_var,
@@ -472,8 +472,8 @@ class ILPRouter:
         if round(val) == 1:
           bridge_to_selected_path[bridge] = path
           logging.debug(f'bridge {bridge.name} is routed to: ')
-          path.printPath()
-          if path.getLength() > path.getTheoreticalShortestLength():
+          path.print_paths()
+          if path.get_length() > path.get_shortest_path_length():
             logging.warning(f'{bridge.name} is not routed with the shortest paths')
 
           break
@@ -491,15 +491,15 @@ class ILPRouter:
 
     return bridge_to_selected_path, routing_edge_to_selected_paths
 
-  def _getENameToPathsExcludeSrcAndDst(self, bridge_to_selected_path):
+  def get_fifo_to_path_exclude_src_dst(self, bridge_to_selected_path):
     e_name_to_paths = {}
     # exclude the source and destination to feed back to the outside world   
     for bridge, selected_path in bridge_to_selected_path.items():
-      e_name_to_paths[bridge.name] = selected_path.getSlotsOfPath()[1:-1]
+      e_name_to_paths[bridge.name] = selected_path.get_slots_in_path()[1:-1]
 
     return e_name_to_paths
 
-  def ILPRouting(
+  def route_design(
       self,
       routing_usage_limit: float = 0.7,
       detour_path_limit: int = 4
@@ -510,18 +510,18 @@ class ILPRouter:
 
       m = Model()
 
-      bridge_to_paths = self._getBridgeToCandidatePaths(routing_usage_limit, detour_path_limit)
-      path_to_var = self._getPathToVar(m, bridge_to_paths)
-      routing_edge_to_paths = self._getRoutingEdgeToPassingPaths(bridge_to_paths)
+      bridge_to_paths = self.get_fifo_to_candidate_paths(routing_usage_limit, detour_path_limit)
+      path_to_var = self.get_path_to_var(m, bridge_to_paths)
+      routing_edge_to_paths = self.get_routing_edge_to_passing_paths(bridge_to_paths)
 
       logging.info(f'there are {len(bridge_to_paths)} dataflow edges')
       logging.info(f'there are {len(path_to_var)} potential paths to select from')
 
-      self._constrOnePathForOneBridge(m, bridge_to_paths, path_to_var)
+      self.constrain_fifo_to_one_path(m, bridge_to_paths, path_to_var)
 
-      self._constrRoutingEdgeCapacity(m, path_to_var, routing_edge_to_paths)
+      self.constrain_routing_edge_capacity(m, path_to_var, routing_edge_to_paths)
 
-      self._minimizeTotalPathArea(m, bridge_to_paths, path_to_var)
+      self.add_opt_goal(m, bridge_to_paths, path_to_var)
 
       status = m.optimize()
 
@@ -534,13 +534,13 @@ class ILPRouter:
 
     # extract results
     bridge_to_selected_path, routing_edge_to_selected_paths = \
-      self._getILPResults(bridge_to_paths, path_to_var, routing_edge_to_paths)
+      self.get_routing_results(bridge_to_paths, path_to_var, routing_edge_to_paths)
 
     # logging and analysis
-    self._analyzeILPResults(bridge_to_paths, bridge_to_selected_path, routing_edge_to_selected_paths)
+    self.analyze_routing_results(bridge_to_paths, bridge_to_selected_path, routing_edge_to_selected_paths)
 
     # convert the data format of the path
-    e_name_to_paths_without_src_and_dst =  self._getENameToPathsExcludeSrcAndDst(bridge_to_selected_path)
+    e_name_to_paths_without_src_and_dst =  self.get_fifo_to_path_exclude_src_dst(bridge_to_selected_path)
 
     return e_name_to_paths_without_src_and_dst
 
@@ -548,11 +548,11 @@ class ILPRouter:
 if __name__ == '__main__':  
   routing_graph = RoutingGraph()
 
-  # paths = routing_graph.findAllPaths('CR_X4Y0_To_CR_X5Y1', 'CR_X4Y8_To_CR_X5Y9', 10, 'test_name')
+  # paths = routing_graph.get_all_paths('CR_X4Y0_To_CR_X5Y1', 'CR_X4Y8_To_CR_X5Y9', 10, 'test_name')
   # print(len(paths))
 
-  paths = routing_graph.findAllPaths('CR_X4Y2_To_CR_X5Y3', 'CR_X4Y8_To_CR_X5Y9', 10, 'test_name')
+  paths = routing_graph.get_all_paths('CR_X4Y2_To_CR_X5Y3', 'CR_X4Y8_To_CR_X5Y9', 10, 'test_name')
   print(len(paths))
 
   for path in paths:
-    path.printPath()
+    path.print_paths()
