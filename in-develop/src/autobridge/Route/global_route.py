@@ -69,7 +69,7 @@ class RoutingPath:
       length_limit: int, 
       data_width: int,
       bridge_name: str,
-      util: Dict[Slot, Dict[str, float]]
+      slot_to_usage: Dict[Slot, Dict[str, float]]
   ) -> None:
     """
     a bridge is an edge in the dataflow graph. To differentiate it 
@@ -81,7 +81,7 @@ class RoutingPath:
     self.length_limit = length_limit
     self.data_width = data_width
     self.bridge_name = bridge_name
-    self.util = util
+    self.slot_to_usage = slot_to_usage
     self.edges = []
 
     # use bridge name to make the path name unique
@@ -142,7 +142,7 @@ class RoutingPath:
         # limit on bend count
         if new_bend_count > BEND_COUNT_LIMIT:
           continue
-        
+
         child_paths.append(
           RoutingPath(
             self.vertices + [next], 
@@ -150,7 +150,7 @@ class RoutingPath:
             self.length_limit, 
             self.data_width,
             self.bridge_name,
-            self.util
+            self.slot_to_usage
           )
         )
     return child_paths
@@ -196,11 +196,11 @@ class RoutingPath:
     use the sum of DSP and BRAM percentage of each slot * wire_length
     """
     try:
-      dsp_costs = [self.util[v.slot]['DSP'] if v.slot in self.util else 0 for v in self.vertices]
-      bram_costs = [self.util[v.slot]['BRAM'] if v.slot in self.util else 0  for v in self.vertices]
-      lut_costs = [self.util[v.slot]['LUT'] if v.slot in self.util else 0  for v in self.vertices]
+      dsp_costs = [self.slot_to_usage[v.slot]['DSP'] if v.slot in self.slot_to_usage else 0 for v in self.vertices]
+      bram_costs = [self.slot_to_usage[v.slot]['BRAM'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
+      lut_costs = [self.slot_to_usage[v.slot]['LUT'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
     except:
-      [v.slot.getRTLModuleName() if v.slot not in self.util else '' for v in self.vertices]
+      [v.slot.getRTLModuleName() if v.slot not in self.slot_to_usage else '' for v in self.vertices]
       import pdb; pdb.set_trace()
 
 
@@ -218,13 +218,13 @@ class RoutingPath:
 class RoutingGraph:
   def __init__(
       self, 
-      util: Dict[Slot, Dict[str, float]], 
+      slot_to_usage: Dict[Slot, Dict[str, float]], 
       routing_usage_limit: int,
       detour_path_limit: int,
   ) -> None:
     self.slot_name_to_vertex = {}
     self.edges = []
-    self.util = util  # resource usage of each slot
+    self.slot_to_usage = slot_to_usage  # resource usage of each slot
     self.routing_usage_limit = routing_usage_limit
     self.detour_path_limit = detour_path_limit
     self._getRoutingGraphForU250()
@@ -234,7 +234,7 @@ class RoutingGraph:
     hardcode the routing graph for U250
     assume slots are 2x2
     """
-    
+
     # create all vertices
     for x in range(0, 8, 2):
       for y in range(0, 16, 2):
@@ -304,7 +304,7 @@ class RoutingGraph:
       length_limit = shortest_dist + self.detour_path_limit,
       data_width = data_width,
       bridge_name = bridge_name,
-      util = self.util
+      slot_to_usage = self.slot_to_usage
     )
 
     queue = [init_path]
@@ -328,7 +328,7 @@ class ILPRouter:
       self, 
       fifo_list: List[Edge], 
       v2s: Dict[Vertex, Slot], 
-      util: Dict[Slot, Dict[str, float]]
+      slot_to_usage: Dict[Slot, Dict[str, float]]
   ) -> None:
     """
     to avoid confusion, here we call the data transfer path betwee two slots a "bridge"
@@ -336,7 +336,7 @@ class ILPRouter:
     """
     self.fifo_list = fifo_list
     self.v2s = v2s
-    self.util = util
+    self.slot_to_usage = slot_to_usage
 
   def get_fifo_to_candidate_paths(
       self, 
@@ -346,7 +346,7 @@ class ILPRouter:
     """
     for each edge, generate the candidate paths to select from
     """
-    routing_graph = RoutingGraph(self.util, routing_usage_limit, detour_path_limit)
+    routing_graph = RoutingGraph(self.slot_to_usage, routing_usage_limit, detour_path_limit)
 
     bridge_to_paths = {}
     for bridge in self.fifo_list:
@@ -448,7 +448,7 @@ class ILPRouter:
         rank_info = f'{bridge.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
         overall_info = f'Path cost: {selected_path.get_cost()}. All costs: {all_costs}'
         logging.info(rank_info + overall_info)
-          
+
     # log the utilization ratio of each boundary
     for routing_edge, paths in routing_edge_to_selected_paths.items():
       total_data_width = sum([path.data_width for path in paths])
