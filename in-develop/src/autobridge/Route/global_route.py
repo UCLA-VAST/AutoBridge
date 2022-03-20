@@ -63,29 +63,28 @@ class RoutingPath:
   """
 
   def __init__(
-      self, 
-      vertices: List[RoutingVertex], 
-      bend_count: int, 
-      length_limit: int, 
+      self,
+      vertices: List[RoutingVertex],
+      bend_count: int,
+      length_limit: int,
       data_width: int,
-      bridge_name: str,
+      fifo_name: str,
       slot_to_usage: Dict[Slot, Dict[str, float]]
   ) -> None:
     """
-    a bridge is an edge in the dataflow graph. To differentiate it 
-    from the edge in the routing graph, we call it a bridge
-    use bridge_name to make the path unique
+    a fifo is an edge in the dataflow graph.
+    use fifo_name to make the path unique
     """
     self.vertices = vertices
     self.bend_count = bend_count
     self.length_limit = length_limit
     self.data_width = data_width
-    self.bridge_name = bridge_name
+    self.fifo_name = fifo_name
     self.slot_to_usage = slot_to_usage
     self.edges = []
 
-    # use bridge name to make the path name unique
-    self._name = self.bridge_name + '_' + '_'.join([v.slot_name for v in self.vertices])
+    # use fifo name to make the path name unique
+    self._name = self.fifo_name + '_' + '_'.join([v.slot_name for v in self.vertices])
 
   def __hash__(self):
     return hash(self._name)
@@ -100,7 +99,7 @@ class RoutingPath:
     for i in range(len(self.vertices)-1):
       curr = self.vertices[i]
       next = self.vertices[i+1]
-      e_common = [bridge for bridge in curr.edges if bridge in next.edges]
+      e_common = [fifo for fifo in curr.edges if fifo in next.edges]
       assert len(e_common) == 1
       self.edges.append(e_common[0])
 
@@ -145,9 +144,9 @@ class RoutingPath:
 
         child_paths.append(
           RoutingPath(
-            self.vertices + [next], 
-            new_bend_count, 
-            self.length_limit, 
+            self.vertices + [next],
+            new_bend_count,
+            self.length_limit,
             self.data_width,
             self.bridge_name,
             self.slot_to_usage
@@ -191,7 +190,7 @@ class RoutingPath:
 
   def get_cost(self) -> float:
     """
-    calculate a cost if this slot is selected. 
+    calculate a cost if this slot is selected.
     We want to pass through less utilized slots as much as possible
     use the sum of DSP and BRAM percentage of each slot * wire_length
     """
@@ -217,8 +216,8 @@ class RoutingPath:
 
 class RoutingGraph:
   def __init__(
-      self, 
-      slot_to_usage: Dict[Slot, Dict[str, float]], 
+      self,
+      slot_to_usage: Dict[Slot, Dict[str, float]],
       routing_usage_limit: int,
       detour_path_limit: int,
   ) -> None:
@@ -285,10 +284,10 @@ class RoutingGraph:
 
   def get_all_paths(
       self,
-      src_slot: str, 
-      dst_slot: str, 
-      data_width: int, 
-      bridge_name: str
+      src_slot: str,
+      dst_slot: str,
+      data_width: int,
+      fifo_name: str
   ) -> List[RoutingPath]:
     """
     run BFS to get all paths that satisfy the requirement
@@ -303,7 +302,7 @@ class RoutingGraph:
       bend_count = 0,
       length_limit = shortest_dist + self.detour_path_limit,
       data_width = data_width,
-      bridge_name = bridge_name,
+      fifo_name = fifo_name,
       slot_to_usage = self.slot_to_usage
     )
 
@@ -325,22 +324,21 @@ class RoutingGraph:
 
 class ILPRouter:
   def __init__(
-      self, 
-      fifo_list: List[Edge], 
-      v2s: Dict[Vertex, Slot], 
+      self,
+      fifo_list: List[Edge],
+      v2s: Dict[Vertex, Slot],
       slot_to_usage: Dict[Slot, Dict[str, float]]
   ) -> None:
     """
-    to avoid confusion, here we call the data transfer path betwee two slots a "bridge"
-    we need to map each bridge to a set of routing edges in the routing graph
+    we need to map each fifo to a set of routing edges in the routing graph
     """
     self.fifo_list = fifo_list
     self.v2s = v2s
     self.slot_to_usage = slot_to_usage
 
   def get_fifo_to_candidate_paths(
-      self, 
-      routing_usage_limit: float, 
+      self,
+      routing_usage_limit: float,
       detour_path_limit: int
   ) -> Dict[Edge, List[RoutingPath]]:
     """
@@ -348,66 +346,66 @@ class ILPRouter:
     """
     routing_graph = RoutingGraph(self.slot_to_usage, routing_usage_limit, detour_path_limit)
 
-    bridge_to_paths = {}
-    for bridge in self.fifo_list:
-      src_slot_name = self.v2s[bridge.src].getRTLModuleName()
-      dst_slot_name = self.v2s[bridge.dst].getRTLModuleName()
+    fifo_to_paths = {}
+    for fifo in self.fifo_list:
+      src_slot_name = self.v2s[fifo.src].getRTLModuleName()
+      dst_slot_name = self.v2s[fifo.dst].getRTLModuleName()
       path_candidates = routing_graph.get_all_paths(
-        src_slot_name, dst_slot_name, bridge.width, bridge.name
+        src_slot_name, dst_slot_name, fifo.width, fifo.name
       )
 
-      logging.debug(f'bridge {bridge.name} has candidate paths:')
+      logging.debug(f'fifo {fifo.name} has candidate paths:')
       for path in path_candidates:
         path.print_paths()
 
-      bridge_to_paths[bridge] = path_candidates
+      fifo_to_paths[fifo] = path_candidates
 
-    return bridge_to_paths
+    return fifo_to_paths
 
   def get_routing_edge_to_passing_paths(
-      self, bridge_to_paths: Dict[Edge, List[RoutingPath]]
+      self, fifo_to_paths: Dict[Edge, List[RoutingPath]]
   ) -> Dict[RoutingEdge, List[RoutingPath]]:
     """
-    for each routing edge, get all bridge and corresponding path candidates that go through it.
+    for each routing edge, get all fifo and corresponding path candidates that go through it.
     """
     routing_edge_to_paths = defaultdict(list)
-    for bridge, path_list in bridge_to_paths.items():
+    for fifo, path_list in fifo_to_paths.items():
       for path in path_list:
         for routing_edge in path.edges:
           routing_edge_to_paths[routing_edge].append(path)
 
     return routing_edge_to_paths
 
-  def get_path_to_var(self, m: Model, bridge_to_paths: Dict[Edge, List[RoutingPath]]):
+  def get_path_to_var(self, m: Model, fifo_to_paths: Dict[Edge, List[RoutingPath]]):
     """
-    for each bridge, for each candidate path, 
+    for each fifo, for each candidate path,
     create a variable to represent if this candidate path is selected
     """
     path_to_var = {}
-    for bridge, path_list in bridge_to_paths.items():
+    for fifo, path_list in fifo_to_paths.items():
       for path in path_list:
         assert path not in path_to_var
         # weight matching model, relax the variable to continous
-        path_to_var[path] = m.add_var(var_type=BINARY, lb=0, ub=1) 
+        path_to_var[path] = m.add_var(var_type=BINARY, lb=0, ub=1)
 
     return path_to_var
 
   def constrain_fifo_to_one_path(
-      self, 
-      m: Model, 
-      bridge_to_paths: Dict[Edge, List[RoutingPath]], 
+      self,
+      m: Model,
+      fifo_to_paths: Dict[Edge, List[RoutingPath]],
       path_to_var: Dict[RoutingPath, Var]
   ) -> None:
     """
-    for each bridge, only one candidate path is selected
+    for each fifo, only one candidate path is selected
     """
-    for paths in bridge_to_paths.values():
+    for paths in fifo_to_paths.values():
       m += xsum([path_to_var[path] for path in paths]) == 1
 
   def constrain_routing_edge_capacity(
-      self, 
-      m: Model, 
-      path_to_var: Dict[RoutingPath, Var], 
+      self,
+      m: Model,
+      path_to_var: Dict[RoutingPath, Var],
       routing_edge_to_paths: Dict[RoutingEdge, List[RoutingPath]]
   ) -> None:
     """
@@ -417,35 +415,35 @@ class ILPRouter:
       m += xsum(path_to_var[path] * path.data_width for path in paths) <= routing_edge.capacity
 
   def add_opt_goal(
-      self, 
-      m: Model, 
-      bridge_to_paths: Dict[Edge, List[RoutingPath]], 
+      self,
+      m: Model,
+      fifo_to_paths: Dict[Edge, List[RoutingPath]],
       path_to_var: Dict[RoutingPath, Var]
   ) -> None:
     """
     minimize the total length * width of all selected paths
     """
     # concatenate to get all paths
-    all_paths: List[RoutingPath] = sum(bridge_to_paths.values(), [])
+    all_paths: List[RoutingPath] = sum(fifo_to_paths.values(), [])
     m.objective = minimize(
       xsum(path_to_var[path] * path.get_cost() for path in all_paths)
     )
 
   def analyze_routing_results(
     self,
-    bridge_to_paths,
-    bridge_to_selected_path,
+    fifo_to_paths,
+    fifo_to_selected_path,
     routing_edge_to_selected_paths
   ) -> None:
     # log the quality of the selected path
-    for bridge, paths in bridge_to_paths.items():
+    for fifo, paths in fifo_to_paths.items():
       if len(paths) > 1:
         all_costs = [p.get_cost() for p in paths]
         all_costs.sort()
-        selected_path = bridge_to_selected_path[bridge]
+        selected_path = fifo_to_selected_path[fifo]
         rank = bisect(all_costs, selected_path.get_cost())
 
-        rank_info = f'{bridge.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
+        rank_info = f'{fifo.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
         overall_info = f'Path cost: {selected_path.get_cost()}. All costs: {all_costs}'
         logging.info(rank_info + overall_info)
 
@@ -454,30 +452,30 @@ class ILPRouter:
       total_data_width = sum([path.data_width for path in paths])
       logging.debug(f'boundary {routing_edge._name} is passed by {total_data_width} / {routing_edge.capacity} = {total_data_width / routing_edge.capacity} ')
       for path in paths:
-        logging.debug(f'  {path.bridge_name}')
+        logging.debug(f'  {path.fifo_name}')
 
   def get_routing_results(
     self,
-    bridge_to_paths,
+    fifo_to_paths,
     path_to_var,
     routing_edge_to_paths
   ) -> Dict[str, List[Slot]]:
 
     # get the selected paths
-    bridge_to_selected_path = {}
-    for bridge, paths in bridge_to_paths.items():
+    fifo_to_selected_path = {}
+    for fifo, paths in fifo_to_paths.items():
       for path in paths:
         val = path_to_var[path].x
         assert abs(val - round(val)) < 0.0001
         if round(val) == 1:
-          bridge_to_selected_path[bridge] = path
-          logging.debug(f'bridge {bridge.name} is routed to: ')
+          fifo_to_selected_path[fifo] = path
+          logging.debug(f'fifo {fifo.name} is routed to: ')
           path.print_paths()
           if path.get_length() > path.get_shortest_path_length():
-            logging.warning(f'{bridge.name} is not routed with the shortest paths')
+            logging.warning(f'{fifo.name} is not routed with the shortest paths')
 
           break
-      assert bridge in bridge_to_selected_path
+      assert fifo in fifo_to_selected_path
 
     # get which paths will pass through a boundary
     routing_edge_to_selected_paths = defaultdict(list)
@@ -487,15 +485,15 @@ class ILPRouter:
         val = path_to_var[path].x
         if round(val) == 1:
           routing_edge_to_selected_paths[routing_edge].append(path)
-          logging.debug(f'  {path.bridge_name}')
+          logging.debug(f'  {path.fifo_name}')
 
-    return bridge_to_selected_path, routing_edge_to_selected_paths
+    return fifo_to_selected_path, routing_edge_to_selected_paths
 
-  def get_fifo_to_path_exclude_src_dst(self, bridge_to_selected_path):
+  def get_fifo_to_path_exclude_src_dst(self, fifo_to_selected_path):
     e_name_to_paths = {}
-    # exclude the source and destination to feed back to the outside world   
-    for bridge, selected_path in bridge_to_selected_path.items():
-      e_name_to_paths[bridge.name] = selected_path.get_slots_in_path()[1:-1]
+    # exclude the source and destination to feed back to the outside world
+    for fifo, selected_path in fifo_to_selected_path.items():
+      e_name_to_paths[fifo.name] = selected_path.get_slots_in_path()[1:-1]
 
     return e_name_to_paths
 
@@ -510,18 +508,18 @@ class ILPRouter:
 
       m = Model()
 
-      bridge_to_paths = self.get_fifo_to_candidate_paths(routing_usage_limit, detour_path_limit)
-      path_to_var = self.get_path_to_var(m, bridge_to_paths)
-      routing_edge_to_paths = self.get_routing_edge_to_passing_paths(bridge_to_paths)
+      fifo_to_paths = self.get_fifo_to_candidate_paths(routing_usage_limit, detour_path_limit)
+      path_to_var = self.get_path_to_var(m, fifo_to_paths)
+      routing_edge_to_paths = self.get_routing_edge_to_passing_paths(fifo_to_paths)
 
-      logging.info(f'there are {len(bridge_to_paths)} dataflow edges')
+      logging.info(f'there are {len(fifo_to_paths)} dataflow edges')
       logging.info(f'there are {len(path_to_var)} potential paths to select from')
 
-      self.constrain_fifo_to_one_path(m, bridge_to_paths, path_to_var)
+      self.constrain_fifo_to_one_path(m, fifo_to_paths, path_to_var)
 
       self.constrain_routing_edge_capacity(m, path_to_var, routing_edge_to_paths)
 
-      self.add_opt_goal(m, bridge_to_paths, path_to_var)
+      self.add_opt_goal(m, fifo_to_paths, path_to_var)
 
       status = m.optimize()
 
@@ -533,19 +531,19 @@ class ILPRouter:
         routing_usage_limit += 0.03
 
     # extract results
-    bridge_to_selected_path, routing_edge_to_selected_paths = \
-      self.get_routing_results(bridge_to_paths, path_to_var, routing_edge_to_paths)
+    fifo_to_selected_path, routing_edge_to_selected_paths = \
+      self.get_routing_results(fifo_to_paths, path_to_var, routing_edge_to_paths)
 
     # logging and analysis
-    self.analyze_routing_results(bridge_to_paths, bridge_to_selected_path, routing_edge_to_selected_paths)
+    self.analyze_routing_results(fifo_to_paths, fifo_to_selected_path, routing_edge_to_selected_paths)
 
     # convert the data format of the path
-    e_name_to_paths_without_src_and_dst =  self.get_fifo_to_path_exclude_src_dst(bridge_to_selected_path)
+    e_name_to_paths_without_src_and_dst =  self.get_fifo_to_path_exclude_src_dst(fifo_to_selected_path)
 
     return e_name_to_paths_without_src_and_dst
 
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
   routing_graph = RoutingGraph()
 
   # paths = routing_graph.get_all_paths('CR_X4Y0_To_CR_X5Y1', 'CR_X4Y8_To_CR_X5Y9', 10, 'test_name')
