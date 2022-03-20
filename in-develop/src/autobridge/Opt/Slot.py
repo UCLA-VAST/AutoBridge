@@ -34,6 +34,10 @@ class Slot:
     # need to convert back to CR coordinates
     return f'CLOCKREGION_X{self.down_left_x}Y{self.down_left_y}:CLOCKREGION_X{self.up_right_x}Y{self.up_right_y}'
 
+  @property
+  def name(self):
+    return f'CR_X{self.down_left_x}Y{self.down_left_y}_To_CRX{self.up_right_x}Y{self.up_right_y}'
+
   def getOrigUpRightX(self):
     return self.up_right_x
   def getOrigUpRightY(self):
