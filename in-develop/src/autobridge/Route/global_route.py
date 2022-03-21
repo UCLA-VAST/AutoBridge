@@ -10,8 +10,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Device.DeviceManager import DeviceU250
 U250_inst = DeviceU250()
 
-root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+_logger = logging.getLogger().getChild(__name__)
 
 BEND_COUNT_LIMIT = 2
 VERTICAL_BOUNDARY_CAPACITY = 5280
@@ -162,9 +161,9 @@ class RoutingPath:
     return self.vertices[-1]
 
   def print_paths(self):
-    logging.debug(f'path from {self.vertices[0].slot_name} to {self.vertices[-1].slot_name} with cost {self.get_cost()}')
+    _logger.debug(f'path from {self.vertices[0].slot_name} to {self.vertices[-1].slot_name} with cost {self.get_cost()}')
     for v in self.vertices:
-      logging.debug(f' => {v.slot_name}')
+      _logger.debug(f' => {v.slot_name}')
 
   def get_length(self) -> int:
     """
@@ -345,7 +344,7 @@ class ILPRouter:
         src_slot_name, dst_slot_name, fifo.width, fifo.name
       )
 
-      logging.debug(f'fifo {fifo.name} has candidate paths:')
+      _logger.debug(f'fifo {fifo.name} has candidate paths:')
       for path in path_candidates:
         path.print_paths()
 
@@ -436,14 +435,14 @@ class ILPRouter:
 
         rank_info = f'{fifo.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
         overall_info = f'Path cost: {selected_path.get_cost()}. All costs: {all_costs}'
-        logging.info(rank_info + overall_info)
+        _logger.info(rank_info + overall_info)
 
     # log the utilization ratio of each boundary
     for routing_edge, paths in routing_edge_to_selected_paths.items():
       total_data_width = sum([path.data_width for path in paths])
-      logging.debug(f'boundary {routing_edge._name} is passed by {total_data_width} / {routing_edge.capacity} = {total_data_width / routing_edge.capacity} ')
+      _logger.debug(f'boundary {routing_edge._name} is passed by {total_data_width} / {routing_edge.capacity} = {total_data_width / routing_edge.capacity} ')
       for path in paths:
-        logging.debug(f'  {path.fifo_name}')
+        _logger.debug(f'  {path.fifo_name}')
 
   def get_routing_results(
     self,
@@ -460,10 +459,10 @@ class ILPRouter:
         assert abs(val - round(val)) < 0.0001
         if round(val) == 1:
           fifo_to_selected_path[fifo] = path
-          logging.debug(f'fifo {fifo.name} is routed to: ')
+          _logger.debug(f'fifo {fifo.name} is routed to: ')
           path.print_paths()
           if path.get_length() > path.get_shortest_path_length():
-            logging.warning(f'{fifo.name} is not routed with the shortest paths')
+            _logger.warning(f'{fifo.name} is not routed with the shortest paths')
 
           break
       assert fifo in fifo_to_selected_path
@@ -471,12 +470,12 @@ class ILPRouter:
     # get which paths will pass through a boundary
     routing_edge_to_selected_paths = defaultdict(list)
     for routing_edge, paths in routing_edge_to_paths.items():
-      logging.debug(f'boundary {routing_edge._name} is passed by:')
+      _logger.debug(f'boundary {routing_edge._name} is passed by:')
       for path in paths:
         val = path_to_var[path].x
         if round(val) == 1:
           routing_edge_to_selected_paths[routing_edge].append(path)
-          logging.debug(f'  {path.fifo_name}')
+          _logger.debug(f'  {path.fifo_name}')
 
     return fifo_to_selected_path, routing_edge_to_selected_paths
 
@@ -495,16 +494,17 @@ class ILPRouter:
   ) -> Dict[Edge, List[Slot]]:
 
     while 1:
-      logging.info(f'Global routing attempt with routing usage limit {routing_usage_limit}')
+      _logger.info(f'Global routing attempt with routing usage limit {routing_usage_limit}')
 
       m = Model()
+      m.verbose = 0
 
       fifo_to_paths = self.get_fifo_to_candidate_paths(routing_usage_limit, detour_path_limit)
       path_to_var = self.get_path_to_var(m, fifo_to_paths)
       routing_edge_to_paths = self.get_routing_edge_to_passing_paths(fifo_to_paths)
 
-      logging.info(f'there are {len(fifo_to_paths)} dataflow edges')
-      logging.info(f'there are {len(path_to_var)} potential paths to select from')
+      _logger.info(f'there are {len(fifo_to_paths)} dataflow edges')
+      _logger.info(f'there are {len(path_to_var)} potential paths to select from')
 
       self.constrain_fifo_to_one_path(m, fifo_to_paths, path_to_var)
 
@@ -515,17 +515,17 @@ class ILPRouter:
       status = m.optimize()
 
       if status == OptimizationStatus.OPTIMAL:
-        logging.warning(f'Succeeded: global routing attempt with routing usage limit {routing_usage_limit}')
+        _logger.warning(f'Succeeded: global routing attempt with routing usage limit {routing_usage_limit}')
         break
       else:
-        logging.warning(f'Failed: global routing attempt with routing usage limit {routing_usage_limit}')
+        _logger.warning(f'Failed: global routing attempt with routing usage limit {routing_usage_limit}')
         routing_usage_limit += 0.03
 
     # extract results
     fifo_to_selected_path, routing_edge_to_selected_paths = \
       self.get_routing_results(fifo_to_paths, path_to_var, routing_edge_to_paths)
 
-    # logging and analysis
+    # _logger and analysis
     self.analyze_routing_results(fifo_to_paths, fifo_to_selected_path, routing_edge_to_selected_paths)
 
     fifo_to_slots = {fifo: path.get_slots_in_path() for fifo, path in fifo_to_selected_path.items()}
