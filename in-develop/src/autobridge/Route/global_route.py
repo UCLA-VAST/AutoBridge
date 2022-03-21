@@ -162,7 +162,7 @@ class RoutingPath:
     return self.vertices[-1]
 
   def print_paths(self):
-    logging.debug(f'path from {self.vertices[0].slot_name} to {self.vertices[-1].slot_name} ')
+    logging.debug(f'path from {self.vertices[0].slot_name} to {self.vertices[-1].slot_name} with cost {self.get_cost()}')
     for v in self.vertices:
       logging.debug(f' => {v.slot_name}')
 
@@ -199,7 +199,7 @@ class RoutingPath:
     bram_costs = [self.slot_to_usage[v.slot]['BRAM'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
     lut_costs = [self.slot_to_usage[v.slot]['LUT'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
 
-    cost = (sum(dsp_costs) + sum(bram_costs) + 0.7 * sum(lut_costs)) * self.data_width
+    cost = (sum(dsp_costs) + sum(bram_costs) + 0.7 * sum(lut_costs) + 10 * len(self.vertices)) * self.data_width
 
     return round(cost, 4)
 
