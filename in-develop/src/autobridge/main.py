@@ -7,8 +7,10 @@ import autobridge.Floorplan as autobridge_floorplan
 from autobridge.Device.DeviceManager import DeviceManager
 from autobridge.HLSParser.tapa.DataflowGraphTapa import DataflowGraphTapa
 from autobridge.HLSParser.tapa.ProgramJsonManager import ProgramJsonManager
-from autobridge.Opt.Slot import Topology
+from autobridge.Opt.DataflowGraph import Edge, Vertex
+from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
+from autobridge.Route.global_route import ILPRouter
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -51,12 +53,19 @@ def annotate_floorplan(config: Dict) -> Dict:
     kwargs['ref_usage_ratio'] = ref_usage_ratio
 
   # generate floorplan
-  v2s = autobridge_floorplan.get_floorplan(graph, slot_manager, grouping_constraints, pre_assignment, **kwargs)
-  
-  s2v = util.invert_v2s(v2s)
-  topology = Topology(s2v)
+  v2s, slot_list = autobridge_floorplan.get_floorplan(graph, slot_manager, grouping_constraints, pre_assignment, **kwargs)
+  slot_to_usage = util.get_slot_utilization(v2s)
 
-  annotated_config = get_annotated_config(v2s, config)
+  # route the FIFO pipelines
+  router = ILPRouter(
+    list(graph.edges.values()),
+    v2s,
+    slot_to_usage,
+    slot_list,
+  )
+  fifo_to_path: Dict[Edge, List[Slot]] = router.route_design()
+
+  annotated_config = get_annotated_config(v2s, fifo_to_path, config)
 
   return annotated_config
 
@@ -86,12 +95,19 @@ def get_vertex_section(config) -> Dict[str, str]:
 def get_area_section(config) -> Dict[str, Dict[str, int]]:
   return {properties['module']: properties['area'] for v_name, properties in config['vertices'].items()}
 
-def get_annotated_config(v2s, config_orig) -> Dict:
+def get_annotated_config(
+    v2s: Dict[Vertex, Slot], 
+    fifo_to_path: Dict[Edge, List[Slot]], 
+    config_orig: Dict,
+) -> Dict:
   config = copy.deepcopy(config_orig)
   for v, s in v2s.items():
     config['vertices'][v.name]['floorplan_region'] = s.getRTLModuleName()
-  
+
   slot_list = list(set(v2s.values()))
   config['floorplan_region_pblock_tcl'] = {s.getRTLModuleName(): s.pblock_tcl for s in slot_list}
+
+  for fifo, path in fifo_to_path.items():
+    config['edges'][fifo.name]['path'] = [s.name for s in path]
 
   return config

@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict, List, Set
 from autobridge.Opt.DataflowGraph import Vertex, Edge
 from autobridge.Opt.Slot import Slot
+from autobridge.Opt.SlotManager import SlotManager, Dir
 
 RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']
 
@@ -63,6 +64,32 @@ def get_total_wirelength(
     wire_length_list.append(length * e.width)
   
   return sum(wire_length_list)
+
+
+def get_slot_utilization(v2s: Dict[Vertex, Slot]) -> Dict[Slot, Dict[str, float]]:
+  slot_to_usage = {}
+  s2v = invert_v2s(v2s)
+  for s, v_list in s2v.items():
+    slot_to_usage[s] = {}
+    for r in RESOURCE_TYPES:
+      capacity = s.area[r]
+      usage = sum(v.area[r] for v in v_list)
+      slot_to_usage[s][r] = round(usage/capacity, 3)
+  return slot_to_usage
+
+
+def get_eight_way_partition_slots(slot_manager: SlotManager) -> List[Slot]:
+  """ get all the eight slots after eight-way partition
+  """
+  partition_order = [Dir.horizontal, Dir.horizontal, Dir.vertical]
+  return slot_manager.getLeafSlotsAfterPartition(partition_order)
+
+
+def get_four_way_partition_slots(slot_manager: SlotManager) -> List[Slot]:
+  """ get all the eight slots after eight-way partition
+  """
+  partition_order = [Dir.horizontal, Dir.horizontal]
+  return slot_manager.getLeafSlotsAfterPartition(partition_order)
 
 
 def log_resource_utilization(

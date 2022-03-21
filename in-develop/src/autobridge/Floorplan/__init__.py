@@ -3,11 +3,16 @@ import logging.handlers
 import os
 
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.FourWayPartition import four_way_partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
-from autobridge.Floorplan.Utilities import print_pre_assignment, print_vertex_areas
+from autobridge.Floorplan.Utilities import (
+  print_pre_assignment, 
+  print_vertex_areas, 
+  get_eight_way_partition_slots, 
+  get_four_way_partition_slots,
+)
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
@@ -30,9 +35,12 @@ def get_floorplan(
   partition_order_in_str: List[str] = ['HORIZONTAL', 'HORIZONTAL', 'VERTICAL'],
   ref_usage_ratio: float = 0.7,
   threshold_for_iterative: int = 400,
-) -> Dict[Vertex, Slot]:
+) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
   """
   main entrance of the floorplan part
+  return (1) mapping from vertex to slot
+  (2) a list of all potential slots
+  Note that an empty slot will not be in (1), but will occur in (2)
   """
   # get initial v2s
   init_slot = slot_manager.getInitialSlot()
@@ -79,18 +87,18 @@ def get_floorplan(
 
     v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
     if v2s:
-      return v2s
+      return v2s, get_eight_way_partition_slots(slot_manager)
     else:
       _logger.warning(f'Please check if any function in the design is too large')
   
   _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
   v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
   if v2s:
-    return v2s
+    return v2s, get_four_way_partition_slots(slot_manager)
 
-  v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
-  if v2s:
-    return v2s
+  # v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
+  # if v2s:
+  #   return v2s
 
   _logger.error(f'AutoBridge fails to partition the design at the SLR level. Either the design is too large, or the functions/modules are too large.')
   return None

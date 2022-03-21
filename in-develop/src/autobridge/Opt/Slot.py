@@ -200,6 +200,12 @@ class Slot:
     dist_y = abs(self.getPositionY() - other.getPositionY())
     return dist_x + dist_y
 
+  def isNeightbor(self, other: 'Slot') -> bool:
+    return self.isToTheLeftOf(other) \
+        or self.isToTheRightOf(other) \
+        or self.isAbove(other) \
+        or self.isBelow(other) \
+
   #------------- For TAPA ------------- #
   def isToTheLeftOf(self, other: 'Slot') -> bool:
     return (self.down_left_y == other.down_left_y and

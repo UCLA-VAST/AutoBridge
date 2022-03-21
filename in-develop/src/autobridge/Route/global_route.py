@@ -1,3 +1,4 @@
+import itertools
 import logging
 from bisect import bisect
 from collections import defaultdict
@@ -148,7 +149,7 @@ class RoutingPath:
             new_bend_count,
             self.length_limit,
             self.data_width,
-            self.bridge_name,
+            self.fifo_name,
             self.slot_to_usage
           )
         )
@@ -194,14 +195,9 @@ class RoutingPath:
     We want to pass through less utilized slots as much as possible
     use the sum of DSP and BRAM percentage of each slot * wire_length
     """
-    try:
-      dsp_costs = [self.slot_to_usage[v.slot]['DSP'] if v.slot in self.slot_to_usage else 0 for v in self.vertices]
-      bram_costs = [self.slot_to_usage[v.slot]['BRAM'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
-      lut_costs = [self.slot_to_usage[v.slot]['LUT'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
-    except:
-      [v.slot.getRTLModuleName() if v.slot not in self.slot_to_usage else '' for v in self.vertices]
-      import pdb; pdb.set_trace()
-
+    dsp_costs = [self.slot_to_usage[v.slot]['DSP'] if v.slot in self.slot_to_usage else 0 for v in self.vertices]
+    bram_costs = [self.slot_to_usage[v.slot]['BRAM'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
+    lut_costs = [self.slot_to_usage[v.slot]['LUT'] if v.slot in self.slot_to_usage else 0  for v in self.vertices]
 
     cost = (sum(dsp_costs) + sum(bram_costs) + 0.7 * sum(lut_costs)) * self.data_width
 
@@ -217,60 +213,53 @@ class RoutingPath:
 class RoutingGraph:
   def __init__(
       self,
+      routing_slot_list: List[Slot],
       slot_to_usage: Dict[Slot, Dict[str, float]],
       routing_usage_limit: int,
       detour_path_limit: int,
   ) -> None:
+    """
+    routing_slot_list: list of all slots available for routing
+    Note that if a slot is empty, it may not appear in slot_to_usage
+    slot_to_usage: resource utilization of each slot
+    """
     self.slot_name_to_vertex = {}
     self.edges = []
     self.slot_to_usage = slot_to_usage  # resource usage of each slot
     self.routing_usage_limit = routing_usage_limit
     self.detour_path_limit = detour_path_limit
-    self._getRoutingGraphForU250()
+    self.routing_slot_list = routing_slot_list
+    self.init_routing_graph()
 
-  def _getRoutingGraphForU250(self):
+  def init_routing_graph(self):
+    """ FIXME: currently hardcoded for U250/U280 slr/half-slr slots
     """
-    hardcode the routing graph for U250
-    assume slots are 2x2
-    """
+    # create routing vertices
+    for s in self.routing_slot_list:
+      self.slot_name_to_vertex[s.name] = RoutingVertex(s.name)
 
-    # create all vertices
-    for x in range(0, 8, 2):
-      for y in range(0, 16, 2):
-        slot_name = f'CR_X{x}Y{y}_To_CR_X{x+1}Y{y+1}'
-        self.slot_name_to_vertex[slot_name] = RoutingVertex(slot_name)
+    # create routing edges
+    for s1, s2 in itertools.combinations(self.routing_slot_list, 2):
+      if s1.isNeightbor(s2):
+        # determine the capacity of passing wires
+        if s1.getSLR() != s2.getSLR():
+          assert s1.down_left_x == s2.down_left_x
+          assert s1.up_right_x == s2.up_right_x
+          num_cr = s1.up_right_x - s1.down_left_x + 1
 
-    # create all edges for vertical boundaries
-    for y in range(0, 16, 2):
-      for x in range(0, 6, 2):
-        left_slot = f'CR_X{x}Y{y}_To_CR_X{x+1}Y{y+1}'
-        right_slot = f'CR_X{x+2}Y{y}_To_CR_X{x+3}Y{y+1}'
-        v1 = self.slot_name_to_vertex[left_slot]
-        v2 = self.slot_name_to_vertex[right_slot]
+          # exclude the vitis region
+          if s1.up_right_x == 7:
+            num_cr -= 1
 
-        e = RoutingEdge(v1, v2, int(VERTICAL_BOUNDARY_CAPACITY*self.routing_usage_limit))
-        self.edges.append(e)
+          # each clock region has 2 laguna columns, each has 1440 wires
+          capacity = num_cr * 2880
 
-    # create all edges for slr crossing boundaries
-    for x in range(0, 8, 2):
-      for y in range(2, 12, 4):
-        lower_slot = left_slot = f'CR_X{x}Y{y}_To_CR_X{x+1}Y{y+1}'
-        upper_slot = left_slot = f'CR_X{x}Y{y+2}_To_CR_X{x+1}Y{y+3}'
-        v_lower = self.slot_name_to_vertex[lower_slot]
-        v_upper = self.slot_name_to_vertex[upper_slot]
+        else:
+          capacity = (s1.up_right_y - s1.down_left_y + 1) * 3000
 
-        e = RoutingEdge(v_lower, v_upper, int(SLR_CROSSING_BOUNDARY_CAPACITY*self.routing_usage_limit))
-        self.edges.append(e)
-
-    # create all edges for non-slr-crossing horizontal boundaries
-    for x in range(0, 8, 2):
-      for y in range(0, 16, 4):
-        lower_slot = left_slot = f'CR_X{x}Y{y}_To_CR_X{x+1}Y{y+1}'
-        upper_slot = left_slot = f'CR_X{x}Y{y+2}_To_CR_X{x+1}Y{y+3}'
-        v_lower = self.slot_name_to_vertex[lower_slot]
-        v_upper = self.slot_name_to_vertex[upper_slot]
-
-        e = RoutingEdge(v_lower, v_upper, int(NON_SLR_CROSSING_HORIZONTAL_BOUNDARY*self.routing_usage_limit))
+        v1 = self.slot_name_to_vertex[s1.name]
+        v2 = self.slot_name_to_vertex[s2.name]
+        e = RoutingEdge(v1, v2, capacity)
         self.edges.append(e)
 
   def get_shortest_dist(self, src: RoutingVertex, dst: RoutingVertex):
@@ -327,7 +316,8 @@ class ILPRouter:
       self,
       fifo_list: List[Edge],
       v2s: Dict[Vertex, Slot],
-      slot_to_usage: Dict[Slot, Dict[str, float]]
+      slot_to_usage: Dict[Slot, Dict[str, float]],
+      routing_slot_list: List[Slot],
   ) -> None:
     """
     we need to map each fifo to a set of routing edges in the routing graph
@@ -335,6 +325,7 @@ class ILPRouter:
     self.fifo_list = fifo_list
     self.v2s = v2s
     self.slot_to_usage = slot_to_usage
+    self.routing_slot_list = routing_slot_list
 
   def get_fifo_to_candidate_paths(
       self,
@@ -344,7 +335,7 @@ class ILPRouter:
     """
     for each edge, generate the candidate paths to select from
     """
-    routing_graph = RoutingGraph(self.slot_to_usage, routing_usage_limit, detour_path_limit)
+    routing_graph = RoutingGraph(self.routing_slot_list, self.slot_to_usage, routing_usage_limit, detour_path_limit)
 
     fifo_to_paths = {}
     for fifo in self.fifo_list:
@@ -456,9 +447,9 @@ class ILPRouter:
 
   def get_routing_results(
     self,
-    fifo_to_paths,
+    fifo_to_paths: Dict[Edge, List[RoutingPath]],
     path_to_var,
-    routing_edge_to_paths
+    routing_edge_to_paths: Dict[RoutingEdge, List[RoutingPath]]
   ) -> Dict[str, List[Slot]]:
 
     # get the selected paths
@@ -501,7 +492,7 @@ class ILPRouter:
       self,
       routing_usage_limit: float = 0.7,
       detour_path_limit: int = 4
-  ) -> Dict[str, List[Slot]]:
+  ) -> Dict[Edge, List[Slot]]:
 
     while 1:
       logging.info(f'Global routing attempt with routing usage limit {routing_usage_limit}')
@@ -537,10 +528,8 @@ class ILPRouter:
     # logging and analysis
     self.analyze_routing_results(fifo_to_paths, fifo_to_selected_path, routing_edge_to_selected_paths)
 
-    # convert the data format of the path
-    e_name_to_paths_without_src_and_dst =  self.get_fifo_to_path_exclude_src_dst(fifo_to_selected_path)
-
-    return e_name_to_paths_without_src_and_dst
+    fifo_to_slots = {fifo: path.get_slots_in_path() for fifo, path in fifo_to_selected_path.items()}
+    return fifo_to_slots
 
 
 if __name__ == '__main__':
