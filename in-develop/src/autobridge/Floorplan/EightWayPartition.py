@@ -20,49 +20,48 @@ def eight_way_partition(
   pre_assignments: Dict[Vertex, Slot],
   ref_usage_ratio: float,
   max_search_time: int = 600,
-  warm_start_assignments: Dict[Vertex, Slot] = {},
   max_usage_ratio: float = 0.84,
   ref_slr_width_limit: int = 10000,
   max_slr_width_limit: int = 15000,
-) -> Optional[Dict[Vertex, Slot]]:
+) -> Dict[Vertex, Slot]:
   """
   adjust the max_usage_ratio if failed
   """
   best_v2s = {}
 
   # start from the largest allowed ratio and search downwards. Prune if fail.
-  for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
+  # for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
+  lo = ref_usage_ratio
+  hi = max_usage_ratio
+  assert lo < hi
+
+  while (1):
+    curr_max_usage = (lo + hi) / 2
+
     _logger.info(f'Attempt eight way partition with max_usage_ratio {curr_max_usage}')
 
-    curr_best_v2s = {}
-
-    # start from the largest allowed slr crossing and search downwards.
-    # if one iteration has solution, update the current solution and keep reducing the slr_limit
-    # if one iteration does not have solution, then break and return the current solution
-    for curr_slr_limit in reversed(range(ref_slr_width_limit, max_slr_width_limit, 500)):
-      _logger.info(f'Try slr_width_limit {curr_slr_limit}')
-
-      v2s = _eight_way_partition(
-        init_v2s, 
-        grouping_constraints, 
-        pre_assignments, 
-        slot_manager, 
-        curr_max_usage, 
-        max_search_time, 
-        warm_start_assignments,
-        curr_slr_limit,
-      )
-
-      if v2s:
-        curr_best_v2s = v2s
-      else:
-        break
-
+    curr_best_v2s = _binary_search_slr_crossing_limit(
+      init_v2s,
+      slot_manager,
+      grouping_constraints,
+      pre_assignments,
+      curr_max_usage,
+      ref_slr_width_limit,
+      max_slr_width_limit,
+      max_search_time,
+    )
     if curr_best_v2s:
-      _logger.info(f'Found solution with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
       best_v2s = curr_best_v2s
+      hi = curr_max_usage
     else:
-      break
+      lo = curr_max_usage
+
+    if best_v2s:
+      if hi - lo < 0.03:
+        break
+    else:
+      if hi - lo < 0.02:
+        break
 
   if not best_v2s:
     _logger.info(f'eight way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
@@ -72,6 +71,58 @@ def eight_way_partition(
   return best_v2s
 
 
+def _binary_search_slr_crossing_limit(
+  init_v2s: Dict[Vertex, Slot],
+  slot_manager: SlotManager,
+  grouping_constraints: List[List[Vertex]],
+  pre_assignments: Dict[Vertex, Slot],
+  max_usage_ratio,
+  min_slr_width_limit,
+  max_slr_width_limit,
+  max_search_time,
+) -> Dict[Vertex, Slot]:
+
+  curr_best_v2s = {}
+
+  # binary search:
+  hi = max_slr_width_limit
+  lo = min_slr_width_limit
+  assert lo < hi
+
+  while (1):
+    curr_slr_limit = (hi + lo) / 2
+    _logger.info(f'Try slr_width_limit {curr_slr_limit}')
+
+    v2s = _eight_way_partition(
+      init_v2s, 
+      grouping_constraints, 
+      pre_assignments, 
+      slot_manager, 
+      max_usage_ratio, 
+      max_search_time, 
+      curr_slr_limit,
+    )
+
+    if v2s:
+      curr_best_v2s = v2s
+      curr_min_slr_limit = curr_slr_limit
+      hi = curr_slr_limit
+    else:
+      lo = curr_slr_limit
+
+    if curr_best_v2s:
+      if hi - lo < 700:
+        break
+    else:
+      if hi - lo < 500:
+        break
+
+  if curr_best_v2s:
+    _logger.info(f'Found solution with max_usage_ratio {max_usage_ratio} and slr_width_limit {curr_min_slr_limit}')
+
+  return curr_best_v2s
+
+
 def _eight_way_partition(
   init_v2s: Dict[Vertex, Slot],
   grouping_constraints: List[List[Vertex]],
@@ -79,7 +130,6 @@ def _eight_way_partition(
   slot_manager: SlotManager,
   max_usage_ratio: float,
   max_search_time: int,
-  warm_start_assignments: Dict[Vertex, Slot],
   slr_width_limit: int,
 ) -> Dict[Vertex, Slot]:
 
@@ -112,9 +162,6 @@ def _eight_way_partition(
   _add_grouping_constraints(m, grouping_constraints, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _add_opt_goal(m, v_list, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
-
-  if warm_start_assignments:
-    _add_warm_start_assignment(m, v_list, slot_to_idx, warm_start_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _logger.debug(f'Start ILP solver with max usage ratio {max_usage_ratio} and max search time {max_search_time}s')
   m.optimize(max_seconds=max_search_time)
