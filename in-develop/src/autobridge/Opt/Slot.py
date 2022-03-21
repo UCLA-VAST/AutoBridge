@@ -36,7 +36,7 @@ class Slot:
 
   @property
   def name(self):
-    return f'CR_X{self.down_left_x}Y{self.down_left_y}_To_CRX{self.up_right_x}Y{self.up_right_y}'
+    return f'CR_X{self.down_left_x}Y{self.down_left_y}_To_CR_X{self.up_right_x}Y{self.up_right_y}'
 
   def getOrigUpRightX(self):
     return self.up_right_x
