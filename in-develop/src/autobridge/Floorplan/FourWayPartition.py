@@ -20,53 +20,108 @@ def four_way_partition(
   pre_assignments: Dict[Vertex, Slot],
   ref_usage_ratio: float,
   max_search_time: int = 600,
-  max_usage_ratio: float = 0.85,
+  max_usage_ratio: float = 0.84,
   ref_slr_width_limit: int = 10000,
   max_slr_width_limit: int = 14000,
-) -> Optional[Dict[Vertex, Slot]]:
+) -> Dict[Vertex, Slot]:
   """
   adjust the max_usage_ratio if failed
   """
-  # try if the least restricted case has solution
-  v2s = _four_way_partition(
-    init_v2s, 
-    grouping_constraints, 
-    pre_assignments, 
-    slot_manager, 
-    max_usage_ratio, 
-    max_search_time, 
-    max_slr_width_limit,
-  )
-  if not v2s:
-    logging.info(f'Four way partition failed under the least requirement: max_usage_ratio {max_usage_ratio} and slr_width_limit {max_slr_width_limit}')
+  best_v2s = {}
+
+  # start from the largest allowed ratio and search downwards. Prune if fail.
+  # for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
+  lo = ref_usage_ratio
+  hi = max_usage_ratio
+  assert lo < hi
+
+  while (1):
+    curr_max_usage = (lo + hi) / 2
+
+    _logger.info(f'Attempt four way partition with max_usage_ratio {curr_max_usage}')
+
+    curr_best_v2s = _binary_search_slr_crossing_limit(
+      init_v2s,
+      slot_manager,
+      grouping_constraints,
+      pre_assignments,
+      curr_max_usage,
+      ref_slr_width_limit,
+      max_slr_width_limit,
+      max_search_time,
+    )
+    if curr_best_v2s:
+      best_v2s = curr_best_v2s
+      hi = curr_max_usage
+    else:
+      lo = curr_max_usage
+
+    if best_v2s:
+      if hi - lo < 0.03:
+        break
+    else:
+      if hi - lo < 0.02:
+        break
+
+  if not best_v2s:
+    _logger.info(f'Four way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
     return {}
-  else:
-    logging.info(f'Four way partition succeeds under the least requirement. Start the optimization process')
+
+  log_resource_utilization(best_v2s)
+  return best_v2s
 
 
-  for curr_slr_limit in range(ref_slr_width_limit, max_slr_width_limit, 500):
-    for curr_max_usage in float_range(ref_usage_ratio, max_usage_ratio, 0.02):
-      _logger.info(f'Attempt four way partition with max_usage_ratio {curr_max_usage} and slr_width_limit {curr_slr_limit}')
+def _binary_search_slr_crossing_limit(
+  init_v2s: Dict[Vertex, Slot],
+  slot_manager: SlotManager,
+  grouping_constraints: List[List[Vertex]],
+  pre_assignments: Dict[Vertex, Slot],
+  max_usage_ratio,
+  min_slr_width_limit,
+  max_slr_width_limit,
+  max_search_time,
+) -> Dict[Vertex, Slot]:
 
-      v2s = _four_way_partition(
-        init_v2s, 
-        grouping_constraints, 
-        pre_assignments, 
-        slot_manager, 
-        curr_max_usage, 
-        max_search_time, 
-        curr_slr_limit,
-      )
-      if v2s:
-        _logger.info(f'four way partition succeeded with max_usage_ratio {curr_max_usage}')
-        log_resource_utilization(v2s)
-        return v2s
+  curr_best_v2s = {}
 
-      else:
-        _logger.debug(f'four way partition failed with max_usage_ratio {curr_max_usage}')
-        
-  _logger.info(f'four way partition failed with max_usage_ratio {curr_max_usage} and slr_width_limit {max_slr_width_limit}')
-  return {}
+  # binary search:
+  hi = max_slr_width_limit
+  lo = min_slr_width_limit
+  assert lo < hi
+
+  while (1):
+    curr_slr_limit = (hi + lo) / 2
+    _logger.info(f'Try slr_width_limit {curr_slr_limit}')
+
+    v2s = _four_way_partition(
+      init_v2s, 
+      grouping_constraints, 
+      pre_assignments, 
+      slot_manager, 
+      max_usage_ratio, 
+      max_search_time, 
+      curr_slr_limit,
+    )
+
+    if v2s:
+      curr_best_v2s = v2s
+      curr_min_slr_limit = curr_slr_limit
+      hi = curr_slr_limit
+    else:
+      lo = curr_slr_limit
+
+    if curr_best_v2s:
+      if hi - lo < 700:
+        break
+    else:
+      if hi - lo < 500:
+        break
+
+  if curr_best_v2s:
+    _logger.info(f'Found solution with max_usage_ratio {max_usage_ratio} and slr_width_limit {curr_min_slr_limit}')
+
+  return curr_best_v2s
+
 
 
 def _four_way_partition(
@@ -76,9 +131,7 @@ def _four_way_partition(
   slot_manager: SlotManager,
   max_usage_ratio: float,
   max_search_time: int,
-  slr_0_1_width_limit: int = 12000,
-  slr_1_2_width_limit: int = 12000,
-  slr_2_3_width_limit: int = 12000,
+  slr_width_limit: int,
 ) -> Dict[Vertex, Slot]:
 
   m = Model()
@@ -99,9 +152,9 @@ def _four_way_partition(
   _add_area_constraints(m, v_list, v2var_y1=v2var_y1, v2var_y2=v2var_y2,
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
-  add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_0_1_width_limit)
-  add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_1_2_width_limit)
-  add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_2_3_width_limit)
+  add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
+  add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_width_limit)
+  add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
