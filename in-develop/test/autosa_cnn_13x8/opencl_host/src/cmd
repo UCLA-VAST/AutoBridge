@@ -1,1 +1,0 @@
-./autosa ./autosa_tests/large/mm/kernel.c --config=./autosa_config/autosa_config.json --target=autosa_hls_c --output-dir=./autosa.tmp/output --sa-sizes={kernel[]->space_time[3];kernel[]->array_part[208,512,256];kernel[]->latency[16,64];kernel[]->simd[8]} --simd-info=./autosa_tests/large/mm/simd_info.json --host-serialize
