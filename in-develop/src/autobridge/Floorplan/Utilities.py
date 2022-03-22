@@ -73,7 +73,7 @@ def get_slot_utilization(v2s: Dict[Vertex, Slot]) -> Dict[Slot, Dict[str, float]
     slot_to_usage[s] = {}
     for r in RESOURCE_TYPES:
       capacity = s.area[r]
-      usage = sum(v.area[r] for v in v_list)
+      usage = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
       slot_to_usage[s][r] = round(usage/capacity, 3)
   return slot_to_usage
 
@@ -103,13 +103,13 @@ def log_resource_utilization(
     _logger.info(f'Slot {s.getRTLModuleName()}:')
     for r in RESOURCE_TYPES:
       capacity = s.area[r]
-      usage = sum(v.area[r] for v in v_list)
+      usage = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
       _logger.info(f'  [{r.ljust(4, " ")}]: {round(usage/capacity*100, 1)}% ({usage} / {capacity})')
 
   for s, v_list in s2v.items():
     _logger.info(f'Slot {s.getRTLModuleName()} contains:')
     for v in v_list:
-      area_info = ' '.join(f'{r}: {v.area[r]}' for r in RESOURCE_TYPES)
+      area_info = ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES)
       _logger.info(f'  {v.name}: {area_info}')
 
   # wire information

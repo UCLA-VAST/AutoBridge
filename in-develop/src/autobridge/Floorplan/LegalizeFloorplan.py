@@ -38,7 +38,7 @@ def _add_area_constraints(
   for r in RESOURCE_TYPES:
     for s, v_to_var in s_to_v_to_var.items():
       capacity = s.area[r] * resource_usage_limit
-      m += xsum(v.area[r] * var for v, var in v_to_var.items()) <= capacity
+      m += xsum(v.getVertexAndInboundFIFOArea()[r] * var for v, var in v_to_var.items()) <= capacity
 
 
 def _add_unique_assign_constraints(m: Model, v_to_s_to_var: Dict[Vertex, Dict[Slot, Var]]) -> None:

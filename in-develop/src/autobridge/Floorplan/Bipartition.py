@@ -141,7 +141,7 @@ class Bipartition:
 
       for r in RESOURCE_TYPES:
         v_var_list = [v2var[v] for v in v_group]
-        area_list = [v.area[r] for v in v_group]
+        area_list = [v.getVertexAndInboundFIFOArea()[r] for v in v_group]
         I = range(len(v_group))
 
         # for the up/right child slot (if mod_x is assigned 1)
