@@ -39,9 +39,10 @@ class RoutingVertex:
 
 
 class RoutingEdge:
-  def __init__(self, v1: RoutingVertex, v2: RoutingVertex, capacity):
+  def __init__(self, v1: RoutingVertex, v2: RoutingVertex, total_wire_capacity, usable_wire_capacity):
     self.vertices = [v1, v2]
-    self.capacity = capacity
+    self.total_capacity = total_wire_capacity
+    self.capacity = usable_wire_capacity
     v1.edges.append(self)
     v2.edges.append(self)
     v1.neighbors.add(v2)
@@ -246,19 +247,19 @@ class RoutingGraph:
           assert s1.up_right_x == s2.up_right_x
           num_cr = s1.up_right_x - s1.down_left_x + 1
 
-          # exclude the vitis region
+          # exclude the vitis region and the laguna used by system interconnects
           if s1.up_right_x == 7:
-            num_cr -= 1
+            num_cr -= 1.5
 
           # each clock region has 2 laguna columns, each has 1440 wires
-          capacity = num_cr * 2880
+          total_capacity = num_cr * 2880
 
         else:
-          capacity = (s1.up_right_y - s1.down_left_y + 1) * 3000
+          total_capacity = (s1.up_right_y - s1.down_left_y + 1) * 3000
 
         v1 = self.slot_name_to_vertex[s1.name]
         v2 = self.slot_name_to_vertex[s2.name]
-        e = RoutingEdge(v1, v2, capacity)
+        e = RoutingEdge(v1, v2, total_capacity, total_capacity * self.routing_usage_limit)
         self.edges.append(e)
 
   def get_shortest_dist(self, src: RoutingVertex, dst: RoutingVertex):
@@ -435,12 +436,12 @@ class ILPRouter:
 
         rank_info = f'{fifo.name} from {selected_path.get_src_slot_name()} to {selected_path.get_dst_slot_name()} is routed with the rank {rank} / {len(all_costs)} path. '
         overall_info = f'Path cost: {selected_path.get_cost()}. All costs: {all_costs}'
-        _logger.info(rank_info + overall_info)
+        _logger.debug(rank_info + overall_info)
 
     # log the utilization ratio of each boundary
     for routing_edge, paths in routing_edge_to_selected_paths.items():
       total_data_width = sum([path.data_width for path in paths])
-      _logger.debug(f'boundary {routing_edge._name} is passed by {total_data_width} / {routing_edge.capacity} = {total_data_width / routing_edge.capacity} ')
+      _logger.info(f'boundary {routing_edge._name} is passed by {total_data_width} / {routing_edge.total_capacity} = {total_data_width / routing_edge.total_capacity} ')
       for path in paths:
         _logger.debug(f'  {path.fifo_name}')
 
@@ -489,7 +490,7 @@ class ILPRouter:
 
   def route_design(
       self,
-      routing_usage_limit: float = 0.7,
+      routing_usage_limit: float = 0.6,
       detour_path_limit: int = 4
   ) -> Dict[Edge, List[Slot]]:
 
