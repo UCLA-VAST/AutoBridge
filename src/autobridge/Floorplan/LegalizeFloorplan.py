@@ -8,7 +8,7 @@ from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def _create_ilp_vars(

@@ -1,8 +1,6 @@
 import logging
-import logging.handlers
 import os
 
-from datetime import datetime
 from typing import Dict, List, Tuple
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.FourWayPartition import four_way_partition
@@ -17,14 +15,7 @@ from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
-log_file = f'tapa-autobridge-{datetime.now().strftime("%d-%m-%Y-%H-%M")}.log'
-handler = logging.FileHandler(log_file)
-
-handlers = [handler, logging.StreamHandler()]
-for h in handlers:
-  h.setFormatter(logging.Formatter('%(message)s'))
-logging.basicConfig(level = logging.INFO, handlers = handlers)
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def get_floorplan(

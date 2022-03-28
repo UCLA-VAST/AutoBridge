@@ -10,7 +10,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Device.DeviceManager import DeviceU250
 U250_inst = DeviceU250()
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 BEND_COUNT_LIMIT = 2
 VERTICAL_BOUNDARY_CAPACITY = 5280

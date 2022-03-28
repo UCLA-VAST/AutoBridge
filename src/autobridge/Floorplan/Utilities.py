@@ -8,7 +8,7 @@ from autobridge.Opt.SlotManager import SlotManager, Dir
 
 RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def invert_v2s(curr_v2s: Dict[Vertex, Slot]) -> Dict[Slot, List[Vertex]]:

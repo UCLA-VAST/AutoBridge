@@ -21,7 +21,7 @@ logging.basicConfig(
     datefmt='%m%d %H:%M:%S',
 )
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def get_floorplan_output_bundle(config):

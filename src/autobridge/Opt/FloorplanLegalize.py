@@ -7,7 +7,7 @@ from autobridge.Opt.Common import RESOURCE_TYPES
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def _createILPVars(

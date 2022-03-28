@@ -1,5 +1,7 @@
 import copy
 import logging
+import sys
+from datetime import datetime
 from typing import List, Dict
 
 import autobridge.Floorplan.Utilities as util
@@ -12,17 +14,18 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format=
-    '%(levelname).1s%(asctime)s.%(msecs)03d %(name)s:%(lineno)d] %(message)s',
-    datefmt='%m%d %H:%M:%S',
-)
 
-_logger = logging.getLogger().getChild(__name__)
+def init_logging() -> None:
+  logger = logging.getLogger('autobridge')
+  log_file = f'autobridge-{datetime.now().strftime("%d-%m-%Y-%H-%M")}.log'
+  handler = logging.FileHandler(log_file)
+  handler.setFormatter(logging.Formatter('[%(levelname)s:%(module)s:%(lineno)d] %(message)s'))
+  logger.addHandler(handler)
+  logger.setLevel(logging.INFO)
 
 
 def annotate_floorplan(config: Dict) -> Dict:
+  init_logging()
 
   board = DeviceManager(
       board_name=get_board_num(config),

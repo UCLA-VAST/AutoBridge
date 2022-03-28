@@ -13,7 +13,7 @@ from autobridge.Opt.SlotManager import SlotManager, Dir
 from autobridge.HLSParser.vivado_hls.HLSProjectManager import HLSProjectManager
 from mip import *
 
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 class Floorplanner:

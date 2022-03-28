@@ -7,7 +7,7 @@ from autobridge.Opt.SlotManager import SlotManager, Dir
 from autobridge.Floorplan.Bipartition import Bipartition
 from autobridge.Floorplan.LegalizeFloorplan import legalize_floorplan
 from autobridge.Floorplan.Utilities import log_resource_utilization
-_logger = logging.getLogger().getChild(__name__)
+_logger = logging.getLogger('autobridge')
 
 
 def iterative_bipartition(
