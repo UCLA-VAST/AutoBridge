@@ -95,9 +95,9 @@ python3.6 -m pip install pyverilog
 ```
 sudo apt install iverilog
 ```
-- Python mip version 1.8.1
+- Python mip
 ```
-python3.6 -m pip install mip==1.8.1
+python3.6 -m pip install mip
 ```
 - It is highly recommended that the user install the `Gurobi` solver which is free to academia and can be easily installed. 
 
