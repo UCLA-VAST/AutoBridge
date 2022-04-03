@@ -1,7 +1,4 @@
 import copy
-import logging
-import sys
-from datetime import datetime
 from typing import List, Dict
 
 import autobridge.Floorplan.Utilities as util
@@ -13,18 +10,13 @@ from autobridge.Opt.DataflowGraph import Edge, Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
-
-
-def init_logging() -> None:
-  logger = logging.getLogger('autobridge')
-  log_file = f'autobridge-{datetime.now().strftime("%d-%m-%Y-%H-%M")}.log'
-  handler = logging.FileHandler(log_file)
-  handler.setFormatter(logging.Formatter('[%(levelname)s:%(module)s:%(lineno)d] %(message)s'))
-  logger.addHandler(handler)
-  logger.setLevel(logging.INFO)
+from autobridge.util import *
 
 
 def annotate_floorplan(config: Dict) -> Dict:
+  general_logger = set_general_logger()
+  print_start(general_logger)
+
   init_logging()
 
   board = DeviceManager(
@@ -69,6 +61,8 @@ def annotate_floorplan(config: Dict) -> Dict:
   fifo_to_path: Dict[Edge, List[Slot]] = router.route_design()
 
   annotated_config = get_annotated_config(v2s, fifo_to_path, config)
+
+  print_end(general_logger)
 
   return annotated_config
 

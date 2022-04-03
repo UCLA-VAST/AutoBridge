@@ -1,9 +1,11 @@
-from contextlib import contextmanager
 import ctypes
+from datetime import datetime
 import io
+import logging
+import mip
 import os, sys
 import tempfile
-import mip
+from contextlib import contextmanager
 
 libc = ctypes.CDLL(None)
 c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
@@ -48,3 +50,54 @@ def get_mip_model_silent():
     m = mip.Model()
     m.verbose = 0
   return m
+
+
+def get_log_name():
+  return f'autobridge-{datetime.now().strftime("%b-%d-%Y-%H:%M")}.log'
+
+
+def get_file_logger():
+  return logging.getLogger('autobridge')
+
+
+def get_cli_logger():
+  return logging.getLogger('general')
+
+
+def init_logging() -> None:
+  logger = get_file_logger()
+  logger.parent = None
+  log_file = get_log_name()
+  handler = logging.FileHandler(log_file)
+  handler.setFormatter(logging.Formatter('[%(levelname)s:%(module)s:%(lineno)d] %(message)s'))
+  logger.addHandler(handler)
+  logger.setLevel(logging.INFO)
+
+
+def set_general_logger():
+  general_logger = get_cli_logger()
+  general_logger.parent = None
+  general_logger.addHandler(logging.StreamHandler())
+  general_logger.setLevel(logging.INFO)
+
+  return general_logger
+
+
+def print_start(general_logger):
+  general_logger.info('')
+  general_logger.info('*********************************************')
+  general_logger.info('***         Starting AutoBridge           ***')
+  general_logger.info('*********************************************')
+  general_logger.info('')
+  general_logger.info('Please cite: [FPGA\'21] Autobridge: Coupling coarse-grained floorplanning and pipelining for high-frequency HLS design on multi-die FPGAs')
+  general_logger.info('')
+  general_logger.info('Running details logged to ' + get_log_name())
+  general_logger.info('')
+
+
+def print_end(general_logger):
+  general_logger.setLevel(logging.INFO)
+  general_logger.info('*********************************************')
+  general_logger.info('***          AutoBridge Finishes          ***')
+  general_logger.info('*********************************************')
+  general_logger.info('')
