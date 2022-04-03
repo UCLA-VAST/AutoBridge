@@ -327,6 +327,12 @@ class ILPRouter:
     self.slot_to_usage = slot_to_usage
     self.routing_slot_list = routing_slot_list
 
+    for fifo in self.fifo_list:
+      src_slot_name = self.v2s[fifo.src].getRTLModuleName()
+      dst_slot_name = self.v2s[fifo.dst].getRTLModuleName()
+      if src_slot_name != dst_slot_name:
+        _logger.info('edge %s, width %d, from %s to %s', fifo.name, fifo.width, src_slot_name, dst_slot_name)
+
   def get_fifo_to_candidate_paths(
       self,
       routing_usage_limit: float,
@@ -495,6 +501,10 @@ class ILPRouter:
   ) -> Dict[Edge, List[Slot]]:
 
     while 1:
+      if routing_usage_limit > 1:
+        _logger.error(f'Global routing failed')
+        exit(1)
+
       _logger.info(f'Global routing attempt with routing usage limit {routing_usage_limit}')
 
       m = Model()
