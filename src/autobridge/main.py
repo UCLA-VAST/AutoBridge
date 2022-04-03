@@ -41,7 +41,7 @@ def annotate_floorplan(config: Dict) -> Dict:
   slot_manager = SlotManager(board)
 
   # which modules must be assigned to the same slot
-  grouping_constraints: List[List[str]] = config.get('GroupingConstraints', [])
+  grouping_constraints: List[List[str]] = config.get('grouping_constraints', [])
 
   # process optional module pre-assignment constraints
   module_floorplan = config['floorplan_pre_assignments']
