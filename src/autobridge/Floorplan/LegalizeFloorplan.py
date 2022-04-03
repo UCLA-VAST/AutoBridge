@@ -7,6 +7,7 @@ from autobridge.Floorplan.Utilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
+from autobridge.util import get_mip_model_silent
 
 _logger = logging.getLogger('autobridge')
 
@@ -161,8 +162,7 @@ def get_legalized_v2s(
   """
   _logger.debug(f'Begin legalizing the floorplan results, target resource usage limit: {resource_usage_limit}')
 
-  m = Model()
-  m.verbose = 0
+  m = get_mip_model_silent()
 
   v_list = list(orig_v2s.keys())
   s_list = all_slot_list

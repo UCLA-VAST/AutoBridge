@@ -7,6 +7,7 @@ from autobridge.Floorplan.Utilities import *
 from autobridge.Opt.DataflowGraph import Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
+from autobridge.util import get_mip_model_silent
 
 _logger = logging.getLogger('autobridge')
 
@@ -42,8 +43,7 @@ class Bipartition:
     """
     bi-partition all the current slots
     """
-    m = Model()
-    m.verbose = 0
+    m = get_mip_model_silent()
 
     v2var = self._create_ilp_vars(m)
 

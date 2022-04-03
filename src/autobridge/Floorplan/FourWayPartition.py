@@ -9,6 +9,7 @@ from autobridge.Floorplan.ILPUtilities import *
 from autobridge.Opt.DataflowGraph import Vertex, Edge
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
+from autobridge.util import get_mip_model_silent
 
 _logger = logging.getLogger('autobridge')
 
@@ -134,8 +135,7 @@ def _four_way_partition(
   slr_width_limit: int,
 ) -> Dict[Vertex, Slot]:
 
-  m = Model()
-  m.verbose = 0
+  m = get_mip_model_silent()
 
   v_list = list(init_v2s.keys())
 

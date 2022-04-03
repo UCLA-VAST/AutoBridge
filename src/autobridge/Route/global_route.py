@@ -8,6 +8,8 @@ from typing import List, Dict
 from autobridge.Opt.DataflowGraph import Edge, Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Device.DeviceManager import DeviceU250
+from autobridge.util import get_mip_model_silent
+
 U250_inst = DeviceU250()
 
 _logger = logging.getLogger('autobridge')
@@ -507,8 +509,7 @@ class ILPRouter:
 
       _logger.info(f'Global routing attempt with routing usage limit {routing_usage_limit}')
 
-      m = Model()
-      m.verbose = 0
+      m = get_mip_model_silent()
 
       fifo_to_paths = self.get_fifo_to_candidate_paths(routing_usage_limit, detour_path_limit)
       path_to_var = self.get_path_to_var(m, fifo_to_paths)
