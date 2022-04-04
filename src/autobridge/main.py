@@ -11,7 +11,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
 from autobridge.util import *
-
+from autobridge.analyze import analyze_result
 
 def annotate_floorplan(config: Dict) -> Dict:
   general_logger = set_general_logger()
@@ -61,6 +61,8 @@ def annotate_floorplan(config: Dict) -> Dict:
   fifo_to_path: Dict[Edge, List[Slot]] = router.route_design()
 
   annotated_config = get_annotated_config(v2s, fifo_to_path, config)
+
+  analyze_result(annotated_config)
 
   print_end(general_logger)
 
