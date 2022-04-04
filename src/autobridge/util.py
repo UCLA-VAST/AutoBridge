@@ -89,14 +89,13 @@ def print_start(general_logger):
   general_logger.info('***         Starting AutoBridge           ***')
   general_logger.info('*********************************************')
   general_logger.info('')
-  general_logger.info('Please cite: [FPGA\'21] Autobridge: Coupling coarse-grained floorplanning and pipelining for high-frequency HLS design on multi-die FPGAs')
+  general_logger.info('Version: 0.0.20220403.dev.1')
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name())
   general_logger.info('')
 
 
 def print_end(general_logger):
-  general_logger.setLevel(logging.INFO)
   general_logger.info('*********************************************')
   general_logger.info('***          AutoBridge Finishes          ***')
   general_logger.info('*********************************************')
