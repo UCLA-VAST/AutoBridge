@@ -89,7 +89,7 @@ def print_start(general_logger):
   general_logger.info('***         Starting AutoBridge           ***')
   general_logger.info('*********************************************')
   general_logger.info('')
-  general_logger.info('Version: 0.0.20220403.dev.1')
+  general_logger.info('Version: 0.0.20220404.dev.1')
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name())
   general_logger.info('')
