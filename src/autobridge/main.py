@@ -11,13 +11,15 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
 from autobridge.util import *
-from autobridge.analyze import analyze_result
+from autobridge.analyze import analyze_result, analyze_input
 
 def annotate_floorplan(config: Dict) -> Dict:
   general_logger = set_general_logger()
   print_start(general_logger)
 
   init_logging()
+
+  analyze_input(config)
 
   board = DeviceManager(
       board_name=get_board_num(config),
@@ -95,8 +97,8 @@ def get_area_section(config) -> Dict[str, Dict[str, int]]:
   return {properties['module']: properties['area'] for v_name, properties in config['vertices'].items()}
 
 def get_annotated_config(
-    v2s: Dict[Vertex, Slot], 
-    fifo_to_path: Dict[Edge, List[Slot]], 
+    v2s: Dict[Vertex, Slot],
+    fifo_to_path: Dict[Edge, List[Slot]],
     slot_to_usage: Dict[Slot, Dict[str, float]],
     config_orig: Dict,
 ) -> Dict:

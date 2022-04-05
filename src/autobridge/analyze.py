@@ -1,3 +1,4 @@
+import os
 from prettytable import PrettyTable
 from autobridge.util import get_cli_logger
 from autobridge.Floorplan.Utilities import RESOURCE_TYPES
@@ -35,7 +36,7 @@ def check_port_binding(config) -> None:
   if not config['part_num'].startswith('xcu280'):
     return
 
-  wrong_binding = False  
+  wrong_binding = False
   for name, prop in config['edges'].items():
     if prop['category'] == 'AXI_EDGE':
       if 'CR_X0Y0_To_CR_X3Y3' in prop['path'] and \
@@ -53,7 +54,7 @@ def check_port_binding(config) -> None:
           'However, its adjacent module %s is floorplaned to the %s half. ',
           port_name, f'{port_cat}[{port_id}]', hbm_side, prop['consumed_by'], oppo_side)
         wrong_binding = True
-  
+
   if wrong_binding:
     logger.critical('')
     logger.critical(
@@ -73,12 +74,12 @@ def check_resource_usage(config):
       '*** CRITICAL WARNING: '
       'Some tasks of the design may be too large and prohibits a more fine-grained floorplanning.'
     )
-    logger.critical('')  
+    logger.critical('')
     logger.critical(
       'Tips: (1) write smaller tasks; (2) make each task use less heterogeneous resources. '
       'E.g., using a lot of DSP / BRAM / URAM in the *same* task makes it harder to floorplan'
     )
-    logger.critical('')  
+    logger.critical('')
 
   table = PrettyTable(['Slot Name'] + [f'{r} (%)' for r in RESOURCE_TYPES])
   for s_name, type_to_usage in usage.items():
@@ -90,3 +91,14 @@ def check_resource_usage(config):
 def analyze_result(config) -> None:
   check_port_binding(config)
   check_resource_usage(config)
+
+
+def check_gurobi() -> None:
+  if os.environ['GUROBI_HOME']:
+    logger.info('Gurobi solver detected.')
+  else:
+    logger.critical('*** CRITICAL WARNING: Gurobi solver not detected. Floorplanning may take extra time.')
+
+
+def analyze_input(config) -> None:
+  check_gurobi()
