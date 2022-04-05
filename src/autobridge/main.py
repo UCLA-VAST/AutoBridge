@@ -60,7 +60,7 @@ def annotate_floorplan(config: Dict) -> Dict:
   )
   fifo_to_path: Dict[Edge, List[Slot]] = router.route_design()
 
-  annotated_config = get_annotated_config(v2s, fifo_to_path, config)
+  annotated_config = get_annotated_config(v2s, fifo_to_path, slot_to_usage, config)
 
   analyze_result(annotated_config)
 
@@ -97,6 +97,7 @@ def get_area_section(config) -> Dict[str, Dict[str, int]]:
 def get_annotated_config(
     v2s: Dict[Vertex, Slot], 
     fifo_to_path: Dict[Edge, List[Slot]], 
+    slot_to_usage: Dict[Slot, Dict[str, float]],
     config_orig: Dict,
 ) -> Dict:
   config = copy.deepcopy(config_orig)
@@ -108,5 +109,7 @@ def get_annotated_config(
 
   for fifo, path in fifo_to_path.items():
     config['edges'][fifo.name]['path'] = [s.name for s in path]
+
+  config['slot_resource_usage'] = {s.getRTLModuleName(): usage for s, usage in slot_to_usage.items()}
 
   return config

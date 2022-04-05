@@ -30,6 +30,7 @@ setup(
     install_requires=[
         'mip',
         'pyverilog',
+        'prettytable',
     ],
     entry_points={
         'console_scripts': [],

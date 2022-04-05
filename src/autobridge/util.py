@@ -93,6 +93,8 @@ def print_start(general_logger):
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name())
   general_logger.info('')
+  general_logger.info('----------------------------------------------')
+  general_logger.info('')
 
 
 def print_end(general_logger):
