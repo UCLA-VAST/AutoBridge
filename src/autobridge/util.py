@@ -83,7 +83,8 @@ def set_general_logger():
   return general_logger
 
 
-def print_start(general_logger):
+def print_start():
+  general_logger = get_cli_logger()
   general_logger.info('')
   general_logger.info('*********************************************')
   general_logger.info('***         Starting AutoBridge           ***')
@@ -97,7 +98,8 @@ def print_start(general_logger):
   general_logger.info('')
 
 
-def print_end(general_logger):
+def print_end():
+  general_logger = get_cli_logger()
   general_logger.info('*********************************************')
   general_logger.info('***          AutoBridge Finishes          ***')
   general_logger.info('*********************************************')

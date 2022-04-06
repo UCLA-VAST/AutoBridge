@@ -14,8 +14,9 @@ from autobridge.util import *
 from autobridge.analyze import analyze_result, analyze_input
 
 def annotate_floorplan(config: Dict) -> Dict:
-  general_logger = set_general_logger()
-  print_start(general_logger)
+  cli_logger = set_general_logger()
+
+  print_start()
 
   init_logging()
 
@@ -57,6 +58,9 @@ def annotate_floorplan(config: Dict) -> Dict:
 
   # if floorplan failed
   if v2s is None:
+    cli_logger.critical('\n*** CRITICAL WARNING: AutoBridge fails to find a solution. Please refer to the log for details.\n')
+    config['floorplan_status'] = 'FAILED'
+    print_end()
     return config
 
   slot_to_usage = util.get_slot_utilization(v2s)
@@ -74,7 +78,7 @@ def annotate_floorplan(config: Dict) -> Dict:
 
   analyze_result(annotated_config)
 
-  print_end(general_logger)
+  print_end()
 
   return annotated_config
 
@@ -121,5 +125,6 @@ def get_annotated_config(
     config['edges'][fifo.name]['path'] = [s.name for s in path]
 
   config['slot_resource_usage'] = {s.getRTLModuleName(): usage for s, usage in slot_to_usage.items()}
+  config['floorplan_status'] = 'SUCCEED'
 
   return config
