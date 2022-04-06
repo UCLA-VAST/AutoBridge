@@ -6,9 +6,9 @@ from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.FourWayPartition import four_way_partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
 from autobridge.Floorplan.Utilities import (
-  print_pre_assignment, 
-  print_vertex_areas, 
-  get_eight_way_partition_slots, 
+  print_pre_assignment,
+  print_vertex_areas,
+  get_eight_way_partition_slots,
   get_four_way_partition_slots,
 )
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
@@ -23,7 +23,7 @@ def get_floorplan(
   slot_manager: SlotManager,
   grouping_constraints_in_str: List[List[str]],
   pre_assignments_in_str: Dict[str, str],
-  partition_order_in_str: List[str] = ['HORIZONTAL', 'HORIZONTAL', 'VERTICAL'],
+  floorplan_strategy: str,
   ref_usage_ratio: float = 0.7,
   threshold_for_iterative: int = 400,
 ) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
@@ -48,20 +48,9 @@ def get_floorplan(
     _logger.info('    ' + ', '.join(grouping))
 
   # get pre_assignment in Vertex
-  pre_assignments = { graph.getVertex(v_name) : slot_manager.createSlot(pblock) 
-    for v_name, pblock in pre_assignments_in_str.items() 
+  pre_assignments = { graph.getVertex(v_name) : slot_manager.createSlot(pblock)
+    for v_name, pblock in pre_assignments_in_str.items()
   }
-
-  def _get_dir(dir_in_str: str) -> Dir:
-    if dir_in_str == 'HORIZONTAL':
-      return Dir.horizontal
-    elif dir_in_str == 'VERTICAL':
-      return Dir.vertical
-    else:
-      _logger.error(f'unknown partition direction {dir_in_str}')
-      assert False
-
-  partition_order = [_get_dir(dir_in_str) for dir_in_str in partition_order_in_str]
 
   print_pre_assignment(pre_assignments)
 
@@ -70,6 +59,29 @@ def get_floorplan(
   # choose floorplan method
   num_vertices = len(graph.getAllVertices())
   v2s: Dict[Vertex, Slot] = {}
+
+  # if user specifies floorplan methods
+  if floorplan_strategy == 'SLR_LEVEL_FLOORPLANNING':
+    _logger.info(f'user specifies to floorplan into SLR-level slots')
+    v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+    if v2s:
+      return v2s, get_four_way_partition_slots(slot_manager)
+    else:
+      return None
+
+  elif floorplan_strategy == 'QUICK_FLOORPLANNING':
+    _logger.info(f'user specifies to prioritize speed')
+    v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio=ref_usage_ratio)
+    if v2s:
+      return v2s
+    else:
+      return None
+
+  else:
+    if floorplan_strategy is not None:
+      raise NotImplementedError('unrecognized floorplan strategy %s', floorplan_strategy)
+
+  # empirically select the floorplan method
   if num_vertices < threshold_for_iterative:
     _logger.info(f'There are {num_vertices} vertices in the design, use eight way partition')
 
@@ -81,15 +93,12 @@ def get_floorplan(
       return v2s, get_eight_way_partition_slots(slot_manager)
     else:
       _logger.warning(f'Please check if any function in the design is too large')
-  
-  _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
-  v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
-  if v2s:
-    return v2s, get_four_way_partition_slots(slot_manager)
 
-  # v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_order, ref_usage_ratio)
-  # if v2s:
-  #   return v2s
+  else:
+    _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
+    v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+    if v2s:
+      return v2s, get_four_way_partition_slots(slot_manager)
 
   _logger.error(f'AutoBridge fails to partition the design at the SLR level. Either the design is too large, or the functions/modules are too large.')
-  return None
+  return None, None

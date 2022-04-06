@@ -44,13 +44,21 @@ def annotate_floorplan(config: Dict) -> Dict:
     for mod_name in module_group:
       pre_assignment[mod_name] = region
 
-  kwargs = {}
-  ref_usage_ratio = config.get('MaxUsage')
-  if ref_usage_ratio is not None:
-    kwargs['ref_usage_ratio'] = ref_usage_ratio
+  floorplan_strategy = config.get('floorplan_strategy', None)
 
   # generate floorplan
-  v2s, slot_list = autobridge_floorplan.get_floorplan(graph, slot_manager, grouping_constraints, pre_assignment, **kwargs)
+  v2s, slot_list = autobridge_floorplan.get_floorplan(
+    graph,
+    slot_manager,
+    grouping_constraints,
+    pre_assignment,
+    floorplan_strategy,
+  )
+
+  # if floorplan failed
+  if v2s is None:
+    return config
+
   slot_to_usage = util.get_slot_utilization(v2s)
 
   # route the FIFO pipelines

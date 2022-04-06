@@ -66,6 +66,16 @@ def check_port_binding(config) -> None:
 def check_resource_usage(config):
   usage = config['slot_resource_usage']
 
+  table = PrettyTable(['Slot Name'] + [f'{r} (%)' for r in RESOURCE_TYPES])
+  for s_name, type_to_usage in usage.items():
+    table.add_row([s_name] + [f'{round(type_to_usage[type]*100, 1)}' for type in RESOURCE_TYPES])
+  logger.info(table)
+  logger.info('')
+
+  if config.get('floorplan_strategy') == 'SLR_LEVEL_FLOORPLANNING':
+    logger.info('only floorplan to SLR-level slots as requested by the user')
+    return
+
   logger.info('The device could be partitioned into %d slots:', len(usage))
 
   if config['part_num'].startswith('xcu250') and len(usage) <= 4 or \
@@ -80,12 +90,6 @@ def check_resource_usage(config):
       'E.g., using a lot of DSP / BRAM / URAM in the *same* task makes it harder to floorplan'
     )
     logger.critical('')
-
-  table = PrettyTable(['Slot Name'] + [f'{r} (%)' for r in RESOURCE_TYPES])
-  for s_name, type_to_usage in usage.items():
-    table.add_row([s_name] + [f'{round(type_to_usage[type]*100, 1)}' for type in RESOURCE_TYPES])
-  logger.info(table)
-  logger.info('')
 
 
 def analyze_result(config) -> None:

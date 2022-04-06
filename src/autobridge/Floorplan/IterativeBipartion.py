@@ -15,8 +15,8 @@ def iterative_bipartition(
   slot_manager: SlotManager,
   grouping_constraints: List[List[Vertex]],
   pre_assignments: Dict[Vertex, Slot],
-  partition_order: List[Dir],
-  ref_usage_ratio: float,
+  partition_order: List[Dir] = [Dir.horizontal, Dir.horizontal, Dir.vertical],
+  ref_usage_ratio: float = 0.7,
 ) -> Optional[Dict[Vertex, Slot]]:
   """
   first iteratively partition the graph. Allow the usage ratio to increase in the process
@@ -37,10 +37,10 @@ def iterative_bipartition(
 
     # globally adjust the floorplan
     legalized_v2s = legalize_floorplan(
-      post_partition_v2s, 
-      slot_manager, 
-      grouping_constraints, 
-      pre_assignments, 
+      post_partition_v2s,
+      slot_manager,
+      grouping_constraints,
+      pre_assignments,
       partition_order[:idx+1],
       max_usage_ratio=0.85,
     )
