@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='autobridge',
-    version='0.0.20220406.dev.1',
+    version='0.0.20220406.dev.2',
     description='AutoBridge',
     long_description='',
     long_description_content_type='text/markdown',
