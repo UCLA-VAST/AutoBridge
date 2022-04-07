@@ -98,7 +98,7 @@ def analyze_result(config) -> None:
 
 
 def check_gurobi() -> None:
-  if os.environ['GUROBI_HOME']:
+  if 'GUROBI_HOME' in os.environ:
     logger.info('Gurobi solver detected.')
   else:
     logger.critical('*** CRITICAL WARNING: Gurobi solver not detected. Floorplanning may take extra time.')
