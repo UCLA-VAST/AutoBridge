@@ -2,15 +2,12 @@
 
 from setuptools import find_packages, setup
 
-with open('../README.md', encoding='utf-8') as f:
+with open('README.md', encoding='utf-8') as f:
   long_description = f.read()
-
-with open('./VERSION') as f:
-  version = f.read().strip()
 
 setup(
     name='autobridge',
-    version=version,
+    version='0.0.20220408.dev.2',
     description='AutoBridge',
     long_description=long_description,
     long_description_content_type='text/markdown',
