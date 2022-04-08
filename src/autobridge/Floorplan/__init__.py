@@ -2,8 +2,7 @@ import logging
 import os
 
 from typing import Dict, List, Tuple
-from autobridge.Floorplan.EightWayPartition import eight_way_partition
-from autobridge.Floorplan.FourWayPartition import four_way_partition
+from autobridge.Floorplan.Partition import partition
 from autobridge.Floorplan.IterativeBipartion import iterative_bipartition
 from autobridge.Floorplan.Utilities import (
   print_pre_assignment,
@@ -63,7 +62,8 @@ def get_floorplan(
   # if user specifies floorplan methods
   if floorplan_strategy == 'SLR_LEVEL_FLOORPLANNING':
     _logger.info(f'user specifies to floorplan into SLR-level slots')
-    v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION')
+
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
     else:
@@ -88,7 +88,7 @@ def get_floorplan(
     if num_vertices > 100:
       _logger.warning('Over 100 vertices. May have a long solving time. Reduce threshold_for_iterative to skip to iterative bi-partitioning.')
 
-    v2s = eight_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='EIGHT_WAY_PARTITION')
     if v2s:
       return v2s, get_eight_way_partition_slots(slot_manager)
     else:
@@ -96,7 +96,7 @@ def get_floorplan(
 
   else:
     _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
-    v2s = four_way_partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio)
+    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION')
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
 
