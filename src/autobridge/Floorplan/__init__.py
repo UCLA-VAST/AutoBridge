@@ -22,8 +22,7 @@ def get_floorplan(
   slot_manager: SlotManager,
   grouping_constraints_in_str: List[List[str]],
   pre_assignments_in_str: Dict[str, str],
-  floorplan_strategy: str = None,
-  ref_usage_ratio: float = 0.7,
+  floorplan_strategy: str = 'HALF_SLR_LEVEL_FLOORPLANNING',
   threshold_for_iterative: int = 400,
   floorplan_opt_priority: str = 'AREA_PRIORITIZED',
 ) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
@@ -74,14 +73,14 @@ def get_floorplan(
 
   elif floorplan_strategy == 'QUICK_FLOORPLANNING':
     _logger.info(f'user specifies to prioritize speed')
-    v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments, ref_usage_ratio=ref_usage_ratio)
+    v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments)
     if v2s:
       return v2s
     else:
       return None
 
   else:
-    if floorplan_strategy is not None:
+    if floorplan_strategy is not 'HALF_SLR_LEVEL_FLOORPLANNING':
       raise NotImplementedError('unrecognized floorplan strategy %s', floorplan_strategy)
 
   # empirically select the floorplan method
