@@ -45,7 +45,11 @@ def annotate_floorplan(config: Dict) -> Dict:
     for mod_name in module_group:
       pre_assignment[mod_name] = region
 
-  floorplan_strategy = config.get('floorplan_strategy', None)
+  kw_args = {}
+  if 'floorplan_strategy' in config:
+    kw_args['floorplan_strategy'] = config['floorplan_strategy']
+  if 'floorplan_opt_priority' in config:
+    kw_args['floorplan_opt_priority'] = config['floorplan_opt_priority']
 
   # generate floorplan
   v2s, slot_list = autobridge_floorplan.get_floorplan(
@@ -53,7 +57,7 @@ def annotate_floorplan(config: Dict) -> Dict:
     slot_manager,
     grouping_constraints,
     pre_assignment,
-    floorplan_strategy,
+    **kw_args,
   )
 
   # if floorplan failed

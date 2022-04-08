@@ -22,9 +22,10 @@ def get_floorplan(
   slot_manager: SlotManager,
   grouping_constraints_in_str: List[List[str]],
   pre_assignments_in_str: Dict[str, str],
-  floorplan_strategy: str,
+  floorplan_strategy: str = None,
   ref_usage_ratio: float = 0.7,
   threshold_for_iterative: int = 400,
+  floorplan_opt_priority: str = 'AREA_PRIORITIZED',
 ) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
   """
   main entrance of the floorplan part
@@ -62,7 +63,9 @@ def get_floorplan(
   # if user specifies floorplan methods
   if floorplan_strategy == 'SLR_LEVEL_FLOORPLANNING':
     _logger.info(f'user specifies to floorplan into SLR-level slots')
-    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION')
+    v2s = partition(
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', priority=floorplan_opt_priority
+    )
 
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
@@ -88,7 +91,9 @@ def get_floorplan(
     if num_vertices > 100:
       _logger.warning('Over 100 vertices. May have a long solving time. Reduce threshold_for_iterative to skip to iterative bi-partitioning.')
 
-    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='EIGHT_WAY_PARTITION')
+    v2s = partition(
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='EIGHT_WAY_PARTITION', priority=floorplan_opt_priority
+    )
     if v2s:
       return v2s, get_eight_way_partition_slots(slot_manager)
     else:
@@ -96,7 +101,9 @@ def get_floorplan(
 
   else:
     _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
-    v2s = partition(init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION')
+    v2s = partition(
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', priority=floorplan_opt_priority
+    )
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
 
