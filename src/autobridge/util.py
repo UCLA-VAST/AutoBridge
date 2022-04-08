@@ -4,6 +4,7 @@ import io
 import logging
 import mip
 import os, sys
+import pathlib
 import tempfile
 from contextlib import contextmanager
 
@@ -84,13 +85,16 @@ def set_general_logger():
 
 
 def print_start():
+  with open(f'{pathlib.Path(__file__).parent.resolve()}/../VERSION') as f:
+    version = f.read().strip()
+
   general_logger = get_cli_logger()
   general_logger.info('')
   general_logger.info('*********************************************')
   general_logger.info('***         Starting AutoBridge           ***')
   general_logger.info('*********************************************')
   general_logger.info('')
-  general_logger.info('Version: 0.0.20220404.dev.1')
+  general_logger.info(f'Version: {version}')
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name())
   general_logger.info('')
