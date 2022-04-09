@@ -11,7 +11,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
 from autobridge.util import *
-from autobridge.analyze import analyze_result, analyze_input
+from autobridge.analyze import analyze_result, analyze_input, is_device_supported
 
 def annotate_floorplan(config: Dict) -> Dict:
   cli_logger = set_general_logger()
@@ -19,6 +19,9 @@ def annotate_floorplan(config: Dict) -> Dict:
   print_start()
 
   init_logging()
+
+  if not is_device_supported(config):
+    return config
 
   analyze_input(config)
 
