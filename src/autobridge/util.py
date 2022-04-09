@@ -4,7 +4,6 @@ import io
 import logging
 import mip
 import os, sys
-import pathlib
 import tempfile
 from contextlib import contextmanager
 
@@ -53,8 +52,12 @@ def get_mip_model_silent():
   return m
 
 
-def get_log_name():
-  return f'autobridge-{datetime.now().strftime("%b-%d-%Y-%H:%M")}.log'
+def get_work_dir(config):
+  return config.get('work_dir', '.')
+
+
+def get_log_name(config):
+  return f'{get_work_dir(config)}/autobridge-{datetime.now().strftime("%b-%d-%Y-%H:%M")}.log'
 
 
 def get_file_logger():
@@ -65,10 +68,10 @@ def get_cli_logger():
   return logging.getLogger('general')
 
 
-def init_logging() -> None:
+def init_logging(config) -> None:
   logger = get_file_logger()
   logger.parent = None
-  log_file = get_log_name()
+  log_file = get_log_name(config)
   handler = logging.FileHandler(log_file)
   handler.setFormatter(logging.Formatter('[%(levelname)s:%(module)s:%(lineno)d] %(message)s'))
   logger.addHandler(handler)
@@ -84,7 +87,7 @@ def set_general_logger():
   return general_logger
 
 
-def print_start():
+def print_start(config):
   general_logger = get_cli_logger()
   general_logger.info('')
   general_logger.info('*********************************************')
@@ -93,7 +96,7 @@ def print_start():
   general_logger.info('')
   general_logger.info(f'Version: 0.0.20220408.dev.2')
   general_logger.info('')
-  general_logger.info('Running details logged to ' + get_log_name())
+  general_logger.info('Running details logged to ' + get_log_name(config))
   general_logger.info('')
   general_logger.info('----------------------------------------------')
   general_logger.info('')
