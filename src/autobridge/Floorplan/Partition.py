@@ -22,9 +22,9 @@ def partition(
   max_slr_width_limit: int = 15000,
   max_search_time: int = 600,
   partition_method: str = 'EIGHT_WAY_PARTITION',
-  priority: str = 'AREA_PRIORITIZED',
+  floorplan_opt_priority: str = 'AREA_PRIORITIZED',
 ) -> Dict[Vertex, Slot]:
-  _logger.info('Use partition method: %s with priority %s', partition_method, priority)
+  _logger.info('Use partition method: %s with floorplan_opt_priority %s', partition_method, floorplan_opt_priority)
 
   if partition_method == 'EIGHT_WAY_PARTITION':
     partitioner = eight_way_partition
@@ -33,12 +33,12 @@ def partition(
   else:
     raise NotImplementedError('unrecognized floorplan method: %s', partition_method)
 
-  if priority == 'AREA_PRIORITIZED':
+  if floorplan_opt_priority == 'AREA_PRIORITIZED':
     worker = partition_area_prioritized
-  elif priority == 'SLR_CROSSING_PRIORITIZED':
+  elif floorplan_opt_priority == 'SLR_CROSSING_PRIORITIZED':
     worker = partition_slr_crossing_prioritized
   else:
-    raise NotImplementedError('unrecognized priority: %s', priority)
+    raise NotImplementedError('unrecognized floorplan_opt_priority: %s', floorplan_opt_priority)
 
   return worker(
     init_v2s,

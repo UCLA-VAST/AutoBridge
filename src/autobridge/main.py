@@ -48,11 +48,7 @@ def annotate_floorplan(config: Dict) -> Dict:
     for mod_name in module_group:
       pre_assignment[mod_name] = region
 
-  kw_args = {}
-  if 'floorplan_strategy' in config:
-    kw_args['floorplan_strategy'] = config['floorplan_strategy']
-  if 'floorplan_opt_priority' in config:
-    kw_args['floorplan_opt_priority'] = config['floorplan_opt_priority']
+  kwargs = get_floorplan_params(config)
 
   # generate floorplan
   v2s, slot_list = autobridge_floorplan.get_floorplan(
@@ -60,7 +56,7 @@ def annotate_floorplan(config: Dict) -> Dict:
     slot_manager,
     grouping_constraints,
     pre_assignment,
-    **kw_args,
+    **kwargs,
   )
 
   # if floorplan failed
@@ -89,6 +85,23 @@ def annotate_floorplan(config: Dict) -> Dict:
 
   return annotated_config
 
+def get_floorplan_params(config) -> Dict:
+  kwargs = {}
+  params = (
+    'floorplan_strategy',
+    'floorplan_opt_priority',
+    'floorplan_opt_priority',
+    'min_area_limit',
+    'max_area_limit',
+    'min_slr_width_limit',
+    'max_slr_width_limit',
+    'max_search_time',
+  )
+  for param in params:
+    if param in config:
+      kwargs[param] = config[param]
+
+  return kwargs
 
 def get_ddr_list(config) -> List[int]:
   """ extract which ddrs are enabled

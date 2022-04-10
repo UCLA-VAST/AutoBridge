@@ -15,6 +15,7 @@ from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
 
 _logger = logging.getLogger('autobridge')
+cli_logger = logging.getLogger('general')
 
 
 def get_floorplan(
@@ -25,6 +26,11 @@ def get_floorplan(
   floorplan_strategy: str = 'HALF_SLR_LEVEL_FLOORPLANNING',
   threshold_for_iterative: int = 400,
   floorplan_opt_priority: str = 'AREA_PRIORITIZED',
+  min_area_limit: float = 0.65,
+  max_area_limit: float = 0.85,
+  min_slr_width_limit: int = 10000,
+  max_slr_width_limit: int = 15000,
+  max_search_time: int = 600,
 ) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
   """
   main entrance of the floorplan part
@@ -32,6 +38,20 @@ def get_floorplan(
   (2) a list of all potential slots
   Note that an empty slot will not be in (1), but will occur in (2)
   """
+  cli_logger.info('')
+  cli_logger.info('Floorplan parameters:')
+  cli_logger.info('')
+  cli_logger.info('  floorplan_strategy: %s', floorplan_strategy)
+  cli_logger.info('  threshold for switching to iterative partitioning: %d', threshold_for_iterative)
+  cli_logger.info('  floorplan_opt_priority: %s', floorplan_opt_priority)
+  cli_logger.info('  min_area_limit: %f', min_area_limit)
+  cli_logger.info('  max_area_limit: %f', max_area_limit)
+  cli_logger.info('  min_slr_width_limit: %d', min_slr_width_limit)
+  cli_logger.info('  max_slr_width_limit: %d', max_slr_width_limit)
+  cli_logger.info('  max_search_time per solving: %d', max_search_time)
+  cli_logger.info('')
+  cli_logger.info('Start floorplanning, please check the log for the progress...\n')
+
   # get initial v2s
   init_slot = slot_manager.getInitialSlot()
   init_v2s = {v : init_slot for v in graph.getAllVertices()}
@@ -55,6 +75,15 @@ def get_floorplan(
 
   print_vertex_areas(init_v2s.keys())
 
+  params = {
+    'floorplan_opt_priority': floorplan_opt_priority,
+    'min_area_limit': min_area_limit,
+    'max_area_limit': max_area_limit,
+    'min_slr_width_limit': min_slr_width_limit,
+    'max_slr_width_limit': max_slr_width_limit,
+    'max_search_time': max_search_time,
+  }
+
   # choose floorplan method
   num_vertices = len(graph.getAllVertices())
   v2s: Dict[Vertex, Slot] = {}
@@ -63,7 +92,7 @@ def get_floorplan(
   if floorplan_strategy == 'SLR_LEVEL_FLOORPLANNING':
     _logger.info(f'user specifies to floorplan into SLR-level slots')
     v2s = partition(
-      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', priority=floorplan_opt_priority
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', **params
     )
 
     if v2s:
@@ -91,7 +120,7 @@ def get_floorplan(
       _logger.warning('Over 100 vertices. May have a long solving time. Reduce threshold_for_iterative to skip to iterative bi-partitioning.')
 
     v2s = partition(
-      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='EIGHT_WAY_PARTITION', priority=floorplan_opt_priority
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='EIGHT_WAY_PARTITION', **params
     )
     if v2s:
       return v2s, get_eight_way_partition_slots(slot_manager)
@@ -101,7 +130,7 @@ def get_floorplan(
   else:
     _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
     v2s = partition(
-      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', priority=floorplan_opt_priority
+      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', **params
     )
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
