@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 
 from autobridge.util import get_cli_logger, get_work_dir
 from autobridge.Floorplan.Utilities import RESOURCE_TYPES
@@ -93,10 +94,34 @@ def check_resource_usage(config):
     )
     logger.critical('')
 
+def check_slot_crossing(config) -> None:
+  boundary_to_wire_num = defaultdict(lambda : 0)
+
+  def get_key(slot1, slot2):
+    return tuple(sorted([slot1, slot2]))
+
+  for e, props in config['edges'].items():
+    path = props['path']
+    for i in range(0, len(path)-1):
+      k = get_key(path[i], path[i+1])
+      boundary_to_wire_num[k] += props['width']
+
+  logger.info('')
+  logger.info('The number of wires between slots are:')
+  logger.info('')
+
+  for boundary, wire_num in boundary_to_wire_num.items():
+    slot1, slot2 = boundary
+    logger.info('%s <--> %s : %d', slot1, slot2, wire_num)
+  logger.info('')
+
 
 def analyze_result(config) -> None:
+  logger.info('Floorplan finishes\n')
+
   check_port_binding(config)
   check_resource_usage(config)
+  check_slot_crossing(config)
 
 
 def check_gurobi() -> None:
