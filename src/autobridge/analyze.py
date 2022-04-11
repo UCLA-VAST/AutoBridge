@@ -1,7 +1,9 @@
 import os
-from prettytable import PrettyTable
-from autobridge.util import get_cli_logger
+
+from autobridge.util import get_cli_logger, get_work_dir
 from autobridge.Floorplan.Utilities import RESOURCE_TYPES
+from autobridge.dotgraph import get_dot_graph
+from prettytable import PrettyTable
 
 logger = get_cli_logger()
 
@@ -106,6 +108,11 @@ def check_gurobi() -> None:
 
 def analyze_input(config) -> None:
   check_gurobi()
+
+  work_dir = get_work_dir(config)
+  logger.info('')
+  logger.info(f'Generate task graph visualization in graphviz format: {work_dir}/task_graph.dot')
+  open(f'{work_dir}/task_graph.dot', 'w').write('\n'.join(get_dot_graph(config)))
 
 
 def is_device_supported(config) -> bool:
