@@ -127,13 +127,12 @@ def get_floorplan(
     else:
       _logger.warning(f'Please check if any function in the design is too large')
 
-  else:
-    _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
-    v2s = partition(
-      init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', **params
-    )
-    if v2s:
-      return v2s, get_four_way_partition_slots(slot_manager)
+  _logger.info(f'Use four-way partition because eight-way partition failed or there are too many vertices ({num_vertices})')
+  v2s = partition(
+    init_v2s, slot_manager, grouping_constraints, pre_assignments, partition_method='FOUR_WAY_PARTITION', **params
+  )
+  if v2s:
+    return v2s, get_four_way_partition_slots(slot_manager)
 
   _logger.error(f'AutoBridge fails to partition the design at the SLR level. Either the design is too large, or the functions/modules are too large.')
   return None, None
