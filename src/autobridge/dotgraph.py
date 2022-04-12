@@ -18,7 +18,7 @@ def get_scaled_edge_width(orig_width: int) -> float:
   return math.log(orig_width / 20, 2)
 
 
-def get_edges_exclude_scala_edges(config) -> List[str]:
+def get_edges_exclude_scala_and_async_mmap_edges(config) -> List[str]:
   dot = []
 
   for e, props in config['edges'].items():
@@ -35,6 +35,8 @@ def get_edges_exclude_scala_edges(config) -> List[str]:
       fifo_name = props['instance']
       dot.append(f'  {path_name} [penwidth={scaled_width}, label={width}]')
     elif cat == 'SCALAR_EDGE':
+      continue
+    elif cat == 'ASYNC_MMAP_EDGE':
       continue
     else:
       dot.append(f'  {path_name} [penwidth={scaled_width}, label={width}]')
@@ -72,7 +74,7 @@ def get_dot_graph(config) -> List[str]:
   dot.append('  rankdir="LR";')
 
   dot += get_port_vertices(config)
-  dot += get_edges_exclude_scala_edges(config)
+  dot += get_edges_exclude_scala_and_async_mmap_edges(config)
   dot += get_merged_scalar_edges(config)
 
   dot.append('}')
