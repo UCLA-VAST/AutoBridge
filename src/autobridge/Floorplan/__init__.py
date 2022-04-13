@@ -24,7 +24,7 @@ def get_floorplan(
   grouping_constraints_in_str: List[List[str]],
   pre_assignments_in_str: Dict[str, str],
   floorplan_strategy: str = 'HALF_SLR_LEVEL_FLOORPLANNING',
-  threshold_for_iterative: int = 400,
+  threshold_for_iterative: int = 200,
   floorplan_opt_priority: str = 'AREA_PRIORITIZED',
   min_area_limit: float = 0.65,
   max_area_limit: float = 0.85,
