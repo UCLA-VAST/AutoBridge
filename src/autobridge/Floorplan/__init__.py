@@ -109,7 +109,7 @@ def get_floorplan(
       return None
 
   else:
-    if floorplan_strategy is not 'HALF_SLR_LEVEL_FLOORPLANNING':
+    if floorplan_strategy != 'HALF_SLR_LEVEL_FLOORPLANNING':
       raise NotImplementedError('unrecognized floorplan strategy %s', floorplan_strategy)
 
   # empirically select the floorplan method
