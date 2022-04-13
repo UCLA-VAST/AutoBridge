@@ -52,7 +52,7 @@ def get_intra_edges(v_group: List[Vertex]) -> List[Edge]:
 
 
 def get_total_wirelength(
-    v2s: Dict[Vertex, Slot], 
+    v2s: Dict[Vertex, Slot],
 ) -> int:
   e_list = get_all_edges(list(v2s.keys()))
   wire_length_list = []
@@ -62,7 +62,7 @@ def get_total_wirelength(
     length = abs(src_slot.getPositionY() - dst_slot.getPositionY()) + \
               abs(src_slot.getPositionX() - dst_slot.getPositionX())
     wire_length_list.append(length * e.width)
-  
+
   return sum(wire_length_list)
 
 
@@ -93,7 +93,7 @@ def get_four_way_partition_slots(slot_manager: SlotManager) -> List[Slot]:
 
 
 def log_resource_utilization(
-    v2s: Dict[Vertex, Slot], 
+    v2s: Dict[Vertex, Slot],
 ) -> None:
   """
   analyze and log the new floorplan results
@@ -142,11 +142,18 @@ def _get_slr_count(slot_list: List[Slot]) -> int:
   return slr_count_list[0]
 
 
-def print_vertex_areas(v_list: List[Vertex]) -> None:
+def print_vertex_areas(v_list: List[Vertex], init_slot: Slot) -> None:
   _logger.info('The area of each vertex is listed as below.')
   _logger.info('Note that the area of each vertex includes the area of all its in-bound FIFOs.')
   for v in v_list:
     _logger.info(f'    {v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
+
+  _logger.info('The total area of the design:')
+  for r in RESOURCE_TYPES:
+    total = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
+    avail = init_slot.getArea()[r]
+    percent = round(total * 100 / avail, 1)
+    _logger.info(f'  {r}: {total} / {avail} = {percent}%')
 
 
 def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
@@ -159,5 +166,5 @@ def float_range(start, stop, step) -> List[float]:
   range = []
   while start <= stop:
     range.append(start)
-    start = round(start + step, 2)  
+    start = round(start + step, 2)
   return range

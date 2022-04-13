@@ -73,7 +73,7 @@ def get_floorplan(
 
   print_pre_assignment(pre_assignments)
 
-  print_vertex_areas(init_v2s.keys())
+  print_vertex_areas(init_v2s.keys(), slot_manager.getInitialSlot())
 
   params = {
     'floorplan_opt_priority': floorplan_opt_priority,
