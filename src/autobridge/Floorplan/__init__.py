@@ -104,7 +104,7 @@ def get_floorplan(
     _logger.info(f'user specifies to prioritize speed')
     v2s = iterative_bipartition(init_v2s, slot_manager, grouping_constraints, pre_assignments)
     if v2s:
-      return v2s
+      return v2s, get_eight_way_partition_slots(slot_manager)
     else:
       return None
 
