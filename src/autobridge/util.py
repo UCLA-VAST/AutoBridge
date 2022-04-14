@@ -95,7 +95,7 @@ def print_start(config):
   general_logger.info('***         Starting AutoBridge           ***')
   general_logger.info('*********************************************')
   general_logger.info('')
-  general_logger.info(f'Version: 0.0.20220413.dev1')
+  general_logger.info(f'Version: 0.0.20220413.dev2')
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name(config))
   general_logger.info('')
