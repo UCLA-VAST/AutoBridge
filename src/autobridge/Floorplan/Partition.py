@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from autobridge.Floorplan.Utilities import log_resource_utilization
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
@@ -40,7 +40,7 @@ def partition(
   else:
     raise NotImplementedError('unrecognized floorplan_opt_priority: %s', floorplan_opt_priority)
 
-  return worker(
+  v2s = worker(
     init_v2s,
     slot_manager,
     grouping_constraints,
@@ -52,6 +52,11 @@ def partition(
     max_search_time,
     partitioner,
   )
+
+  if v2s:
+    log_resource_utilization(v2s)
+
+  return v2s
 
 
 def partition_area_prioritized(
@@ -69,49 +74,93 @@ def partition_area_prioritized(
   """
   adjust the max_usage_ratio if failed
   """
-  best_v2s = {}
+  # use the max slr limit to find the min area limit
+  curr_v2s, curr_area_limit = _binary_search_area_limit(
+    init_v2s,
+    slot_manager,
+    grouping_constraints,
+    pre_assignments,
+    max_slr_width_limit,
+    min_area_limit,
+    max_area_limit,
+    max_search_time,
+    partitioner,
+  )
 
-  # start from the largest allowed ratio and search downwards. Prune if fail.
-  # for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
-  lo = min_area_limit
-  hi = max_area_limit
-  assert lo < hi
-
-  while (1):
-    curr_area_limit = (lo + hi) / 2
-
-    _logger.info(f'Attempt eight way partition with area limit of {curr_area_limit}')
-
-    curr_best_v2s = _binary_search_slr_crossing_limit(
-      init_v2s,
-      slot_manager,
-      grouping_constraints,
-      pre_assignments,
-      curr_area_limit,
-      min_slr_width_limit,
-      max_slr_width_limit,
-      max_search_time,
-      partitioner,
-    )
-    if curr_best_v2s:
-      best_v2s = curr_best_v2s
-      hi = curr_area_limit
-    else:
-      lo = curr_area_limit
-
-    if best_v2s:
-      if hi - lo < 0.03:
-        break
-    else:
-      if hi - lo < 0.02:
-        break
-
-  if not best_v2s:
-    _logger.info(f'eight way partition failed with max_usage_ratio {curr_area_limit} and slr_width_limit {max_slr_width_limit}')
+  if not curr_v2s:
+    _logger.info(f'partition failed with max_usage_ratio {max_area_limit} and slr_width_limit {max_slr_width_limit}')
     return {}
 
-  log_resource_utilization(best_v2s)
-  return best_v2s
+  # with the min area limit, minimize the slr limit
+  best_v2s, curr_slr_limit = _binary_search_slr_crossing_limit(
+    init_v2s,
+    slot_manager,
+    grouping_constraints,
+    pre_assignments,
+    curr_area_limit,
+    min_slr_width_limit,
+    max_slr_width_limit,
+    max_search_time,
+    partitioner,
+  )
+
+  if not best_v2s:
+    return curr_v2s
+  else:
+    _logger.info(f'partition succeeds with max_usage_ratio {curr_area_limit} and slr_width_limit {curr_slr_limit}')
+    return best_v2s
+
+
+def partition_slr_crossing_prioritized(
+  init_v2s: Dict[Vertex, Slot],
+  slot_manager: SlotManager,
+  grouping_constraints: List[List[Vertex]],
+  pre_assignments: Dict[Vertex, Slot],
+  min_area_limit: float,
+  max_area_limit: float,
+  min_slr_width_limit: int,
+  max_slr_width_limit: int,
+  max_search_time: int,
+  partitioner,
+) -> Dict[Vertex, Slot]:
+  """
+  adjust the max_usage_ratio if failed
+  """
+  # use the max area to find the min slr limit
+  curr_v2s, curr_slr_limit = _binary_search_slr_crossing_limit(
+    init_v2s,
+    slot_manager,
+    grouping_constraints,
+    pre_assignments,
+    max_area_limit,
+    min_slr_width_limit,
+    max_slr_width_limit,
+    max_search_time,
+    partitioner,
+  )
+
+  if not curr_v2s:
+    _logger.info(f'partition failed with max_usage_ratio {max_area_limit} and slr_width_limit {max_slr_width_limit}')
+    return {}
+
+  # with the min slr limit, minimize the area limit
+  best_v2s, curr_area_limit = _binary_search_area_limit(
+    init_v2s,
+    slot_manager,
+    grouping_constraints,
+    pre_assignments,
+    curr_slr_limit,
+    min_area_limit,
+    max_area_limit,
+    max_search_time,
+    partitioner,
+  )
+
+  if not best_v2s:
+    return curr_v2s
+  else:
+    _logger.info(f'partition succeeds with max_usage_ratio {curr_area_limit} and slr_width_limit {curr_slr_limit}')
+    return best_v2s
 
 
 def _binary_search_slr_crossing_limit(
@@ -124,7 +173,9 @@ def _binary_search_slr_crossing_limit(
   max_slr_width_limit: int,
   max_search_time: int,
   partitioner,
-) -> Dict[Vertex, Slot]:
+) -> Tuple[Dict[Vertex, Slot], int]:
+  _logger.info('Binary search of slr_width_limit between %d and %d, '
+               'with area_limit %f', min_slr_width_limit, max_slr_width_limit, area_limit)
 
   curr_best_v2s = {}
 
@@ -154,77 +205,13 @@ def _binary_search_slr_crossing_limit(
     else:
       lo = curr_slr_limit
 
-    if curr_best_v2s:
-      if hi - lo < 700:
-        break
-    else:
-      if hi - lo < 500:
-        break
+    if hi - lo < 500:
+      break
 
   if curr_best_v2s:
     _logger.info(f'Found solution with area limit {area_limit} and slr_width_limit {curr_min_slr_limit}')
 
-  return curr_best_v2s
-
-
-def partition_slr_crossing_prioritized(
-  init_v2s: Dict[Vertex, Slot],
-  slot_manager: SlotManager,
-  grouping_constraints: List[List[Vertex]],
-  pre_assignments: Dict[Vertex, Slot],
-  min_area_limit: float,
-  max_area_limit: float,
-  min_slr_width_limit: int,
-  max_slr_width_limit: int,
-  max_search_time: int,
-  partitioner,
-) -> Dict[Vertex, Slot]:
-  """
-  adjust the max_usage_ratio if failed
-  """
-  best_v2s = {}
-
-  # start from the largest allowed ratio and search downwards. Prune if fail.
-  # for curr_max_usage in reversed(float_range(ref_usage_ratio, max_usage_ratio, 0.02)):
-  lo = min_slr_width_limit
-  hi = max_slr_width_limit
-  assert lo < hi
-
-  while (1):
-    curr_slr_limit = (lo + hi) / 2
-
-    _logger.info(f'Attempt eight way partition with slr_crossing_limit {curr_slr_limit}')
-
-    curr_best_v2s = _binary_search_area_limit(
-      init_v2s,
-      slot_manager,
-      grouping_constraints,
-      pre_assignments,
-      curr_slr_limit,
-      min_area_limit,
-      max_area_limit,
-      max_search_time,
-      partitioner,
-    )
-    if curr_best_v2s:
-      best_v2s = curr_best_v2s
-      hi = curr_slr_limit
-    else:
-      lo = curr_slr_limit
-
-    if best_v2s:
-      if hi - lo < 700:
-        break
-    else:
-      if hi - lo < 500:
-        break
-
-  if not best_v2s:
-    _logger.info(f'eight way partition failed with area limit {max_area_limit} and slr_width_limit {curr_slr_limit}')
-    return {}
-
-  log_resource_utilization(best_v2s)
-  return best_v2s
+  return curr_best_v2s, curr_min_slr_limit
 
 
 def _binary_search_area_limit(
@@ -237,7 +224,9 @@ def _binary_search_area_limit(
   max_area_limit,
   max_search_time,
   partitioner,
-) -> Dict[Vertex, Slot]:
+) -> Tuple[Dict[Vertex, Slot], float]:
+  _logger.info('Binary search of min_area_limit between %f and %f, '
+               'with slr_width_limit %d', min_area_limit, max_area_limit, slr_width_limit)
 
   curr_best_v2s = {}
 
@@ -267,14 +256,10 @@ def _binary_search_area_limit(
     else:
       lo = curr_area_limit
 
-    if curr_best_v2s:
-      if hi - lo < 0.015:
-        break
-    else:
-      if hi - lo < 0.01:
-        break
+    if hi - lo < 0.01:
+      break
 
   if curr_best_v2s:
     _logger.info(f'Found solution with usage_ratio {curr_min_usage} and slr_width_limit {slr_width_limit}')
 
-  return curr_best_v2s
+  return curr_best_v2s, curr_min_usage
