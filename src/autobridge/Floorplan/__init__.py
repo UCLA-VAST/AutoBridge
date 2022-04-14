@@ -9,6 +9,7 @@ from autobridge.Floorplan.Utilities import (
   print_vertex_areas,
   get_eight_way_partition_slots,
   get_four_way_partition_slots,
+  get_actual_usage,
 )
 from autobridge.Opt.DataflowGraph import Vertex, DataflowGraph
 from autobridge.Opt.Slot import Slot
@@ -38,6 +39,19 @@ def get_floorplan(
   (2) a list of all potential slots
   Note that an empty slot will not be in (1), but will occur in (2)
   """
+  # get initial v2s
+  init_slot = slot_manager.getInitialSlot()
+  init_v2s = {v : init_slot for v in graph.getAllVertices()}
+
+  actual_usage = get_actual_usage(init_v2s.keys(), slot_manager.getInitialSlot())
+  if max_area_limit < actual_usage:
+    max_area_limit = actual_usage + 0.1
+    cli_logger.warning('The specified max_area_limit is less than the actual usage of the design: %f. '
+                       'Adjust max_area_limit to %f', actual_usage, max_area_limit)
+  if min_area_limit < actual_usage:
+    min_area_limit = actual_usage
+    cli_logger.warning('Adjust the min_area_limit to the actual usage of the design: %f', actual_usage)
+
   cli_logger.info('')
   cli_logger.info('Floorplan parameters:')
   cli_logger.info('')
@@ -51,10 +65,6 @@ def get_floorplan(
   cli_logger.info('  max_search_time per solving: %d', max_search_time)
   cli_logger.info('')
   cli_logger.info('Start floorplanning, please check the log for the progress...\n')
-
-  # get initial v2s
-  init_slot = slot_manager.getInitialSlot()
-  init_v2s = {v : init_slot for v in graph.getAllVertices()}
 
   # get grouping constraints of Vertex
   grouping_constraints: List[List[Vertex]] = [

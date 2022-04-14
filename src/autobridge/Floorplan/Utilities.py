@@ -156,6 +156,17 @@ def print_vertex_areas(v_list: List[Vertex], init_slot: Slot) -> None:
     _logger.info(f'  {r}: {total} / {avail} = {percent}%')
 
 
+def get_actual_usage(v_list: List[Vertex], init_slot: Slot) -> float:
+  usage = 0
+  for r in RESOURCE_TYPES:
+    total = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
+    avail = init_slot.getArea()[r]
+    percent = round(total / avail, 2)
+    usage = max(usage, percent)
+
+  return usage
+
+
 def print_pre_assignment(v2s: Dict[Vertex, Slot]) -> None:
   _logger.info('The pre-determined floorplanning is shown as below:')
   for v, s in v2s.items():
