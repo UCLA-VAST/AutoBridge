@@ -78,12 +78,13 @@ def init_logging(config) -> None:
   logger.setLevel(logging.INFO)
 
 
-def set_general_logger():
+def set_general_logger(config):
   general_logger = get_cli_logger()
   general_logger.parent = None
   general_logger.addHandler(logging.StreamHandler())
   general_logger.setLevel(logging.INFO)
 
+  general_logger.addHandler(logging.FileHandler(get_log_name(config)))
   return general_logger
 
 

@@ -14,7 +14,7 @@ from autobridge.util import *
 from autobridge.analyze import analyze_result, analyze_input, is_device_supported
 
 def annotate_floorplan(config: Dict) -> Dict:
-  cli_logger = set_general_logger()
+  cli_logger = set_general_logger(config)
 
   print_start(config)
 
