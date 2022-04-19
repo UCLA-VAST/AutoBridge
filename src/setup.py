@@ -7,7 +7,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name='autobridge',
-    version='0.0.20220413.dev2',
+    version='0.0.20220419.dev2',
     description='AutoBridge',
     long_description=long_description,
     long_description_content_type='text/markdown',
