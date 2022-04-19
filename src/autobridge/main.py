@@ -137,6 +137,7 @@ def get_annotated_config(
   config = copy.deepcopy(config_orig)
   for v, s in v2s.items():
     config['vertices'][v.name]['floorplan_region'] = s.getRTLModuleName()
+    config['vertices'][v.name]['SLR'] = s.getSLR()
 
   slot_list = list(set(v2s.values()))
   config['floorplan_region_pblock_tcl'] = {s.getRTLModuleName(): s.pblock_tcl for s in slot_list}
