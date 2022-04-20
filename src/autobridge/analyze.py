@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 
 from autobridge.util import get_cli_logger, get_work_dir
@@ -79,20 +80,20 @@ def check_resource_usage(config):
     logger.info('only floorplan to SLR-level slots as requested by the user')
     return
 
-  logger.info('The device could be partitioned into %d slots:', len(usage))
+  logger.info('The device could be partitioned into %d slots.', len(usage))
 
-  if config['part_num'].startswith('xcu250') and len(usage) <= 4 or \
-     config['part_num'].startswith('xcu280') and len(usage) <= 3:
-    logger.critical(
-      '*** CRITICAL WARNING: '
-      'Some tasks of the design may be too large and prohibits a more fine-grained floorplanning.'
-    )
-    logger.critical('')
-    logger.critical(
-      'Tips: (1) write smaller tasks; (2) make each task use less heterogeneous resources. '
-      'E.g., using a lot of DSP / BRAM / URAM in the *same* task makes it harder to floorplan'
-    )
-    logger.critical('')
+  for slot_name in usage.keys():
+    if re.search('CR_X0Y\d+_To_CR_X7Y\d+', slot_name):
+      logger.critical(
+        '*** CRITICAL WARNING: '
+        'Some tasks of the design may be too large and prohibits a more fine-grained floorplanning.'
+      )
+      logger.critical('')
+      logger.critical(
+        'Tips: (1) write smaller tasks; (2) make each task use less heterogeneous resources. '
+        'E.g., using a lot of DSP / BRAM / URAM in the *same* task makes it harder to floorplan'
+      )
+      logger.critical('')
 
 def check_slot_crossing(config) -> None:
   boundary_to_wire_num = defaultdict(lambda : 0)
