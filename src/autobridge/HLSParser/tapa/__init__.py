@@ -17,7 +17,7 @@ from autobridge.Opt.SlotManager import SlotManager
 logging.basicConfig(
     level=logging.DEBUG,
     format=
-    '%(levelname).1s%(asctime)s.%(msecs)03d %(name)s:%(lineno)d] %(message)s',
+    '[%(levelname)s: %(name)s:%(lineno)d] %(message)s',
     datefmt='%m%d %H:%M:%S',
 )
 
@@ -57,7 +57,7 @@ def get_floorplan_output_bundle(config):
 
   # generate floorplan
   v2s = autobridge_floorplan.get_floorplan(graph, slot_manager, grouping_constraints, pre_assignment, **kwargs)
-  
+
   s2v = util.invert_v2s(v2s)
   topology = Topology(s2v)
 
