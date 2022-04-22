@@ -108,7 +108,7 @@ def get_floorplan(
     if v2s:
       return v2s, get_four_way_partition_slots(slot_manager)
     else:
-      return None
+      return None, None
 
   elif floorplan_strategy == 'QUICK_FLOORPLANNING':
     _logger.info(f'user specifies to prioritize speed')
@@ -116,7 +116,7 @@ def get_floorplan(
     if v2s:
       return v2s, get_eight_way_partition_slots(slot_manager)
     else:
-      return None
+      return None, None
 
   else:
     if floorplan_strategy != 'HALF_SLR_LEVEL_FLOORPLANNING':
