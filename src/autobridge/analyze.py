@@ -129,7 +129,16 @@ def check_gurobi() -> None:
   if 'GUROBI_HOME' in os.environ:
     logger.info('Gurobi solver detected.')
   else:
-    logger.critical('*** CRITICAL WARNING: Gurobi solver not detected. Floorplanning may take extra time.')
+    logger.critical('*** CRITICAL WARNING: Gurobi solver not detected. Floorplanning may take extra time. ')
+    logger.critical('The Gurobi solver is much faster than the open-source solver, and it is free for academia. ')
+    logger.critical('  - Register and download the Gurobi Optimizer at https://www.gurobi.com/downloads/gurobi-optimizer-eula/')
+    logger.critical('  - Unzip the package to your desired directory')
+    logger.critical('  - Obtain an academic license at https://www.gurobi.com/downloads/end-user-license-agreement-academic/')
+    logger.critical('  - Set environment variables GUROBI_HOME and GRB_LICENSE_FILE')
+    logger.critical('      export GUROBI_HOME=[WHERE-YOU-INSTALL] ')
+    logger.critical('      export GRB_LICENSE_FILE=[ADDRESS-OF-YOUR-LICENSE-FILE] ')
+    logger.critical('      export PATH="${PATH}:${GUROBI_HOME}/bin" ')
+    logger.critical('      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib" ')
 
 
 def analyze_input(config) -> None:
