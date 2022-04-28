@@ -7,6 +7,7 @@ import os, sys
 import tempfile
 from contextlib import contextmanager
 
+
 libc = ctypes.CDLL(None)
 c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
 
@@ -45,12 +46,19 @@ def stdout_redirector(stream):
 
 
 def get_mip_model_silent():
-  f = io.BytesIO()
-  with stdout_redirector(f):
-    m = mip.Model()
-    m.verbose = 0
-  return m
-
+  """Create a mip model but filter out the Gurobi prints"""
+  try:
+    f = io.BytesIO()
+    with stdout_redirector(f):
+      m = mip.Model()
+      m.verbose = 0
+    return m
+  except:
+    logger = get_cli_logger()
+    logger.error('*** ERROR: Failed to start Gurobi. Check if GUROBI_HOME and GRB_LICENSE_FILE are correctly set')
+    logger.error('GUROBI_HOME is currently set to %s', os.environ.get('GUROBI_HOME', ''))
+    logger.error('GRB_LICENSE_FILE is currently set to %s', os.environ.get('GRB_LICENSE_FILE', ''))
+    exit(1)
 
 def get_work_dir(config):
   return config.get('work_dir', '.')
