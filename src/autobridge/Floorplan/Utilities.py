@@ -92,6 +92,35 @@ def get_four_way_partition_slots(slot_manager: SlotManager) -> List[Slot]:
   return slot_manager.getLeafSlotsAfterPartition(partition_order)
 
 
+def get_actual_area_limit(v2s: Dict[Vertex, Slot]) -> float:
+  """Calculate the actual area limit among all slots"""
+  area_limit = 0
+  s2v = invert_v2s(v2s)
+  for s, v_list in s2v.items():
+    for r in RESOURCE_TYPES:
+      capacity = s.area[r]
+      usage = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
+      ratio = round(usage/capacity, 4)
+      area_limit = max(ratio, area_limit)
+  return area_limit
+
+
+def get_actual_slr_crossing_limit(v2s: Dict[Vertex, Slot]) -> int:
+  """Calculate the actual max SLR crossing among all SLR boundaries"""
+  s2v = invert_v2s(v2s)
+  slr_crossing = [0] * (_get_slr_count(list(s2v.keys())) - 1)
+  e_list = get_all_edges(list(v2s.keys()))
+  for e in e_list:
+    src_slr = v2s[e.src].getSLR()
+    dst_slr = v2s[e.dst].getSLR()
+    idx_small = min(src_slr, dst_slr)
+    idx_large = max(src_slr, dst_slr)
+    for i in range(idx_small, idx_large):
+      slr_crossing[i] += e.width
+
+  return max(slr_crossing)
+
+
 def log_resource_utilization(
     v2s: Dict[Vertex, Slot],
 ) -> None:

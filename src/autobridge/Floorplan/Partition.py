@@ -1,7 +1,11 @@
 import logging
 from typing import Dict, List, Tuple
 
-from autobridge.Floorplan.Utilities import log_resource_utilization
+from autobridge.Floorplan.Utilities import (
+  log_resource_utilization,
+  get_actual_area_limit,
+  get_actual_slr_crossing_limit,
+)
 from autobridge.Floorplan.EightWayPartition import eight_way_partition
 from autobridge.Floorplan.FourWayPartition import four_way_partition
 from autobridge.Opt.DataflowGraph import Vertex
@@ -201,8 +205,13 @@ def _binary_search_slr_crossing_limit(
 
     if v2s:
       curr_best_v2s = v2s
-      curr_min_slr_limit = curr_slr_limit
-      hi = curr_slr_limit
+
+      # the actual area usage may be smaller than the provided limit
+      actual_slr_usage = get_actual_slr_crossing_limit(v2s)
+      curr_min_slr_limit = actual_slr_usage
+      hi = actual_slr_usage
+
+      _logger.info('succeed with max actual slr crossing count %d', actual_slr_usage)
     else:
       lo = curr_slr_limit
 
@@ -253,8 +262,13 @@ def _binary_search_area_limit(
 
     if v2s:
       curr_best_v2s = v2s
-      curr_min_usage = curr_area_limit
-      hi = curr_area_limit
+
+      # the actual area usage may be smaller than the provided limit
+      actual_area_usage = get_actual_area_limit(v2s)
+      curr_min_usage = actual_area_usage
+      hi = actual_area_usage
+
+      _logger.info('succeed with actual area usage %f', actual_area_usage)
     else:
       lo = curr_area_limit
 
