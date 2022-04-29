@@ -192,10 +192,9 @@ def _binary_search_slr_crossing_limit(
   # binary search:
   hi = max_slr_width_limit
   lo = min_slr_width_limit
-  assert lo <= hi
 
   curr_min_slr_limit = None
-  while (1):
+  while (lo <= hi):
     curr_slr_limit = (hi + lo) / 2
     _logger.info(f'Try slr_width_limit {curr_slr_limit}')
 
@@ -249,10 +248,9 @@ def _binary_search_area_limit(
   # binary search:
   hi = max_area_limit
   lo = min_area_limit
-  assert lo <= hi
 
   curr_min_usage = None
-  while (1):
+  while (lo <= hi):
     curr_area_limit = (hi + lo) / 2
     _logger.info(f'Try area limit {curr_area_limit}')
 
