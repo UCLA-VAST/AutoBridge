@@ -1,10 +1,11 @@
 import ctypes
-from datetime import datetime
 import io
 import logging
 import mip
 import os, sys
 import tempfile
+from datetime import datetime
+from pkg_resources import get_distribution
 from contextlib import contextmanager
 
 
@@ -97,13 +98,15 @@ def set_general_logger(config):
 
 
 def print_start(config):
+  __version__ = get_distribution('autobridge').version
+
   general_logger = get_cli_logger()
   general_logger.info('')
   general_logger.info('*********************************************')
   general_logger.info('***         Starting AutoBridge           ***')
   general_logger.info('*********************************************')
   general_logger.info('')
-  general_logger.info(f'Version: 0.0.20220420.dev2')
+  general_logger.info('Version: %s', __version__)
   general_logger.info('')
   general_logger.info('Running details logged to ' + get_log_name(config))
   general_logger.info('')
