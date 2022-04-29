@@ -1,5 +1,9 @@
 # Latest
 
+- **[04/29/2022]** We are holding a tutorial at [FCCM 2022](https://www.fccm.org/workshop-tutorial-2022/).
+
+- **[04/29/2022]** Check our latest documentation for the workflow [here](https://tapa.readthedocs.io/en/latest/).
+
 - **[02/20/2022]** We decide to only maintain AutoBridge as a plug-in of the [TAPA](https://github.com/UCLA-VAST/tapa) workflow. The TAPA framework provides a stable and robust environment for AutoBridge across different HLS versions. TAPA is easy and natural to use if you are familiar with the HLS dataflow coding style.
 
 ![image](https://user-images.githubusercontent.com/32432619/157976696-a08c646a-55db-49f0-86dc-fb4985c06b39.png)
