@@ -148,4 +148,8 @@ def get_annotated_config(
   config['slot_resource_usage'] = {s.getRTLModuleName(): usage for s, usage in slot_to_usage.items()}
   config['floorplan_status'] = 'SUCCEED'
 
+  # record important floorplan metrics
+  config['actual_slr_width_usage'] = util.get_actual_slr_crossing_limit(v2s)
+  config['actual_area_usage'] = util.get_actual_area_limit(v2s)
+
   return config
