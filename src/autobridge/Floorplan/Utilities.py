@@ -5,10 +5,12 @@ from typing import Dict, List, Set
 from autobridge.Opt.DataflowGraph import Vertex, Edge
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager, Dir
+from autobridge.util import get_cli_logger
 
 RESOURCE_TYPES = ['BRAM', 'DSP', 'FF', 'LUT', 'URAM']
 
 _logger = logging.getLogger('autobridge')
+cli_logger = get_cli_logger()
 
 
 def invert_v2s(curr_v2s: Dict[Vertex, Slot]) -> Dict[Slot, List[Vertex]]:
@@ -177,12 +179,13 @@ def print_vertex_areas(v_list: List[Vertex], init_slot: Slot) -> None:
   for v in v_list:
     _logger.info(f'    {v.name}: ' + ' '.join(f'{r}: {v.getVertexAndInboundFIFOArea()[r]}' for r in RESOURCE_TYPES))
 
-  _logger.info('The total area of the design:')
+  cli_logger.info('The total area of the design:')
   for r in RESOURCE_TYPES:
     total = sum(v.getVertexAndInboundFIFOArea()[r] for v in v_list)
     avail = init_slot.getArea()[r]
     percent = round(total * 100 / avail, 1)
-    _logger.info(f'  {r}: {total} / {avail} = {percent}%')
+    cli_logger.info(f'  {r}: {total} / {avail} = {percent}%')
+  cli_logger.info('')
 
 
 def get_actual_usage(v_list: List[Vertex], init_slot: Slot) -> float:
