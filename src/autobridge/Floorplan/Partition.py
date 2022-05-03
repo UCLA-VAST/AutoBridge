@@ -98,24 +98,8 @@ def partition_area_prioritized(
   # use this value as the upper bound in binary search
   actual_slr_width_usage = get_actual_slr_crossing_limit(curr_v2s)
 
-  # with the min area limit, minimize the slr limit
-  best_v2s, curr_slr_limit = _binary_search_slr_crossing_limit(
-    init_v2s,
-    slot_manager,
-    grouping_constraints,
-    pre_assignments,
-    curr_area_limit,
-    min_slr_width_limit,
-    actual_slr_width_usage,
-    max_search_time,
-    partitioner,
-  )
-
-  if not best_v2s:
-    return curr_v2s
-  else:
-    _logger.info(f'partition succeeds with max_usage_ratio {curr_area_limit} and slr_width_limit {curr_slr_limit}')
-    return best_v2s
+  _logger.info(f'partition succeeds with max_usage_ratio {curr_area_limit} and slr_width_limit {actual_slr_width_usage}')
+  return curr_v2s
 
 
 def partition_slr_crossing_prioritized(
@@ -153,24 +137,8 @@ def partition_slr_crossing_prioritized(
   # use this value as the upper bound in binary search
   actual_area_usage = get_actual_area_limit(curr_v2s)
 
-  # with the min slr limit, minimize the area limit
-  best_v2s, curr_area_limit = _binary_search_area_limit(
-    init_v2s,
-    slot_manager,
-    grouping_constraints,
-    pre_assignments,
-    curr_slr_limit,
-    min_area_limit,
-    actual_area_usage,
-    max_search_time,
-    partitioner,
-  )
-
-  if not best_v2s:
-    return curr_v2s
-  else:
-    _logger.info(f'partition succeeds with max_usage_ratio {curr_area_limit} and slr_width_limit {curr_slr_limit}')
-    return best_v2s
+  _logger.info(f'partition succeeds with max_usage_ratio {actual_area_usage} and slr_width_limit {curr_slr_limit}')
+  return curr_v2s
 
 
 def _binary_search_slr_crossing_limit(
