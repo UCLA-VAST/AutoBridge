@@ -22,6 +22,7 @@ def eight_way_partition(
   max_usage_ratio: float,
   slr_width_limit: int,
   max_search_time: int,
+  hbm_port_v_list: List[Vertex] = [],
 ) -> Dict[Vertex, Slot]:
 
   m = get_mip_model_silent()
@@ -44,6 +45,8 @@ def eight_way_partition(
     func_get_slot_by_idx=func_get_slot_by_idx, max_usage_ratio=max_usage_ratio)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
+
+  _add_hbm_port_constraints(m, hbm_port_v_list, slot_to_idx, pre_assignments, v2var_x=v2var_x, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   add_slr_0_1_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
   add_slr_1_2_crossing_constraint(m, v_list, v2var_y1, slr_width_limit)
@@ -172,6 +175,53 @@ def _add_pre_assignment(
     # only add constraints for x if the slot is half-slr
     if x != -1:
       m += v2var_x[v] == x
+
+
+def _add_hbm_port_constraints(
+    m: Model,
+    hbm_port_v_list: List[Vertex],
+    slot_to_idx: Dict[Slot, Tuple[int, int, int]],
+    pre_assignments: Dict[Vertex, Slot],
+    v2var_x: Dict[Vertex, Var],
+    v2var_y1: Dict[Vertex, Var],
+    v2var_y2: Dict[Vertex, Var],
+) -> None:
+  """Specific for U280, add port binding decisions to the floorplan ILP"""
+  # filter out the port vertices already pre assigned
+  flexible_hbm_port_v_list = []
+  for v in hbm_port_v_list:
+    if v not in pre_assignments:
+      flexible_hbm_port_v_list.append(v)
+    else:
+      _logger.info(f'{v.name} not considered for port binding adjustment as its '
+                    'location is enforced in pre assignments')
+
+  # how many hbm channels already occupied on both sides
+  hbm_0_to_15_free_channels = 16
+  hbm_16_to_31_free_channels = 16
+  for v in hbm_port_v_list:
+    if v in pre_assignments:
+      expect_slot = pre_assignments[v]
+      y1, y2, x = slot_to_idx[expect_slot]
+      assert y1 == 0 and y2 == 0, f'vertex port {v.name} assigned to non-SLR 0 slots {expect_slot.getRTLModuleName()}'
+
+      if x == 0:
+        hbm_0_to_15_free_channels -= 1
+      elif x == 1:
+        hbm_16_to_31_free_channels -= 1
+      else:
+        assert False
+
+  # hbm port vertices must be in SLR 0
+  for v in flexible_hbm_port_v_list:
+    m += v2var_y1[v] == 0
+    m += v2var_y2[v] == 0
+
+  # constraint the number of port vertices floorplaned to the left side
+  m += xsum(v2var_x[v] for v in flexible_hbm_port_v_list) >= len(flexible_hbm_port_v_list) - hbm_0_to_15_free_channels
+
+  # constraint the number of port vertices floorplaned to the right side
+  m += xsum(v2var_x[v] for v in flexible_hbm_port_v_list) <= hbm_16_to_31_free_channels
 
 
 def _add_warm_start_assignment(

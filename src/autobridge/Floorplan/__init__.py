@@ -32,6 +32,7 @@ def get_floorplan(
   min_slr_width_limit: int = 10000,
   max_slr_width_limit: int = 15000,
   max_search_time: int = 600,
+  hbm_port_v_name_list: List[str] = []
 ) -> Tuple[Dict[Vertex, Slot], List[Slot]]:
   """
   main entrance of the floorplan part
@@ -81,6 +82,11 @@ def get_floorplan(
     for v_name, pblock in pre_assignments_in_str.items()
   }
 
+  # get the hbm port vertices
+  hbm_port_v_list = [graph.getVertex(v_name) for v_name in hbm_port_v_name_list]
+  for v_name in hbm_port_v_name_list:
+    _logger.info('Binding of HBM vertex %s is subject to change', v_name)
+
   print_pre_assignment(pre_assignments)
 
   print_vertex_areas(init_v2s.keys(), slot_manager.getInitialSlot())
@@ -92,6 +98,7 @@ def get_floorplan(
     'min_slr_width_limit': min_slr_width_limit,
     'max_slr_width_limit': max_slr_width_limit,
     'max_search_time': max_search_time,
+    'hbm_port_v_list': hbm_port_v_list,
   }
 
   # choose floorplan method

@@ -10,7 +10,7 @@ class Slot:
     self.board = board
 
     assert 'COARSE_' not in pblock
-    
+
     match = re.search(r'^CLOCKREGION_X(\d+)Y(\d+)[ ]*:[ ]*CLOCKREGION_X(\d+)Y(\d+)$', pblock)
     if not match:
       match = re.search(r'^CR_X(\d+)Y(\d+)[ ]*_To_[ ]*CR_X(\d+)Y(\d+)$', pblock)
@@ -66,7 +66,7 @@ class Slot:
 
   def getArea(self):
     return self.area
-  
+
   # use the middle point as the position of the slot. Check the results have no fractional part
   # biased towards the larger side
   def getPositionX(self):
@@ -81,7 +81,7 @@ class Slot:
 
   def getLenY(self):
     return self.up_right_y - self.down_left_y + 1
-  
+
   # 1/4 from the lower end
   def getQuarterPositionX(self):
     return int(self.down_left_x + (self.up_right_x - self.down_left_x + 1) / 4)
@@ -99,7 +99,7 @@ class Slot:
   #                  |       |
   #                  |  up   |
   #                  |       |
-  #                  |-------| u_r_x, mid_y   
+  #                  |-------| u_r_x, mid_y
   #                  |       |
   #                  |  bot  |
   #                  |       |
@@ -112,7 +112,7 @@ class Slot:
     down_left_cr = f'CLOCKREGION_X{self.down_left_x }Y{self.down_left_y}'
     up_right_cr  = f'CLOCKREGION_X{self.up_right_x}Y{mid_y-1}'
     return f'{down_left_cr}:{up_right_cr}'
-  
+
   def getUpChildSlotName(self):
     assert self.down_left_x != self.up_right_x or \
       self.down_left_y != self.up_right_y, 'Cannot split a single CR'
@@ -129,7 +129,7 @@ class Slot:
   #               |         |         |
   #  d_l_x, d_l_y |---------|---------|
   #                    mid_x, d_l_y
-  #     
+  #
   def getLeftChildSlotName(self):
     assert self.down_left_x != self.up_right_x or \
       self.down_left_y != self.up_right_y, 'Cannot split a single CR'
@@ -152,7 +152,7 @@ class Slot:
     return target.down_left_x >= self.down_left_x \
       and  target.down_left_y >= self.down_left_y \
       and  target.up_right_x  <= self.up_right_x  \
-      and  target.up_right_y  <= self.up_right_y  
+      and  target.up_right_y  <= self.up_right_y
 
   def getNeighborSlotName(self, dir):
     """get the neighbor slot at the given direction of the equal size"""
@@ -176,7 +176,7 @@ class Slot:
       if self.down_left_y >= i * num_rows_per_slr \
          and self.up_right_y <= (i+1) * num_rows_per_slr - 1:
         return i
-    
+
     assert False, f'the current slot {self.getName()} is beyond 1 SLR'
     return None
 
@@ -196,7 +196,7 @@ class Slot:
     """
     get the manhatten dist from another slot
     """
-    dist_x = abs(self.getPositionX() - other.getPositionX()) 
+    dist_x = abs(self.getPositionX() - other.getPositionX())
     dist_y = abs(self.getPositionY() - other.getPositionY())
     return dist_x + dist_y
 
@@ -205,6 +205,18 @@ class Slot:
         or self.isToTheRightOf(other) \
         or self.isAbove(other) \
         or self.isBelow(other) \
+
+  def isLeftHalf(self) -> bool:
+    return self.down_left_x == 0 and self.up_right_x == 3
+
+  def isRightHalf(self) -> bool:
+    return self.down_left_x == 4 and self.up_right_x == 7
+
+  def isFullSLRSlot(self) -> bool:
+    return self.down_left_x == 0 and self.up_right_x == 7
+
+  def isHalfSLRSlot(self) -> bool:
+    return self.isLeftHalf() or self.isRightHalf()
 
   #------------- For TAPA ------------- #
   def isToTheLeftOf(self, other: 'Slot') -> bool:
@@ -229,8 +241,8 @@ class Slot:
 
   @property
   def pblock_tcl(self) -> str:
-    """ 
-    remove the overlaps with vitis IPs 
+    """
+    remove the overlaps with vitis IPs
     must start with a leading '\n', or the tapa side will error
     """
     return '\n' + f'# begin defining a slot\n' + '\n'.join(self.board.getSlotPblockTcl(self)) + '\n'

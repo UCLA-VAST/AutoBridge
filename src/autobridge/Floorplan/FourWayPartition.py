@@ -22,6 +22,7 @@ def four_way_partition(
   max_usage_ratio: float,
   slr_width_limit: int,
   max_search_time: int,
+  hbm_port_v_list: List[Vertex] = [],
 ) -> Dict[Vertex, Slot]:
 
   m = get_mip_model_silent()
@@ -46,6 +47,8 @@ def four_way_partition(
   add_slr_2_3_crossing_constraint(m, v_list, v2var_y1, v2var_y2, slr_width_limit)
 
   _add_pre_assignment(m, v_list, slot_to_idx, pre_assignments, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
+
+  _add_hbm_port_constraints(m, hbm_port_v_list, pre_assignments, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
   _add_grouping_constraints(m, grouping_constraints, v2var_y1=v2var_y1, v2var_y2=v2var_y2)
 
@@ -145,6 +148,29 @@ def _add_pre_assignment(
         y1, y2 = slot_to_idx[avail_slot]
         m += v2var_y1[v] == y1
         m += v2var_y2[v] == y2
+
+
+def _add_hbm_port_constraints(
+    m: Model,
+    hbm_port_v_list: List[Vertex],
+    pre_assignments: Dict[Vertex, Slot],
+    v2var_y1: Dict[Vertex, Var],
+    v2var_y2: Dict[Vertex, Var],
+) -> None:
+  """Specific for U280, add port binding decisions to the floorplan ILP"""
+  # filter out the port vertices already pre assigned
+  flexible_hbm_port_v_list = []
+  for v in hbm_port_v_list:
+    if v not in pre_assignments:
+      flexible_hbm_port_v_list.append(v)
+    else:
+      _logger.info(f'{v.name} not considered for port binding adjustment as its '
+                    'location is enforced in pre assignments')
+
+  # hbm port vertices must be in SLR 0
+  for v in flexible_hbm_port_v_list:
+    m += v2var_y1[v] == 0
+    m += v2var_y2[v] == 0
 
 
 def _add_opt_goal(

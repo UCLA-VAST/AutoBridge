@@ -27,6 +27,7 @@ def partition(
   max_search_time: int = 600,
   partition_method: str = 'EIGHT_WAY_PARTITION',
   floorplan_opt_priority: str = 'AREA_PRIORITIZED',
+  hbm_port_v_list: List[Vertex] = [],
 ) -> Dict[Vertex, Slot]:
   _logger.info('Use partition method: %s with floorplan_opt_priority %s', partition_method, floorplan_opt_priority)
 
@@ -54,6 +55,7 @@ def partition(
     min_slr_width_limit,
     max_slr_width_limit,
     max_search_time,
+    hbm_port_v_list,
     partitioner,
   )
 
@@ -73,6 +75,7 @@ def partition_area_prioritized(
   min_slr_width_limit: int,
   max_slr_width_limit: int,
   max_search_time: int,
+  hbm_port_v_list: List[Vertex],
   partitioner,
 ) -> Dict[Vertex, Slot]:
   """
@@ -88,6 +91,7 @@ def partition_area_prioritized(
     min_area_limit,
     max_area_limit,
     max_search_time,
+    hbm_port_v_list,
     partitioner,
   )
 
@@ -112,6 +116,7 @@ def partition_slr_crossing_prioritized(
   min_slr_width_limit: int,
   max_slr_width_limit: int,
   max_search_time: int,
+  hbm_port_v_list: List[Vertex],
   partitioner,
 ) -> Dict[Vertex, Slot]:
   """
@@ -127,6 +132,7 @@ def partition_slr_crossing_prioritized(
     min_slr_width_limit,
     max_slr_width_limit,
     max_search_time,
+    hbm_port_v_list,
     partitioner,
   )
 
@@ -150,6 +156,7 @@ def _binary_search_slr_crossing_limit(
   min_slr_width_limit: int,
   max_slr_width_limit: int,
   max_search_time: int,
+  hbm_port_v_list: List[Vertex],
   partitioner,
 ) -> Tuple[Dict[Vertex, Slot], int]:
   _logger.info('Binary search of slr_width_limit between %d and %d, '
@@ -174,6 +181,7 @@ def _binary_search_slr_crossing_limit(
       area_limit,
       curr_slr_limit,
       max_search_time,
+      hbm_port_v_list=hbm_port_v_list,
     )
 
     if v2s:
@@ -206,6 +214,7 @@ def _binary_search_area_limit(
   min_area_limit,
   max_area_limit,
   max_search_time,
+  hbm_port_v_list: List[Vertex],
   partitioner,
 ) -> Tuple[Dict[Vertex, Slot], float]:
   _logger.info('Binary search of min_area_limit between %f and %f, '
@@ -230,6 +239,7 @@ def _binary_search_area_limit(
       curr_area_limit,
       slr_width_limit,
       max_search_time,
+      hbm_port_v_list=hbm_port_v_list,
     )
 
     if v2s:

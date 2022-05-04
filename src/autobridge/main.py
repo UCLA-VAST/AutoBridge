@@ -101,6 +101,14 @@ def get_floorplan_params(config) -> Dict:
     if param in config:
       kwargs[param] = config[param]
 
+  # u280 only: get the hbm port list
+  if config['part_num'].startswith('xcu280') and config.get('enable_hbm_binding_adjustment', False):
+    hbm_port_v_name_list = []
+    for v, props in config['vertices'].items():
+      if props['category'] == 'PORT_VERTEX' and props['port_cat'] == 'HBM':
+        hbm_port_v_name_list.append(v)
+    kwargs['hbm_port_v_name_list'] = hbm_port_v_name_list
+
   return kwargs
 
 def get_ddr_list(config) -> List[int]:
@@ -151,5 +159,28 @@ def get_annotated_config(
   # record important floorplan metrics
   config['actual_slr_width_usage'] = util.get_actual_slr_crossing_limit(v2s)
   config['actual_area_usage'] = util.get_actual_area_limit(v2s)
+
+  # record the new HBM binding
+  if any(s.isHalfSLRSlot() for s in slot_list):
+    if config.get('enable_hbm_binding_adjustment', False):
+      config['new_hbm_binding'] = {}
+      left_curr = 0
+      right_curr = 16
+      for v, s in v2s.items():
+        if  config['vertices'][v.name]['category'] == 'PORT_VERTEX' and \
+            config['vertices'][v.name]['port_cat'] == 'HBM':
+          assert s.getSLR() == 0
+          name = config['vertices'][v.name]['top_arg_name']
+          if s.isLeftHalf():
+            port = left_curr
+            left_curr += 1
+          elif s.isRightHalf():
+            port = right_curr
+            right_curr += 1
+          else:
+            assert False
+
+          config['new_hbm_binding'][name] = port
+
 
   return config
