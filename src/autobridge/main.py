@@ -10,6 +10,7 @@ from autobridge.Opt.DataflowGraph import Edge, Vertex
 from autobridge.Opt.Slot import Slot
 from autobridge.Opt.SlotManager import SlotManager
 from autobridge.Route.global_route import ILPRouter
+from autobridge.Route.latency_balancing import latency_balancing
 from autobridge.util import *
 from autobridge.analyze import analyze_result, analyze_input, is_device_supported
 
@@ -77,7 +78,9 @@ def annotate_floorplan(config: Dict) -> Dict:
   )
   fifo_to_path: Dict[Edge, List[Slot]] = router.route_design()
 
-  annotated_config = get_annotated_config(v2s, fifo_to_path, slot_to_usage, config)
+  fifo_name_to_depth = latency_balancing(graph, fifo_to_path)
+
+  annotated_config = get_annotated_config(v2s, fifo_to_path, slot_to_usage, fifo_name_to_depth, config)
 
   analyze_result(annotated_config)
 
@@ -140,6 +143,7 @@ def get_annotated_config(
     v2s: Dict[Vertex, Slot],
     fifo_to_path: Dict[Edge, List[Slot]],
     slot_to_usage: Dict[Slot, Dict[str, float]],
+    fifo_name_to_depth: Dict[str, int],
     config_orig: Dict,
 ) -> Dict:
   config = copy.deepcopy(config_orig)
@@ -155,6 +159,10 @@ def get_annotated_config(
 
   config['slot_resource_usage'] = {s.getRTLModuleName(): usage for s, usage in slot_to_usage.items()}
   config['floorplan_status'] = 'SUCCEED'
+
+  # update the edge depth
+  for fifo_name, depth in fifo_name_to_depth.items():
+    config['edges'][fifo_name]['adjusted_depth'] = depth
 
   # record important floorplan metrics
   config['actual_slr_width_usage'] = util.get_actual_slr_crossing_limit(v2s)
