@@ -4,9 +4,11 @@ from typing import List, Dict
 from autobridge.util import get_mip_model_silent
 from autobridge.Opt.DataflowGraph import Edge, Vertex
 from autobridge.Opt.Slot import Slot
+from autobridge.util import get_cli_logger
 from mip import INTEGER, minimize, xsum, OptimizationStatus
 
 _logger = logging.getLogger('autobridge')
+cli_logger = get_cli_logger()
 
 
 def get_latency(path: List[Slot]) -> int:
@@ -39,7 +41,9 @@ def latency_balancing(graph, fifo_to_path) -> Dict[str, int]:
     ))
 
     status = m.optimize(max_seconds=120)
-    assert status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE, 'Failed to balance reconvergent paths at loop level. Dependency loop detected.'
+    if status != OptimizationStatus.OPTIMAL and status != OptimizationStatus.FEASIBLE:
+      cli_logger.warning('Failed to balance reconvergent paths at loop level. Most likely there is a loop of streams.')
+      return {}
 
     # get result
     fifo_name_to_depth = {}
