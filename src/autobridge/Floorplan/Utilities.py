@@ -144,7 +144,7 @@ def log_resource_utilization(
       _logger.info(f'  {v.name}: {area_info}')
 
   # wire information
-  _logger.info(f'total wire length: {get_total_wirelength(v2s)}')
+  cli_logger.info(f'total wire length: {get_total_wirelength(v2s)}')
 
   # SLR crossing information
   try:
@@ -159,7 +159,7 @@ def log_resource_utilization(
         slr_crossing[i] += e.width
 
     for i, count in enumerate(slr_crossing):
-      _logger.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
+      cli_logger.info(f'SLR boundary {i} - {i+1} has {slr_crossing[i]} crossings')
   except:
     _logger.info(f'Skip logging SLR crossing because current slots include multiple SLRs')
 
