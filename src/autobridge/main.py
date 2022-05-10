@@ -52,6 +52,7 @@ def annotate_floorplan(config: Dict) -> Dict:
   kwargs = get_floorplan_params(config)
 
   # generate floorplan
+  # slot_list includes all possible slot regardless of whether it is empty
   v2s, slot_list = autobridge_floorplan.get_floorplan(
     graph,
     slot_manager,
@@ -80,7 +81,7 @@ def annotate_floorplan(config: Dict) -> Dict:
 
   fifo_name_to_depth = latency_balancing(graph, fifo_to_path)
 
-  annotated_config = get_annotated_config(v2s, fifo_to_path, slot_to_usage, fifo_name_to_depth, config)
+  annotated_config = get_annotated_config(v2s, slot_list, fifo_to_path, slot_to_usage, fifo_name_to_depth, config)
 
   analyze_result(annotated_config)
 
@@ -141,6 +142,7 @@ def get_area_section(config) -> Dict[str, Dict[str, int]]:
 
 def get_annotated_config(
     v2s: Dict[Vertex, Slot],
+    slot_list: List[Slot],
     fifo_to_path: Dict[Edge, List[Slot]],
     slot_to_usage: Dict[Slot, Dict[str, float]],
     fifo_name_to_depth: Dict[str, int],
@@ -151,7 +153,6 @@ def get_annotated_config(
     config['vertices'][v.name]['floorplan_region'] = s.getRTLModuleName()
     config['vertices'][v.name]['SLR'] = s.getSLR()
 
-  slot_list = list(set(v2s.values()))
   config['floorplan_region_pblock_tcl'] = {s.getRTLModuleName(): s.pblock_tcl for s in slot_list}
 
   for fifo, path in fifo_to_path.items():
