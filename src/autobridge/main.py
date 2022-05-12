@@ -81,7 +81,7 @@ def annotate_floorplan(config: Dict) -> Dict:
 
   fifo_name_to_depth = latency_balancing(graph, fifo_to_path)
 
-  annotated_config = get_annotated_config(v2s, slot_list, fifo_to_path, slot_to_usage, fifo_name_to_depth, config)
+  annotated_config = get_annotated_config(v2s, fifo_to_path, slot_to_usage, fifo_name_to_depth, config)
 
   analyze_result(annotated_config)
 
@@ -142,7 +142,6 @@ def get_area_section(config) -> Dict[str, Dict[str, int]]:
 
 def get_annotated_config(
     v2s: Dict[Vertex, Slot],
-    slot_list: List[Slot],
     fifo_to_path: Dict[Edge, List[Slot]],
     slot_to_usage: Dict[Slot, Dict[str, float]],
     fifo_name_to_depth: Dict[str, int],
@@ -153,7 +152,11 @@ def get_annotated_config(
     config['vertices'][v.name]['floorplan_region'] = s.getRTLModuleName()
     config['vertices'][v.name]['SLR'] = s.getSLR()
 
-  config['floorplan_region_pblock_tcl'] = {s.getRTLModuleName(): s.pblock_tcl for s in slot_list}
+  # which slots are not empty
+  used_slots_list = list(v2s.values()) + [s for path in fifo_to_path.values() for s in path ]
+  used_slots = set(used_slots_list)
+
+  config['floorplan_region_pblock_tcl'] = {s.getRTLModuleName(): s.pblock_tcl for s in used_slots}
 
   for fifo, path in fifo_to_path.items():
     config['edges'][fifo.name]['path'] = [s.name for s in path]
@@ -170,7 +173,7 @@ def get_annotated_config(
   config['actual_area_usage'] = util.get_actual_area_limit(v2s)
 
   # record the new HBM binding
-  if any(s.isHalfSLRSlot() for s in slot_list):
+  if any(s.isHalfSLRSlot() for s in used_slots):
     if config.get('enable_hbm_binding_adjustment', False):
       config['new_hbm_binding'] = {}
       left_curr = 0
