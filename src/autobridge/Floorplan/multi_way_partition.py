@@ -23,6 +23,30 @@ class Coordinate:
     self.y = y
 
 
+def _get_total_resources(
+    resources: Dict[int, Dict[int, Dict[str, int]]]
+) -> Dict[str, int]:
+  total = {r: 0 for r in RESOURCE_TYPES}
+  for x, y_to_r_to_val in resources.items():
+    for y, r_to_val in y_to_r_to_val.items():
+      for r, val in r_to_val.items():
+        total[r] += val
+  return total
+
+
+def _get_slot_weight(
+    resources: Dict[int, Dict[int, Dict[str, int]]]
+) -> DefaultDict[int, DefaultDict[int, Dict[str, float]]]:
+  """area of current slot over the total area"""
+  total_resource = _get_total_resources(resources)
+  slot_to_weight: DefaultDict[int, DefaultDict[int, Dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
+  for x, y_to_r_to_val in resources.items():
+    for y, r_to_val in y_to_r_to_val.items():
+      for r, val in r_to_val.items():
+        slot_to_weight[x][y][r] = val / total_resource[r]
+  return slot_to_weight
+
+
 def multi_way_partition(
   vertices: List[Vertex],
   grouping_constraints: List[List[Vertex]],
@@ -32,15 +56,23 @@ def multi_way_partition(
   resources: Dict[int, Dict[int, Dict[str, int]]],
   resource_weight: Dict[str, int],
   max_search_time: int,
+  usage_penalty_weight: int,
+  variance_penalty_weight: int,
 ) -> Dict[Vertex, Tuple[int, int]]:
+  """
+  resources[x][y][t] => the number of available resource of type t in slot (x,y)
+  FIXME: currently use v.getVertexAndInboundFIFOArea() to get area.
+  Should treat a FIFO as a vertex
+  """
   # safety check
   assert all(resources[x][y] for x in range(num_row) for y in range(num_col))
 
   m = get_mip_model_silent()
 
   # create a binary decision var for each slot for each vertex
+  # v_to_x_to_y_to_var[v][x][y] is true if vertex v is assigned to (x,y)
   v_to_x_to_y_to_var: DefaultDict[Vertex, DefaultDict[int, Dict[int, mip.Var]]] = defaultdict(lambda: defaultdict(dict))
-  v_to_all_vars: DefaultDict[Vertex, List[VarInfo]] = defaultdict(list)
+  v_to_all_vars: DefaultDict[Vertex, List[VarInfo]] = defaultdict(list) # all decision vars of a vertex
   for v in vertices:
     for x in range(num_row):
       for y in range(num_col):
@@ -55,19 +87,20 @@ def multi_way_partition(
   # represent the index of each vertex
   v_to_indices: Dict[Vertex, Coordinate] = {}
   for v, vars in v_to_all_vars.items():
-    x_idx = m.add_var(var_type=mip.INTEGER)
-    y_idx = m.add_var(var_type=mip.INTEGER)
-    m += mip.xsum(var.var * var.x for var in vars) == x_idx  # type: ignore
-    m += mip.xsum(var.var * var.y for var in vars) == y_idx  # type: ignore
-    v_to_indices[v] = Coordinate(x_idx, y_idx)
+    x_coor = m.add_var(var_type=mip.INTEGER)
+    y_coor = m.add_var(var_type=mip.INTEGER)
+    m += mip.xsum(var.var * var.x for var in vars) == x_coor  # type: ignore
+    m += mip.xsum(var.var * var.y for var in vars) == y_coor  # type: ignore
+    v_to_indices[v] = Coordinate(x_coor, y_coor)
 
   # pre assignemnts
   for v, coordinates in pre_assignments.items():
-    idx_vars = v_to_indices[v]
-    m += idx_vars.x == coordinates[0]
-    m += idx_vars.y == coordinates[1]
+    coor_vars = v_to_indices[v]
+    m += coor_vars.x == coordinates[0]
+    m += coor_vars.y == coordinates[1]
 
-  # group constraints
+  # group constraints. Set the coordinates of all vertices to be the same
+  # as the first vertex in the group
   for group in grouping_constraints:
     for i in range(1, len(group)):
       m += v_to_indices[group[0]].x == v_to_indices[group[i]].x
@@ -75,64 +108,67 @@ def multi_way_partition(
 
   # distance of each edge
   edges = get_all_edges(vertices)
-  edge_to_cost = {e: m.add_var(var_type=mip.INTEGER, name=f'intra_{e.name}') for e in edges}
-  cost_y = lambda e : v_to_indices[e.src].y - v_to_indices[e.dst].y
-  cost_x = lambda e : v_to_indices[e.src].x - v_to_indices[e.dst].x
+  edge_to_length = {e: m.add_var(var_type=mip.INTEGER) for e in edges}
+  length_y = lambda e : v_to_indices[e.src].y - v_to_indices[e.dst].y
+  length_x = lambda e : v_to_indices[e.src].x - v_to_indices[e.dst].x
 
-  for e, cost in edge_to_cost.items():
-    m += cost >= cost_y(e) + cost_x(e)
-    m += cost >= -cost_y(e) + cost_x(e)
-    m += cost >= cost_y(e) - cost_x(e)
-    m += cost >= -cost_y(e) - cost_x(e)
+  # unknown of the signs of length y and length x
+  for e, length in edge_to_length.items():
+    m += length >= length_y(e) + length_x(e)
+    m += length >= -length_y(e) + length_x(e)
+    m += length >= length_y(e) - length_x(e)
+    m += length >= -length_y(e) - length_x(e)
 
   # total wirelength
   total_wirelength = m.add_var(mip.INTEGER)
-  m += total_wirelength == mip.xsum(e.width * cost for e, cost in edge_to_cost.items())  # type: ignore
+  m += total_wirelength == mip.xsum(e.width * length for e, length in edge_to_length.items())  # type: ignore
 
-  # resource usage of each slot
-  idx_to_usage: DefaultDict[int, DefaultDict[int, Dict[str, mip.Var]]] = defaultdict(lambda: defaultdict(dict))
-  idx_to_balance: DefaultDict[int, DefaultDict[int, Dict[str, mip.LinExpr]]] = defaultdict(lambda: defaultdict(dict))
-  for x_idx in range(num_row):
-    for y_idx in range(num_col):
+  # used resource / total resource in each slot
+  coor_to_usage_ratio: DefaultDict[int, DefaultDict[int, Dict[str, mip.LinExpr]]] = defaultdict(lambda: defaultdict(dict))
+  for x_coor in range(num_row):
+    for y_coor in range(num_col):
       for r in RESOURCE_TYPES:
-        total_resource = m.add_var(var_type=mip.CONTINUOUS)
-        m += total_resource == mip.xsum(
-          v.getVertexAndInboundFIFOArea()[r] * x_to_y_to_var[x_idx][y_idx]  # type: ignore
+        total_usage_var = m.add_var(var_type=mip.CONTINUOUS)
+        m += total_usage_var == mip.xsum(
+          # FIXME: should treat a FIFO as an vertex as well. Edge should be pure wires
+          v.getVertexAndInboundFIFOArea()[r] * x_to_y_to_var[x_coor][y_coor]  # type: ignore
             for v, x_to_y_to_var in v_to_x_to_y_to_var.items()
         )
-
-        idx_to_usage[x_idx][y_idx][r] = total_resource
-        idx_to_balance[x_idx][y_idx][r] = 1 - total_resource / resources[x_idx][y_idx][r]  # type: ignore
+        coor_to_usage_ratio[x_coor][y_coor][r] = total_usage_var / resources[x_coor][y_coor][r]  # type: ignore
 
   # resource penalty. use the actual resource subtracted by the used resource
-  total_resource_balance = m.add_var(mip.CONTINUOUS)
-  m += total_resource_balance == mip.xsum(
-    resource_weight[r] * idx_to_balance[x_idx][y_idx][r]  # type: ignore
-      for x_idx in range(num_row)
-        for y_idx in range(num_col)
+  # the weight of each slot is determined by its area over the total area
+  # also multiplied by an optional weight for each resource type
+  slot_to_weight = _get_slot_weight(resources)
+  usage_penalty_var = m.add_var(mip.CONTINUOUS)
+  m += usage_penalty_var == mip.xsum(
+    resource_weight[r] * slot_to_weight[x_coor][y_coor] * # type: ignore
+      coor_to_usage_ratio[x_coor][y_coor][r]
+      for x_coor in range(num_row)
+        for y_coor in range(num_col)
           for r in RESOURCE_TYPES
   )
 
   # subtract the most used slots by the least used slots
   min_usage = m.add_var(mip.CONTINUOUS)
   max_usage = m.add_var(mip.CONTINUOUS)
-  for x_idx in range(num_row):
-    for y_idx in range(num_col):
+  for x_coor in range(num_row):
+    for y_coor in range(num_col):
       for r in RESOURCE_TYPES:
-        m += min_usage <= idx_to_balance[x_idx][y_idx][r]
-        m += max_usage >= idx_to_balance[x_idx][y_idx][r]
+        m += min_usage <= coor_to_usage_ratio[x_coor][y_coor][r]
+        m += max_usage >= coor_to_usage_ratio[x_coor][y_coor][r]
 
-  m.objective = mip.minimize(total_wirelength + total_resource_balance * 50000 + (max_usage - min_usage) * 10000)  # type: ignore
+  m.objective = mip.minimize(
+    total_wirelength +
+    usage_penalty_var * usage_penalty_weight +   # type: ignore
+    (max_usage - min_usage) * variance_penalty_weight  # type: ignore
+  )
 
   m.optimize(max_seconds=max_search_time) # type: ignore
 
   # get results
   v_to_coor: Dict[Vertex, Tuple[int, int]] = {}
-  for v, x_to_y_to_var in v_to_x_to_y_to_var.items():
-    for x, y_to_var in x_to_y_to_var.items():
-      for y, var in y_to_var.items():
-        if var.x and int(var.x) == 1:
-          v_to_coor[v] = (x, y)
-    assert v in v_to_coor
+  for v, coor in v_to_indices.items():
+    v_to_coor[v] = (int(coor.x.x), int(coor.y.x))  # type: ignore
 
   return v_to_coor
