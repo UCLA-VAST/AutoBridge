@@ -47,7 +47,7 @@ def _get_slot_weight(
   return slot_to_weight
 
 
-def multi_way_partition(
+def floorplan_core(
   vertices: List[Vertex],
   grouping_constraints: List[List[Vertex]],
   pre_assignments: Dict[Vertex, Tuple[int, int]],
@@ -164,11 +164,29 @@ def multi_way_partition(
     (max_usage - min_usage) * variance_penalty_weight  # type: ignore
   )
 
-  m.optimize(max_seconds=max_search_time) # type: ignore
+  status = m.optimize(max_seconds=max_search_time) # type: ignore
 
   # get results
   v_to_coor: Dict[Vertex, Tuple[int, int]] = {}
-  for v, coor in v_to_indices.items():
-    v_to_coor[v] = (int(coor.x.x), int(coor.y.x))  # type: ignore
+
+  if status in (mip.OptimizationStatus.OPTIMAL, mip.OptimizationStatus.FEASIBLE):
+    for v, coor in v_to_indices.items():
+      v_to_coor[v] = (int(coor.x.x), int(coor.y.x))  # type: ignore
+
+    # show metrics
+    for x, y_to_type_to_ratio in coor_to_usage_ratio.items():
+      for y, type_to_ratio in y_to_type_to_ratio.items():
+        _logger.info(f'usage ratio of slot ({x}, {y}):')
+        for type, ratio in type_to_ratio.items():
+          total = resources[x][y][type]
+          val = round(ratio.x else -1, 4)  # type: ignore
+          _logger.info(f'  {type}: {val} of {total}')
+
+    _logger.info(f'total wirelength: {total_wirelength.x}')
+    _logger.info(f'resource usage penalty: {usage_penalty_var.x}, weight: {usage_penalty_weight}')
+    _logger.info(f'max_usage: {max_usage.x}, min_usage: {min_usage.x}, weight: {variance_penalty_weight}')
+
+  else:
+    _logger.warning(f'failed to find a solution')
 
   return v_to_coor
