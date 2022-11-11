@@ -1,7 +1,7 @@
 import logging
 
 from typing import Dict, List, Tuple, DefaultDict
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 
 import mip
 from autobridge.util import get_mip_model_silent
@@ -65,17 +65,17 @@ def floorplan_core(
   Should treat a FIFO as a vertex
   """
   # safety check
-  assert all(resources[x][y] for x in range(num_row) for y in range(num_col))
+  assert all(resources[x][y] for y in range(num_row) for x in range(num_col))
 
-  m = get_mip_model_silent()
+  m = mip.Model()
 
   # create a binary decision var for each slot for each vertex
   # v_to_x_to_y_to_var[v][x][y] is true if vertex v is assigned to (x,y)
   v_to_x_to_y_to_var: DefaultDict[Vertex, DefaultDict[int, Dict[int, mip.Var]]] = defaultdict(lambda: defaultdict(dict))
   v_to_all_vars: DefaultDict[Vertex, List[VarInfo]] = defaultdict(list) # all decision vars of a vertex
   for v in vertices:
-    for x in range(num_row):
-      for y in range(num_col):
+    for y in range(num_row):
+      for x in range(num_col):
         var = m.add_var(var_type=mip.BINARY)
         v_to_all_vars[v].append(VarInfo(var, x, y))
         v_to_x_to_y_to_var[v][x][y] = var
@@ -125,8 +125,8 @@ def floorplan_core(
 
   # used resource / total resource in each slot
   coor_to_usage_ratio: DefaultDict[int, DefaultDict[int, Dict[str, mip.LinExpr]]] = defaultdict(lambda: defaultdict(dict))
-  for x_coor in range(num_row):
-    for y_coor in range(num_col):
+  for y_coor in range(num_row):
+    for x_coor in range(num_col):
       for r in RESOURCE_TYPES:
         total_usage_var = m.add_var(var_type=mip.CONTINUOUS)
         m += total_usage_var == mip.xsum(
@@ -142,26 +142,31 @@ def floorplan_core(
   slot_to_weight = _get_slot_weight(resources)
   usage_penalty_var = m.add_var(mip.CONTINUOUS)
   m += usage_penalty_var == mip.xsum(
-    resource_weight[r] * slot_to_weight[x_coor][y_coor] * # type: ignore
+    resource_weight[r] * slot_to_weight[x_coor][y_coor][r] * # type: ignore
       coor_to_usage_ratio[x_coor][y_coor][r]
-      for x_coor in range(num_row)
-        for y_coor in range(num_col)
+      for y_coor in range(num_row)
+        for x_coor in range(num_col)
           for r in RESOURCE_TYPES
   )
 
   # subtract the most used slots by the least used slots
-  min_usage = m.add_var(mip.CONTINUOUS)
-  max_usage = m.add_var(mip.CONTINUOUS)
-  for x_coor in range(num_row):
-    for y_coor in range(num_col):
-      for r in RESOURCE_TYPES:
+  resource_to_usage_var: Dict[str, Tuple[mip.Var, mip.Var]] = {}
+  for r in RESOURCE_TYPES:
+    min_usage = m.add_var(mip.CONTINUOUS)
+    max_usage = m.add_var(mip.CONTINUOUS)
+    for y_coor in range(num_row):
+      for x_coor in range(num_col):
         m += min_usage <= coor_to_usage_ratio[x_coor][y_coor][r]
         m += max_usage >= coor_to_usage_ratio[x_coor][y_coor][r]
+    resource_to_usage_var[r] = (min_usage, max_usage)
 
   m.objective = mip.minimize(
     total_wirelength +
     usage_penalty_var * usage_penalty_weight +   # type: ignore
-    (max_usage - min_usage) * variance_penalty_weight  # type: ignore
+    mip.xsum(
+      (max_usage - min_usage) * variance_penalty_weight  # type: ignore
+        for type, (min_usage, max_usage) in resource_to_usage_var.items()
+    )
   )
 
   status = m.optimize(max_seconds=max_search_time) # type: ignore
@@ -179,14 +184,88 @@ def floorplan_core(
         _logger.info(f'usage ratio of slot ({x}, {y}):')
         for type, ratio in type_to_ratio.items():
           total = resources[x][y][type]
-          val = round(ratio.x else -1, 4)  # type: ignore
+          val = round(ratio.x, 4)  # type: ignore
           _logger.info(f'  {type}: {val} of {total}')
 
     _logger.info(f'total wirelength: {total_wirelength.x}')
     _logger.info(f'resource usage penalty: {usage_penalty_var.x}, weight: {usage_penalty_weight}')
-    _logger.info(f'max_usage: {max_usage.x}, min_usage: {min_usage.x}, weight: {variance_penalty_weight}')
+    for type, (min_usage, max_usage) in resource_to_usage_var.items():
+      _logger.info(f'{type} max_usage: {max_usage.x}, min_usage: {min_usage.x}, weight: {variance_penalty_weight}')
 
   else:
     _logger.warning(f'failed to find a solution')
 
   return v_to_coor
+
+
+# FIXME: temp test code
+from autobridge.Opt.Slot import Slot
+from autobridge.Opt.SlotManager import SlotManager
+from autobridge.Floorplan.u280_resource import resources
+cli_logger = logging.getLogger('general')
+
+def eight_way_partition_new(
+  init_v2s: Dict[Vertex, Slot],
+  grouping_constraints: List[List[Vertex]],
+  pre_assignments: Dict[Vertex, Slot],
+  slot_manager: SlotManager,
+  max_usage_ratio: float,
+  slr_width_limit: int,
+  max_search_time: int,
+  hbm_port_v_list: List[Vertex] = [],
+) -> Dict[Vertex, Slot]:
+  cli_logger.info('start the new floorplan testing')
+
+  v_list = list(init_v2s.keys())
+
+  calibrated_resources = {0: {0: {}}}
+  for x, y_to_r_to_val in resources.items():
+    for y, r_to_val in y_to_r_to_val.items():
+      for r, val in r_to_val.items():
+        calibrated_resources[x][y][r] = val * max_usage_ratio
+
+  def get_coordinate(slot: Slot) -> Tuple[int, int]:
+    if slot.down_left_x == 0 and slot.down_left_y == 0:
+      return (0, 0)
+    elif slot.down_left_x == 0 and slot.down_left_y == 4:
+      return (0, 1)
+    elif slot.down_left_x == 0 and slot.down_left_y == 8:
+      return (0, 2)
+    elif slot.down_left_x == 4 and slot.down_left_y == 0:
+      return (1, 0)
+    elif slot.down_left_x == 4 and slot.down_left_y == 4:
+      return (1, 1)
+    elif slot.down_left_x == 4 and slot.down_left_y == 8:
+      return (1, 2)
+    else:
+      assert False
+
+  def get_slot(x: int, y: int) -> Slot:
+    return slot_manager.createSlot(f'CLOCKREGION_X{x*4}Y{y*4}:CLOCKREGION_X{x*4+3}Y{y*4+3}')
+
+  pre_assignments_to_coor = {v: get_coordinate(slot) for v, slot in pre_assignments.items()}
+
+  resource_weight = {
+  "BRAM" :  1,
+  "DSP"  :  1,
+  "FF"   :  1,
+  "LUT"  :  1,
+  "URAM" :  1,
+  }
+
+  v_to_coor = floorplan_core(
+    v_list,
+    grouping_constraints,
+    pre_assignments_to_coor,
+    num_row=3,
+    num_col=2,
+    resources=calibrated_resources,
+    resource_weight=resource_weight,
+    max_search_time=max_search_time,
+    usage_penalty_weight=50000,
+    variance_penalty_weight=50000,
+  )
+
+  v_to_slot = {v: get_slot(x, y) for v, (x, y) in v_to_coor.items()}
+
+  return v_to_slot
