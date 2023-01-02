@@ -137,6 +137,12 @@ class Vertex():
       item: sum(e.getArea()[item] for e in self.in_edges) + val for item, val in self.area.items()
     }
   
+  def assign_pblock(self, pblock: str) -> None:
+    self.pblock = pblock
+
+  def get_pblock(self) -> str:
+    return self.pblock
+
 
 class DataflowGraph:
   def __init__(self, hls_prj_manager : HLSProjectManager, top_rtl_parser : TopRTLParser):
