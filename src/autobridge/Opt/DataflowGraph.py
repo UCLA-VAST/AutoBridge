@@ -1,5 +1,6 @@
 import logging
 import math
+import re
 from typing import Dict
 
 from autobridge.HLSParser.vivado_hls.TopRTLParser import TopRTLParser
@@ -52,7 +53,7 @@ class Edge:
         'URAM': 0,
         'FF': 0,
         'LUT': 0
-      }      
+      }
 
     if not skip_balance_part:
       fifo_depth += self.added_depth_for_rebalance
@@ -102,6 +103,7 @@ class Vertex():
     self.name = name
     self.id = self.type + self.name
     self.area = {} # str_name -> count
+    self.pblock = ''
 
   def __hash__(self):
     return hash(self.id)
@@ -114,10 +116,10 @@ class Vertex():
 
   def getEdges(self):
     return self.in_edges + self.out_edges
-  
+
   def getInEdges(self):
     return self.in_edges
-  
+
   def getOutEdges(self):
     return self.out_edges
 
@@ -136,12 +138,23 @@ class Vertex():
     return {
       item: sum(e.getArea()[item] for e in self.in_edges) + val for item, val in self.area.items()
     }
-  
+
   def assign_pblock(self, pblock: str) -> None:
+    # FIXME: temp fix for tapa
+    if pblock == 'COARSE_X1Y0':
+      pblock = 'CLOCKREGION_X4Y0:CLOCKREGION_X7Y3'
+    elif pblock == 'COARSE_X0Y0':
+      pblock = 'CLOCKREGION_X0Y0:CLOCKREGION_X3Y3'
+
+    match = re.search(r'^CLOCKREGION_X(\d+)Y(\d+)[ ]*:[ ]*CLOCKREGION_X(\d+)Y(\d+)$', pblock)
+    assert match, f'incorrect pblock {pblock}'
     self.pblock = pblock
 
   def get_pblock(self) -> str:
     return self.pblock
+
+  def is_assigned_to_pblock(self) -> bool:
+    return self.pblock != ''
 
 
 class DataflowGraph:
@@ -159,7 +172,7 @@ class DataflowGraph:
       self.__initEdges(e_node)
 
     self.__linkEdgeAndVertex()
-    
+
     self.__checker()
 
     self.v_type_2_int = {} # map each vertex type to an integer
@@ -168,7 +181,7 @@ class DataflowGraph:
     self.int_2_v_name = {}
     self.__initVTypeToInt()
     self.__initVInstToInt()
-    
+
   # assign an integer to v type
   def __initVTypeToInt(self):
     id = 1
@@ -224,7 +237,7 @@ class DataflowGraph:
 
     # get area
     v.area = self.hls_prj_manager.getAreaFromModuleType(v.type)
-    
+
     v.in_edge_names = self.top_rtl_parser.getInFIFOsOfModuleInst(v.name)
     v.out_edge_names = self.top_rtl_parser.getOutFIFOsOfModuleInst(v.name)
 
